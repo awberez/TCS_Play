@@ -1,0 +1,441 @@
+/*
+
+SKIN: PRINT VERSION
+
+VALUES TO PLAY WITH
+These values are safe to set and can be used to customize the appearence of the board.
+
+*/
+
+/*
+Customizing the chessboard 
+*/
+/* The color of the light and dark square on the board. */
+div.chess_board div.chess_square_light {
+  background-color: #ffffff;
+  }
+
+div.chess_board div.chess_square_dark {
+  background-color: #dddddd !important;
+  }
+
+/* The color of the light and dark squares when selected. */
+div.chess_board div.chess_square_light.chess_square_selected {
+  background-color: #eeeeee;
+  }
+
+div.chess_board div.chess_square_dark.chess_square_selected {
+  background-color: #c5c1a1;
+  }
+
+/* The color of the board frame. */
+div.chess_board div.chess_frame {
+  background-color: #ffffff;
+  .chess_label_hidden {
+    color: #000000;
+    }
+  }
+
+/*
+Customizing chess pieces 
+*/
+div.chess_board div.chess_player_white {
+  color: #000000;
+  font-family: "LOC Chess Pieceset", Fallback, sans-serif;
+  position: relative;
+  }
+
+div.chess_board div.chess_player_black {
+  color: #000000;
+  font-family: "LOC Chess Pieceset", Fallback, sans-serif;
+  position: relative;
+  }
+
+div.chess_board div.chess_square_selected div.chess_player_white {
+  color: #487eae;
+  cursor: pointer;
+  }
+
+div.chess_board div.chess_square_selected div.chess_player_black {
+  color: #dd6952;
+  cursor: pointer;
+  }
+
+/*
+Customizing chess arrows 
+*/
+div.chess_board div.chess_arrow_white {
+  opacity: 0;
+  font-family: "LOC Chess Pieceset", Fallback, sans-serif;
+  position: relative;
+  pointer-events: none;
+  }
+
+div.chess_board div.chess_arrow_black {
+  opacity: 0;
+  font-family: "LOC Chess Pieceset", Fallback, sans-serif;
+  position: relative;
+  pointer-events: none;
+  }
+
+div.chess_board div.chess_arrow_xbox, div.chess_arrow_xbox_mirror {
+  opacity: 0;
+  font-family: "LOC Chess Pieceset", Fallback, sans-serif;
+  position: relative;
+  pointer-events: none;
+  }
+
+div.chess_board div.chess_square_light.chess_square_valid_move {
+  /*	background-color: #CDE855;*/
+  cursor: move;
+  }
+
+div.chess_board div.chess_square_dark.chess_square_valid_move {
+  /*	background-color: #A7C520;*/
+  cursor: move;
+  }
+
+/*div.chess_board div.chess_square_light.chess_square_valid_move {
+	-webkit-box-shadow: inset 0 0 3px 3px #CDE855;
+	-moz-box-shadow: inset 0 0 3px 3px #CDE855;
+	box-shadow: inset 0 0 3px 3px #CDE855;
+}
+div.chess_board div.chess_square_dark.chess_square_valid_move {
+	-webkit-box-shadow: inset 0 0 3px 3px #A7C520;
+	-moz-box-shadow: inset 0 0 3px 3px #A7C520;
+	box-shadow: inset 0 0 3px 3px #A7C520;
+}
+*/
+
+div.chess_board div.chess_square {
+  -webkit-font-smoothing: antialiased;
+  }
+
+div.chess_board div.chess_square {
+  /*	cursor: default; */
+  }
+
+div.chess_frame_column + div.chess_square {
+  border-left-style: double !important;
+  border-color: black;
+  }
+
+div.chess_last_square {
+  border-right-style: double !important;
+  border-color: black;
+  }
+
+div.chess_board div.chess_frame_top {
+  border-bottom-style: double !important;
+  border-color: black;
+  }
+
+div.chess_board div.chess_frame_bottom {
+  border-top-style: double !important;
+  border-color: black;
+  }
+
+div.chess_board div.chess_piece_none {
+  pointer-events: none;
+  }
+
+div.chess_board div.chess_arrow_none {
+  pointer-events: none;
+  }
+
+/*
+div.chess_board div.chess_square_light > div.chess_label {
+	color: #e5e1d1;
+}
+
+div.chess_board div.chess_square_dark > div.chess_label {
+	color: #ffffff;
+}
+*/
+div.chess_board div.chess_label {
+  font-family: "Helvetica Neue", "Helvetica", Helvetica, Arial, sans-serif;
+  font-weight: bold;
+  font-style: normal;
+  /*	font-variant: small-caps; */
+  }
+
+/* Chess pieces with unicode characters */
+div.chess_board div.chess_player_black.chess_piece_pawn:after {
+  content: '\265F';
+  }
+
+div.chess_board div.chess_player_black.chess_piece_rook:after {
+  content: '\265C';
+  }
+
+div.chess_board div.chess_player_black.chess_piece_knight:after {
+  content: '\265E';
+  }
+
+div.chess_board div.chess_player_black.chess_piece_bishop:after {
+  content: '\265D';
+  }
+
+div.chess_board div.chess_player_black.chess_piece_queen:after {
+  content: '\265B';
+  }
+
+div.chess_board div.chess_player_black.chess_piece_king:after {
+  content: '\265A';
+  }
+
+div.chess_board div.chess_player_white.chess_piece_pawn:after {
+  content: '\2659';
+  }
+
+div.chess_board div.chess_player_white.chess_piece_rook:after {
+  content: '\2656';
+  }
+
+div.chess_board div.chess_player_white.chess_piece_knight:after {
+  content: '\2658';
+  }
+
+div.chess_board div.chess_player_white.chess_piece_bishop:after {
+  content: '\2657';
+  }
+
+div.chess_board div.chess_player_white.chess_piece_queen:after {
+  content: '\2655';
+  }
+
+div.chess_board div.chess_player_white.chess_piece_king:after {
+  content: '\2654';
+  }
+
+/* Chess arrows with unicode characters */
+div.chess_board div.chess_arrow_black.chess_arrow_uarrow:after, div.chess_arrow_black.chess_arrow_darrow_mirror:after {
+  content: '\2B06';
+  }
+
+div.chess_board div.chess_arrow_black.chess_arrow_urarrow:after, div.chess_arrow_black.chess_arrow_dlarrow_mirror:after {
+  content: '\2B08';
+  }
+
+div.chess_board div.chess_arrow_black.chess_arrow_rarrow:after, div.chess_arrow_black.chess_arrow_larrow_mirror:after {
+  content: '\27A1';
+  }
+
+div.chess_board div.chess_arrow_black.chess_arrow_drarrow:after, div.chess_arrow_black.chess_arrow_ularrow_mirror:after {
+  content: '\2B0A';
+  }
+
+div.chess_board div.chess_arrow_black.chess_arrow_darrow:after, div.chess_arrow_black.chess_arrow_uarrow_mirror:after {
+  content: '\2B07';
+  }
+
+div.chess_board div.chess_arrow_black.chess_arrow_dlarrow:after, div.chess_arrow_black.chess_arrow_urarrow_mirror:after {
+  content: '\2B0B';
+  }
+
+div.chess_board div.chess_arrow_black.chess_arrow_larrow:after, div.chess_arrow_black.chess_arrow_rarrow_mirror:after {
+  content: '\2B05';
+  }
+
+div.chess_board div.chess_arrow_black.chess_arrow_ularrow:after, div.chess_arrow_black.chess_arrow_drarrow_mirror:after {
+  content: '\2B09';
+  }
+
+div.chess_board div.chess_arrow_white.chess_arrow_uarrow:after, div.chess_arrow_white.chess_arrow_darrow_mirror:after {
+  content: '\2191';
+  }
+
+div.chess_board div.chess_arrow_white.chess_arrow_urarrow:after, div.chess_arrow_white.chess_arrow_dlarrow_mirror:after {
+  content: '\2197';
+  }
+
+div.chess_board div.chess_arrow_white.chess_arrow_rarrow:after, div.chess_arrow_white.chess_arrow_larrow_mirror:after {
+  content: '\2192';
+  }
+
+div.chess_board div.chess_arrow_white.chess_arrow_drarrow:after, div.chess_arrow_white.chess_arrow_ularrow_mirror:after {
+  content: '\2198';
+  }
+
+div.chess_board div.chess_arrow_white.chess_arrow_darrow:after, div.chess_arrow_white.chess_arrow_uarrow_mirror:after {
+  content: '\2193';
+  }
+
+div.chess_board div.chess_arrow_white.chess_arrow_dlarrow:after, div.chess_arrow_white.chess_arrow_urarrow_mirror:after {
+  content: '\2199';
+  }
+
+div.chess_board div.chess_arrow_white.chess_arrow_larrow:after, div.chess_arrow_white.chess_arrow_rarrow_mirror:after {
+  content: '\2190';
+  }
+
+div.chess_board div.chess_arrow_white.chess_arrow_ularrow:after, div.chess_arrow_white.chess_arrow_drarrow_mirror:after {
+  content: '\2196';
+  }
+
+div.chess_board div.chess_arrow_xbox:after, div.chess_arrow_xbox_mirror:after {
+  content: '\2573';
+  color: #000000;
+  line-height: 115%;
+  }
+
+/* Chess pieces with images */
+
+/* Use this section if you prefer to use images to fonts */
+
+/*
+div.chess_board div.chess_player_black.chess_piece_pawn {
+background-image: url('http://upload.wikimedia.org/wikipedia/commons/c/c7/Chess_pdt45.svg');
+}
+div.chess_board div.chess_player_black.chess_piece_rook {
+background-image: url('http://upload.wikimedia.org/wikipedia/commons/f/ff/Chess_rdt45.svg');
+}
+div.chess_board div.chess_player_black.chess_piece_knight {
+background-image: url('http://upload.wikimedia.org/wikipedia/commons/e/ef/Chess_ndt45.svg');
+}
+div.chess_board div.chess_player_black.chess_piece_bishop {
+background-image: url('http://upload.wikimedia.org/wikipedia/commons/9/98/Chess_bdt45.svg');
+}
+div.chess_board div.chess_player_black.chess_piece_queen {
+background-image: url('http://upload.wikimedia.org/wikipedia/commons/4/47/Chess_qdt45.svg');
+}
+div.chess_board div.chess_player_black.chess_piece_king {
+background-image: url('http://upload.wikimedia.org/wikipedia/commons/f/f0/Chess_kdt45.svg');
+}
+div.chess_board div.chess_player_white.chess_piece_pawn {
+background-image: url('http://upload.wikimedia.org/wikipedia/commons/4/45/Chess_plt45.svg');
+}
+div.chess_board div.chess_player_white.chess_piece_rook {
+background-image: url('http://upload.wikimedia.org/wikipedia/commons/7/72/Chess_rlt45.svg');
+}
+div.chess_board div.chess_player_white.chess_piece_knight {
+background-image: url('http://upload.wikimedia.org/wikipedia/commons/7/70/Chess_nlt45.svg');
+}
+div.chess_board div.chess_player_white.chess_piece_bishop {
+background-image: url('http://upload.wikimedia.org/wikipedia/commons/b/b1/Chess_blt45.svg');
+}
+div.chess_board div.chess_player_white.chess_piece_queen {
+background-image: url('http://upload.wikimedia.org/wikipedia/commons/1/15/Chess_qlt45.svg');
+}
+div.chess_board div.chess_player_white.chess_piece_king {
+background-image: url('http://upload.wikimedia.org/wikipedia/commons/4/42/Chess_klt45.svg');
+}
+*/
+
+/*
+
+STRUCTURE
+
+VALUES TO LET ALONE!
+If you set these values, you risk to mess up the chessboard structure
+*/
+
+div.chess_board,
+div.chess_board div.chess_square,
+div.chess_board div.chess_frame,
+div.chess_board div.chess_square > div {
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  }
+
+div.chess_board div.chess_frame {
+  position: relative;
+  float: left;
+  height: 100%;
+  z-index: 0;
+  }
+
+div.chess_board div.chess_frame_column,
+div.chess_board div.chess_frame_corner {
+  width: 6%;
+  }
+
+div.chess_board div.chess_frame_row {
+  width: 11%;
+  }
+
+div.chess_board div.chess_square {
+  position: relative;
+  float: left;
+  width: 11%;
+  z-index: 0;
+  }
+
+div.chess_board div.chess_frame_right {
+  float: none;
+  overflow: hidden;
+  width: auto !important;
+  }
+
+div.chess_board div.chess_piece {
+  text-align: center;
+  line-height: 100%;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+  z-index: 1;
+  }
+
+div.chess_board div.chess_piece:after {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  width: 100%;
+  }
+
+div.chess_board div.chess_arrow {
+  text-align: center;
+  line-height: 100%;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+  height: 100%;
+  z-index: 2;
+  }
+
+div.chess_board div.chess_arrow:after {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  width: 100%;
+  }
+
+div.chess_board div.chess_label {
+  z-index: 0;
+  text-align: center;
+  line-height: 100%;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+  height: 100%;
+  }
+
+div.chess_board div.chess_label_row {
+  position: relative;
+  top: 1.5em;
+  }
+
+div.chess_board div.chess_label_row_reversed {
+  position: relative;
+  top: 1.5em;
+  }
+
+div.chess_board div.chess_label_column {
+  position: relative;
+  top: .5em;
+  }
+
+div.chess_board div.chess_label_column_reversed {
+  position: relative;
+  top: .5em;
+  }
+
+div.chess_board div.chess_label_hidden {
+  visibility: hidden;
+  }
