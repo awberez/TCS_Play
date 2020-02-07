@@ -14,6 +14,10 @@ module.exports = function(sequelize, DataTypes) {
     white_id: {type: DataTypes.INTEGER,
         allowNull: false,
     },
+    in_progress: {type: DataTypes.BOOLEAN,
+        defaultValue: true,
+        allowNull: false,
+    },
     createdAt: DataTypes.DATE,
     updatedAt: DataTypes.DATE,
     
