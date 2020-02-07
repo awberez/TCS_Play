@@ -45,8 +45,6 @@ module.exports = (app)=>{
 			        	where: { match_id: match_id }
 			    	}).then((gameMoves2)=>{	
 		    			console.log("getting move");
-		    			console.log(player_id);
-		    			console.log(dbPlayer.white_id);
 		    			let waitForMove;
 			    		if (player_id == dbPlayer.white_id) { //if white player queries
 			    			if (gameMoves2.length % 2 == 0) { 
