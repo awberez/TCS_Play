@@ -8,10 +8,10 @@ module.exports = function(sequelize, DataTypes) {
     match_id: {type: DataTypes.INTEGER,
         allowNull: false,
     },
-    move_id: {type: DataTypes.INTEGER,
-        allowNull: false,
-    },
     move: {type: DataTypes.STRING,
+        allowNull: false
+    },
+    lastMove: {type: DataTypes.STRING,
         allowNull: false
     },
     createdAt: DataTypes.DATE,
