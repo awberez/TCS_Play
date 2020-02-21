@@ -45,7 +45,30 @@ module.exports = (app)=>{
 	        	order: [ [ 'id', 'DESC' ]]
 	    	}).then((gameMoves)=>{
 	    		console.log(upToDate === "false");
-	    		if (gameMoves[0]) {
+	    		if (gameMoves[1]) {
+	    			if (game_move && gameMoves[1].lastMove == player_color && gameMoves[1].move !== game_move) {
+	    				console.log("creating");
+			    		db.GameMove.create({ 
+					    	match_id: match_id,
+					    	lastMove: player_color,
+					    	move: game_move
+					    }).then(() => { sendTheMoves(dbPlayer); }); 
+			    	}
+			    	else if (upToDate === "false") {
+			    		console.log("sending moves to update");
+			    		db.GameMove.findAll({
+				        	where: { match_id: match_id },
+				        	order: [ [ 'id', 'DESC' ]]
+				    	}).then((gameMoves2)=>{	
+				    		res.send(gameMoves2);
+				    	});
+			    	}
+			    	else { 
+			    		console.log("awaiting moves");
+			    		sendTheMoves(dbPlayer); 
+			    	};
+			    }
+			    else if (gameMoves[0]) {
 	    			if (game_move && gameMoves[0].lastMove !== player_color) {
 	    				console.log("creating");
 			    		db.GameMove.create({ 
@@ -105,8 +128,10 @@ module.exports = (app)=>{
 	    				console.log("sent moves to white");
 	    			}
 	    			else { 
+	    				let numberTimesChecked = 0;
 	    				waitForMove[`${match_id} + ${player_id}`] = setInterval(()=>{ 
-	    					console.log("checking for move from black");
+	    					numberTimesChecked++;
+	    					console.log(`checking for move from black attempt ${numberTimesChecked}`);
 	    					db.GameMove.findAll({
 					        	where: { match_id: match_id },
 	        					order: [ [ 'id', 'DESC' ]]
@@ -116,6 +141,11 @@ module.exports = (app)=>{
 				    				console.log("sent moves to white");
 				    				clearInterval(waitForMove[`${match_id} + ${player_id}`]);
 				    			}
+				    			else if (numberTimesChecked === 30) {
+				    				res.send("retry");
+				    				console.log("renew request sent to white");
+				    				clearInterval(waitForMove[`${match_id} + ${player_id}`]);
+				    			};
 			    			});
 	    				}, 1000); 
 	    			};
@@ -126,8 +156,10 @@ module.exports = (app)=>{
 	    				console.log("sent moves to black"); 
 	    			}
 	    			else { 
+	    				let numberTimesChecked = 0;
 	    				waitForMove[`${match_id} + ${player_id}`] = setInterval(()=>{ 
-	    					console.log("checking for move from white");
+	    					numberTimesChecked++;
+	    					console.log(`checking for move from white attempt ${numberTimesChecked}`);
 	    					db.GameMove.findAll({
 					        	where: { match_id: match_id },
 	        					order: [ [ 'id', 'DESC' ]]
@@ -137,6 +169,11 @@ module.exports = (app)=>{
 				    				console.log("sent moves to black");
 				    				clearInterval(waitForMove[`${match_id} + ${player_id}`]);
 				    			}
+				    			else if (numberTimesChecked === 30) {
+				    				res.send("retry");
+				    				console.log("renew request sent to black");
+				    				clearInterval(waitForMove[`${match_id} + ${player_id}`]);
+				    			};
 			    			});
 	    				}, 1000); 
 	    			};
@@ -144,8 +181,5 @@ module.exports = (app)=>{
 			});
 		};
   	});
-
-  	/*if (player_id == dbPlayer.white && gameMoves2.length % 2 == 1) console.log("move already submitted");
-	  else if (player_id == dbPlayer.black && gameMoves2.length % 2 == 0) console.log("move already submitted");*/
 
 };

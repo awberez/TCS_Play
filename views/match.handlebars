@@ -1,146 +1,154 @@
 <main>
-    <p>player color: {{player}}</p>
+    <p>Your color: {{player}}</p>
     <div id="myBoard" style="width: 400px"></div>
     <label>Status:</label>
     <div id="status"></div>
     <label>PGN:</label>
     <div id="pgn"></div>
     <script type="text/javascript">
-    let decodedJson = decodeURIComponent("{{{encodedJson}}}"), userData = JSON.parse(decodedJson);
-    userData.upToDate = false;
-    //console.log(userData);
-    var board = null
-    var game = new Chess()
-    var $status = $('#status')
-    var $pgn = $('#pgn')
-    var movesMade = [];
 
-    function onDragStart (source, piece, position, orientation) {
-      // do not pick up pieces if the game is over
-      if (game.game_over()) return false
+        let decodedJson = decodeURIComponent("{{{encodedJson}}}"), userData = JSON.parse(decodedJson);
+        userData.upToDate = false;
+        //console.log(userData);
+        var board = null
+        var game = new Chess()
+        var $status = $('#status')
+        var $pgn = $('#pgn')
+        var movesMade = [];
 
-      // do not pick up opponent's pieces
-      if ((game.turn() === 'w' && userData.player_color == "black") ||
-          (game.turn() === 'b' && userData.player_color == "white")) {
-        return false;
-      }
+        function onDragStart (source, piece, position, orientation) {
+          // do not pick up pieces if the game is over
+          if (game.game_over()) return false
 
-      // only pick up pieces for the side to move
-      if ((game.turn() === 'w' && piece.search(/^b/) !== -1) ||
-          (game.turn() === 'b' && piece.search(/^w/) !== -1)) {
-        return false
-      }
-    }
+          // do not pick up opponent's pieces
+          if ((game.turn() === 'w' && userData.player_color == "black") ||
+              (game.turn() === 'b' && userData.player_color == "white")) {
+            return false;
+          }
 
-    function onDrop (source, target) {
-      // see if the move is legal
-      var move = game.move({
-        from: source,
-        to: target,
-        promotion: 'q' // NOTE: always promote to a queen for example simplicity
-      })
-
-      // illegal move
-      if (move === null) return 'snapback'
-
-      updateStatus(move.san, true);
-    }
-
-    // update the board position after the piece snap
-    // for castling, en passant, pawn promotion
-    function onSnapEnd () {
-      board.position(game.fen())
-    }
-
-    function updateStatus (move, didPlayerMove) {
-      if (move) movesMade.push(move);
-      var status = ''
-
-      var moveColor = 'White'
-      if (game.turn() === 'b') {
-        moveColor = 'Black'
-      }
-
-      // checkmate?
-      if (game.in_checkmate()) {
-        status = 'Game over, ' + moveColor + ' is in checkmate.'
-      }
-
-      // draw?
-      else if (game.in_draw()) {
-        status = 'Game over, drawn position'
-      }
-
-      // game still on
-      else {
-        status = moveColor + ' to move'
-
-        // check?
-        if (game.in_check()) {
-          status += ', ' + moveColor + ' is in check'
+          // only pick up pieces for the side to move
+          if ((game.turn() === 'w' && piece.search(/^b/) !== -1) ||
+              (game.turn() === 'b' && piece.search(/^w/) !== -1)) {
+            return false
+          }
         }
-      }
 
-      $status.html(status)
-      $pgn.html(game.pgn())
+        function onDrop (source, target) {
+          // see if the move is legal
+          var move = game.move({
+            from: source,
+            to: target,
+            promotion: 'q' // NOTE: always promote to a queen for example simplicity
+          })
 
-      let moveData = {
-        player_id: userData.player_id,
-        match_id: userData.match_id,
-        player_color: userData.player_color,
-        game_move: move
-      }
+          // illegal move
+          if (move === null) return 'snapback'
 
-      console.log(moveData);
+          updateStatus(move.san, true);
+        }
 
-      if ((game.turn() === 'w' && userData.player_color == "black" && didPlayerMove) ||
-          (game.turn() === 'b' && userData.player_color == "white" && didPlayerMove)) {
-            console.log("sending move");
-            $.post("/getmove", moveData, (res)=>{ 
-                console.log(res);
-                opponentMove(res);
-            });
-      }
+        // update the board position after the piece snap
+        // for castling, en passant, pawn promotion
+        function onSnapEnd () {
+          board.position(game.fen())
+        }
 
-    }
+        function updateStatus (move, didPlayerMove) {
+          if (move) movesMade.push(move);
+          var status = ''
 
-    function opponentMove (res) {
-        console.log(movesMade.length < res.length);
-        console.log(movesMade.length);
-        console.log(res.length);
-        if (movesMade.length < res.length) {
-            console.log("moving");
-            let n = res.length - movesMade.length;
-            for (i = n; 0 < i; i--) {
-                console.log(res[i-1].move);
-                game.move(res[i-1].move);
-                board.position(game.fen());
-                updateStatus(res[i-1].move, false);
+          var moveColor = 'White'
+          if (game.turn() === 'b') {
+            moveColor = 'Black'
+          }
+
+          // checkmate?
+          if (game.in_checkmate()) {
+            status = 'Game over, ' + moveColor + ' is in checkmate.'
+          }
+
+          // draw?
+          else if (game.in_draw()) {
+            status = 'Game over, drawn position'
+          }
+
+          // game still on
+          else {
+            status = moveColor + ' to move'
+
+            // check?
+            if (game.in_check()) {
+              status += ', ' + moveColor + ' is in check'
             }
-            userData.upToDate = true;
-            onLoad(userData);
+          }
+
+          $status.html(status)
+          $pgn.html(game.pgn())
+
+          let moveData = {
+            player_id: userData.player_id,
+            match_id: userData.match_id,
+            player_color: userData.player_color,
+            game_move: move
+          }
+
+          console.log(moveData);
+
+          if ((game.turn() === 'w' && userData.player_color == "black" && didPlayerMove) ||
+              (game.turn() === 'b' && userData.player_color == "white" && didPlayerMove)) {
+                console.log("sending move");
+                $.post("/getmove", moveData, (res)=>{ 
+                    if (res == "retry") { onLoad(moveData); }
+                    else {
+                        console.log(res);
+                        opponentMove(res);
+                    };
+                });
+          }
+
         }
-    }
 
-    var config = {
-      draggable: true,
-      position: 'start',
-      onDragStart: onDragStart,
-      onDrop: onDrop,
-      onSnapEnd: onSnapEnd
-    }
-    board = Chessboard('myBoard', config)
+        function opponentMove (res) {
+            console.log(movesMade.length < res.length);
+            console.log(movesMade.length);
+            console.log(res.length);
+            if (movesMade.length < res.length) {
+                console.log("moving");
+                let n = res.length - movesMade.length;
+                for (i = n; 0 < i; i--) {
+                    console.log(res[i-1].move);
+                    game.move(res[i-1].move);
+                    board.position(game.fen());
+                    updateStatus(res[i-1].move, false);
+                }
+                userData.upToDate = true;
+                onLoad(userData);
+            }
+        }
 
-    function onLoad (playerData) {
-        console.log("asking for move");
-        $.post("/getmove", playerData, (res)=>{ 
-            console.log(res);
-            opponentMove(res);
-        });
-    }
+        var config = {
+          draggable: true,
+          position: 'start',
+          onDragStart: onDragStart,
+          onDrop: onDrop,
+          onSnapEnd: onSnapEnd
+        }
+        board = Chessboard('myBoard', config)
 
-    onLoad(userData);
+        function onLoad (playerData) {
+            console.log("asking for move");
+            $.post("/getmove", playerData, (res)=>{ 
+                if (res == "retry") { onLoad(playerData); }
+                else {
+                    console.log(res);
+                    opponentMove(res);
+                };
+            });
+        }
 
-    updateStatus()
+        onLoad(userData);
+
+        updateStatus();
+
     </script>
 </main>
