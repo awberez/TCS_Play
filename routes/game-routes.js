@@ -70,30 +70,7 @@ module.exports = (app)=>{
 			    }
 			    else if (gameMoves[0]) {
 	    			if (game_move && gameMoves[0].lastMove !== player_color) {
-	    				console.log("creating");
-			    		db.GameMove.create({ 
-					    	match_id: match_id,
-					    	lastMove: player_color,
-					    	move: game_move
-					    }).then(() => { sendTheMoves(dbPlayer); }); 
-			    	}
-			    	else if (upToDate === "false") {
-			    		console.log("sending moves to update");
-			    		db.GameMove.findAll({
-				        	where: { match_id: match_id },
-				        	order: [ [ 'id', 'DESC' ]]
-				    	}).then((gameMoves2)=>{	
-				    		res.send(gameMoves2);
-				    	});
-			    	}
-			    	else { 
-			    		console.log("awaiting moves");
-			    		sendTheMoves(dbPlayer); 
-			    	};
-			    }
-			    else {
-			    	if (game_move && player_color == "white") {
-			    		console.log("creating2");
+	    				console.log("creating2");
 			    		db.GameMove.create({ 
 					    	match_id: match_id,
 					    	lastMove: player_color,
@@ -111,6 +88,20 @@ module.exports = (app)=>{
 			    	}
 			    	else { 
 			    		console.log("awaiting moves2");
+			    		sendTheMoves(dbPlayer); 
+			    	};
+			    }
+			    else {
+			    	if (game_move && player_color == "white") {
+			    		console.log("creating3");
+			    		db.GameMove.create({ 
+					    	match_id: match_id,
+					    	lastMove: player_color,
+					    	move: game_move
+					    }).then(() => { sendTheMoves(dbPlayer); }); 
+			    	}
+			    	else { 
+			    		console.log("awaiting moves3");
 			    		sendTheMoves(dbPlayer); 
 			    	};
 			    }
