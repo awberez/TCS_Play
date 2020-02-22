@@ -4,7 +4,7 @@
     <br/>
     <label>Status:</label>
     <div id="status"></div><br/>
-    <label>Select a piece for promotions (you may change this at any time):</label>
+    <label>Select a piece for pawn promotions (you may change this at any time):</label>
     <div id="promotions">
         <input type="radio" id="queen" name="promotion" value="q" checked="default">
         <label for="queen">Queen</label>
@@ -52,17 +52,6 @@
             if (move === null) return 'snapback';
             updateStatus(move.san, true);
         };
-
-        /*askForPiece = ()=>{
-            let queen, rook, knight;
-            queen = confirm("Promote to Queen?");
-            if (queen) { return "q"; }
-            else { rook = confirm("Promote to Rook?"); };
-            if (rook) { return "q" }
-            else { knight = confirm("Promote to Knight?"); };
-            if (knight) { return "n" }
-            else { return "b"; };
-        };*/
 
         // update the board position after the piece snap
         // for castling, en passant, pawn promotion

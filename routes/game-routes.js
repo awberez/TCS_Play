@@ -5,13 +5,20 @@ let waitForMove = {};
 module.exports = (app)=>{
 
 	app.get("/newgame/:id/:white/:black", (req, res)=>{
-	    db.GameList.create({ 
-	    	match_id: req.params.id,
-			white_id: req.params.white,
-	    	black_id: req.params.black
-	    }).then(() => {
-            res.send("success");
-        })  
+		db.GameList.findOne({
+	        where: { match_id: req.params.id }
+	    }).then((dbGame)=>{
+	    	if (!dbGame) {
+		    	db.GameList.create({ 
+			    	match_id: req.params.id,
+					white_id: req.params.white,
+			    	black_id: req.params.black
+			    }).then(() => {
+		            res.send("success");
+		        });
+		    }
+		    else { res.send("failure"); }
+	    });
   	});
 
   	app.get("/match/:id/:player_id", (req, res)=>{
