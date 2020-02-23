@@ -40,9 +40,9 @@ module.exports = (app)=>{
 
   	app.post("/getmove", (req, res)=>{
   		console.log(req.body);
-  		let match_id = req.body.match_id, player_id = req.body.player_id, player_color = req.body.player_color, upToDate = req.body.upToDate, game_move;
+  		let match_id = req.body.match_id, player_id = req.body.player_id, player_color = req.body.player_color, upToDate = req.body.upToDate, move_from, move_to, promotion, fen;
   		clearInterval(waitForMove[`${match_id} + ${player_id}`]);
-  		if (req.body.game_move) game_move = req.body.game_move;
+  		if (req.body.from) move_from = req.body.from, move_to = req.body.to, promotion = req.body.promotion, fen = req.body.fen;
   		db.GameList.findOne({
 	        where: { match_id: match_id }
 	    }).then((dbPlayer)=>{
@@ -53,12 +53,15 @@ module.exports = (app)=>{
 	    	}).then((gameMoves)=>{
 	    		console.log(upToDate === "false");
 	    		if (gameMoves[1]) {
-	    			if (game_move && gameMoves[1].lastMove == player_color && gameMoves[1].move !== game_move) {
+	    			if (move_from && gameMoves[1].lastMove == player_color && gameMoves[1].from !== move_from && gameMoves[1].to !== move_to ) {
 	    				console.log("creating");
 			    		db.GameMove.create({ 
 					    	match_id: match_id,
 					    	lastMove: player_color,
-					    	move: game_move
+					    	from: move_from,
+					    	to: move_to,
+					    	promotion: promotion,
+					    	fen: fen
 					    }).then(() => { sendTheMoves(dbPlayer); }); 
 			    	}
 			    	else if (upToDate === "false") {
@@ -76,12 +79,15 @@ module.exports = (app)=>{
 			    	};
 			    }
 			    else if (gameMoves[0]) {
-	    			if (game_move && gameMoves[0].lastMove !== player_color) {
+	    			if (move_from && gameMoves[0].lastMove !== player_color) {
 	    				console.log("creating2");
 			    		db.GameMove.create({ 
 					    	match_id: match_id,
 					    	lastMove: player_color,
-					    	move: game_move
+					    	from: move_from,
+					    	to: move_to,
+					    	promotion: promotion,
+					    	fen: fen
 					    }).then(() => { sendTheMoves(dbPlayer); }); 
 			    	}
 			    	else if (upToDate === "false") {
@@ -99,12 +105,15 @@ module.exports = (app)=>{
 			    	};
 			    }
 			    else {
-			    	if (game_move && player_color == "white") {
+			    	if (move_from && player_color == "white") {
 			    		console.log("creating3");
 			    		db.GameMove.create({ 
 					    	match_id: match_id,
 					    	lastMove: player_color,
-					    	move: game_move
+					    	from: move_from,
+					    	to: move_to,
+					    	promotion: promotion,
+					    	fen: fen
 					    }).then(() => { sendTheMoves(dbPlayer); }); 
 			    	}
 			    	else { 
@@ -129,7 +138,7 @@ module.exports = (app)=>{
 	    				let numberTimesChecked = 0;
 	    				waitForMove[`${match_id} + ${player_id}`] = setInterval(()=>{ 
 	    					numberTimesChecked++;
-	    					console.log(`checking for move from black attempt ${numberTimesChecked}`);
+	    					console.log(`checking for move from black player in match ${match_id} attempt ${numberTimesChecked}`);
 	    					db.GameMove.findAll({
 					        	where: { match_id: match_id },
 	        					order: [ [ 'id', 'DESC' ]]
@@ -157,7 +166,7 @@ module.exports = (app)=>{
 	    				let numberTimesChecked = 0;
 	    				waitForMove[`${match_id} + ${player_id}`] = setInterval(()=>{ 
 	    					numberTimesChecked++;
-	    					console.log(`checking for move from white attempt ${numberTimesChecked}`);
+	    					console.log(`checking for move from white player in match ${match_id} attempt ${numberTimesChecked}`);
 	    					db.GameMove.findAll({
 					        	where: { match_id: match_id },
 	        					order: [ [ 'id', 'DESC' ]]

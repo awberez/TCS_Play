@@ -8,7 +8,16 @@ module.exports = function(sequelize, DataTypes) {
     match_id: {type: DataTypes.INTEGER,
         allowNull: false,
     },
-    move: {type: DataTypes.STRING,
+    from: {type: DataTypes.STRING,
+        allowNull: false
+    },
+    to: {type: DataTypes.STRING,
+        allowNull: false
+    },
+    promotion: {type: DataTypes.STRING,
+        allowNull: false
+    },
+    fen: {type: DataTypes.STRING,
         allowNull: false
     },
     lastMove: {type: DataTypes.STRING,

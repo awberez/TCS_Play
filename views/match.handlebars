@@ -1,6 +1,6 @@
 <main>
     <p>Your color: {{player}}</p>
-    <div id="myBoard" style="width: 400px"></div>
+    <div id="myBoard" style="width: 100%; max-width: calc(100vh - 250px)"></div>
     <br/>
     <label>Status:</label>
     <div id="status"></div><br/>
@@ -15,13 +15,173 @@
         <input type="radio" id="bishop" name="promotion" value="b">
         <label for="bishop">Bishop</label>
     </div><br/>
-    
     <label>PGN:</label>
     <div id="pgn"></div>
-
     <script type="text/javascript">
 
-        let decodedJson = decodeURIComponent("{{{encodedJson}}}"), userData = JSON.parse(decodedJson);
+        let decodedJson = decodeURIComponent("{{{encodedJson}}}"), userData = JSON.parse(decodedJson), movesMade = [], promotionPiece = "q";
+        userData.upToDate = false;
+
+        var chess = new Chess();
+
+        var board = new Chessboard('myBoard', {
+          position: ChessUtils.FEN.startId,
+          eventHandlers: {
+            onPieceSelected: pieceSelected,
+            onMove: pieceMove
+          }
+        });
+
+        $(document).ready(function(){
+            $('#promotions').change(function(){
+                promotionPiece = $("input[name='promotion']:checked").val();
+            });
+        });
+
+        resetGame();
+
+        function resetGame() {
+          board.setPosition(ChessUtils.FEN.startId);
+          userData.player_color == "white" ? board.setOrientation(ChessUtils.ORIENTATION.white) : board.setOrientation(ChessUtils.ORIENTATION.black);
+          chess.reset();
+
+          updateGameInfo('Next player is white.');
+        }
+
+        function updateGameInfo(status) {
+          $('#status').html(status);
+          $('#pgn').html(chess.pgn());
+        }
+
+        function pieceMove(move) {
+
+          var nextPlayer,
+            status,
+            chessMove = chess.move({
+              from: move.from,
+              to: move.to,
+              promotion: promotionPiece
+            });
+
+
+          nextPlayer = 'white';
+          if (chess.turn() === 'b') {
+            nextPlayer = 'black';
+          }
+
+          if (chessMove !== null) {
+            movesMade.push(chessMove);
+            if (chess.in_checkmate() === true) {
+              status = 'CHECKMATE! Player ' + nextPlayer + ' lost.';
+            } else if (chess.in_draw() === true) {
+              status = 'DRAW!';
+            } else {
+              status = 'Next player is ' + nextPlayer + '.';
+
+              if (chess.in_check() === true) {
+                status = 'CHECK! ' + status;        
+              }
+            }
+
+            let moveData = {
+                player_id: userData.player_id,
+                match_id: userData.match_id,
+                player_color: userData.player_color,
+                from: move.from,
+                to: move.to,
+                promotion: promotionPiece,
+                fen: chess.fen(),
+            };
+
+            console.log("sending move");
+            board.enableUserInput(false);
+            $.post("/getmove", moveData, (res)=>{ 
+                if (res == "retry") { getMovesFromServer(moveData); }
+                else {
+                    console.log(res);
+                    opponentMove(res);
+                };
+            });
+
+            updateGameInfo(status); 
+
+          }
+
+          return chess.fen();
+        }
+
+        function pieceSelected(notationSquare) {
+          var i,
+            movesNotation,
+            movesPosition = [];
+
+          movesNotation = chess.moves({square: notationSquare, verbose: true});
+          for (i = 0; i < movesNotation.length; i++) {
+            movesPosition.push(ChessUtils.convertNotationSquareToIndex(movesNotation[i].to));
+          }
+          return movesPosition;
+        }
+
+        opponentMove = (res)=>{
+            console.log(movesMade.length < res.length);
+            console.log(movesMade.length);
+            console.log(res.length);
+            if (movesMade.length < res.length) {
+                console.log("moving");
+                let n = res.length - movesMade.length;
+                for (i = n; 0 < i; i--) {
+                    let chessMove = chess.move({
+                      from: res[i-1].from,
+                      to: res[i-1].to,
+                      promotion: res[i-1].promotion
+                    });
+                    movesMade.push(chessMove);
+                    board.setPosition(res[i-1].fen);
+                    console.log(chess.pgn());
+                    nextPlayer = 'white';
+                    let status;
+                    if (chess.turn() === 'b') {
+                        nextPlayer = 'black';
+                    }
+
+                    if (chess.in_checkmate() === true) {
+                        status = 'CHECKMATE! Player ' + nextPlayer + ' lost.';
+                    } else if (chess.in_draw() === true) {
+                      status = 'DRAW!';
+                    } else {
+                      status = 'Next player is ' + nextPlayer + '.';
+
+                    if (chess.in_check() === true) {
+                        status = 'CHECK! ' + status;        
+                    }
+
+                    updateGameInfo(status); 
+
+                    }
+                }
+                userData.upToDate = true;
+                getMovesFromServer(userData);
+            }
+            else {
+                board.enableUserInput();
+            }
+        };
+
+        getMovesFromServer = (playerData)=>{
+            board.enableUserInput(false);
+            console.log("asking for move");
+            $.post("/getmove", playerData, (res)=>{ 
+                if (res == "retry") { getMovesFromServer(playerData); }
+                else {
+                    console.log(res);
+                    opponentMove(res);
+                };
+            });
+        };
+
+        getMovesFromServer(userData);
+
+        /*let decodedJson = decodeURIComponent("{{{encodedJson}}}"), userData = JSON.parse(decodedJson);
         userData.upToDate = false;
         //console.log(userData);
         let board = null, game = new Chess(), $status = $('#status'), $pgn = $('#pgn'), movesMade = [], promotionPiece = "q";
@@ -139,7 +299,7 @@
         };
 
         getMovesFromServer(userData);
-        updateStatus();
+        updateStatus();*/
 
     </script>
 </main>
