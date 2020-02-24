@@ -1,0 +1,20 @@
+PRIVATE LICENSE
+
+Copyright (c) 2020 The Chess School, Inc.
+
+This code is publicly visible as an example of how two chess packages, which
+handle the board and game-play logic, may be combined and extended into a
+simple multi-user multi-game online chess service. While we hope that you will
+gain insights that may help with your own projects, NO LICENSE IS GRANTED to
+copy any of this code directly for any other use or to use the font and other
+asset files for any purpose.
+
+The two core chess packages are available in their original forms under
+MII License here:
+
+Chess.js (https://github.com/jhlywa/chess.js), a Javascript chess library for
+  chess move generation/validation, piece placement/movement, and
+  check/checkmate/draw detection.
+  
+ChessboardJS (https://caustique.github.io/chessboard-js), a responsive
+  mobile-first javascript chessboard library.
