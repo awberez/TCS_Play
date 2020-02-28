@@ -1,29 +1,29 @@
 <main>
     <p>Your color: {{player}}</p>
     <div id="myBoard" style="width: 100%; max-width: calc(100vh - 250px)"></div>
-    <br/><br/>
+    <br/>
+    <div id="flipButton">
+        <button id="flip" type="button">Flip Board Perspective</button>
+        <br/>
+    </div>
+    <br/>
     <label>Status:</label>
     <div id="status"></div>
     <br/>
-    <label id="promotionsLabel">Select a piece for pawn promotions (you may change this at any time):</label>
-    <div id="promotions">
-        <input type="radio" id="queen" name="promotion" value="q" checked="default">
-        <label for="queen">Queen</label>
-        <input type="radio" id="rook" name="promotion" value="r">
-        <label for="rook">Rook</label>
-        <input type="radio" id="knight" name="promotion" value="n">
-        <label for="knight">Knight</label>
-        <input type="radio" id="bishop" name="promotion" value="b">
-        <label for="bishop">Bishop</label>
+    <div id="promotionsChoice">
+        <label>Select a piece for pawn promotions (you may change this at any time):</label>
+        <div id="promotions">
+            <input type="radio" id="queen" name="promotion" value="q" checked="default">
+            <label for="queen">Queen</label>
+            <input type="radio" id="rook" name="promotion" value="r">
+            <label for="rook">Rook</label>
+            <input type="radio" id="knight" name="promotion" value="n">
+            <label for="knight">Knight</label>
+            <input type="radio" id="bishop" name="promotion" value="b">
+            <label for="bishop">Bishop</label>
+        </div>
+        <br/>
     </div>
-    <label id="flipLabel">Choose board perspective:</label>
-    <div id="flip">
-        <input type="radio" id="white" name="flip" value="white" checked="default">
-        <label for="white">White</label>
-        <input type="radio" id="black" name="flip" value="black">
-        <label for="black">Black</label>
-    </div>
-    <br/>
     <label>PGN:</label>
     <div id="pgn"></div>
     <script type="text/javascript">
@@ -32,24 +32,10 @@
         userData.upToDate = false;
         console.log(userData);
 
-        if (userData.player_id == "observer") {
-            $('#promotionsLabel').hide();
-            $('#promotions').hide();
-        }
-        else {
-            $('#flipLabel').hide();
-            $('#flip').hide();
-        }
+        userData.player_id == "observer" ? $('#promotionsChoice').hide() : $('#flipButton').hide();
 
         $(document).ready(function(){ $('#promotions').change(function(){ promotionPiece = $("input[name='promotion']:checked").val(); }); });
-
-        $(document).ready(function(){
-            $('#flip').change(function(){
-                $("input[name='flip']:checked").val() == "black" 
-                    ? board.setOrientation(ChessUtils.ORIENTATION.black) 
-                    : board.setOrientation(ChessUtils.ORIENTATION.white);
-            });
-        });
+        $(document).ready(function(){ $('#flip').click(function(){ board.setOrientation(ChessUtils.ORIENTATION.flip) }); });
 
         resetGame = ()=>{
             board.setPosition(ChessUtils.FEN.startId);
@@ -65,9 +51,10 @@
 
         getMovesFromServer = (playerData)=>{
             board.enableUserInput(false);
-            console.log("asking for move");
+            console.log("asking for next move");
             $.post("/getmove", playerData, (res)=>{ 
                 if (res == "retry") { getMovesFromServer(playerData); }
+                else if (res == "game complete") { console.log("Game has been completed") }
                 else {
                     console.log(res);
                     opponentMove(res);
@@ -101,15 +88,7 @@
                     promotion: promotionPiece,
                     fen: chess.fen(),
                 };
-                board.enableUserInput(false);
-                console.log("sending move");
-                $.post("/getmove", moveData, (res)=>{ 
-                    if (res == "retry") { getMovesFromServer(moveData); }
-                    else {
-                        console.log(res);
-                        opponentMove(res);
-                    };
-                });
+                getMovesFromServer(moveData);
                 updateGameInfo(status); 
             };
             return chess.fen();
