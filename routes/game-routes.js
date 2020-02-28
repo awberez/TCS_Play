@@ -28,13 +28,17 @@ module.exports = (app)=>{
 	    	let userData = {
 	    		match_id: req.params.id,
 	    		player_id: req.params.player_id,
-	    		player_color: req.params.player_id == dbPlayer.black_id ? "black" : "white"
+	    		player_color: req.params.player_id == "observer" ? "observer" 
+	    														 : req.params.player_id == dbPlayer.black_id ? "black" 
+	    														 					 						 : "white"
 	    	}
 	    	req.params.player_id == dbPlayer.black_id
 	    		? res.render("match", { match_id: dbPlayer.match_id, player: "black", encodedJson : encodeURIComponent(JSON.stringify(userData)) })
 	    		: req.params.player_id == dbPlayer.white_id
 	    			? res.render("match", { match_id: dbPlayer.match_id, player: "white", encodedJson : encodeURIComponent(JSON.stringify(userData)) })
-	    			: res.render("unauthorized");
+	    			: req.params.player_id == "observer"
+	    				? res.render("match", { match_id: dbPlayer.match_id, player: "observer", encodedJson : encodeURIComponent(JSON.stringify(userData)) })
+	    				: res.render("unauthorized");
       	});
   	});
 
@@ -46,13 +50,16 @@ module.exports = (app)=>{
   		db.GameList.findOne({
 	        where: { match_id: match_id }
 	    }).then((dbPlayer)=>{
-	    	if (player_id != dbPlayer.white_id && player_id != dbPlayer.black_id) { res.render("unauthorized") }
+	    	if (player_id != dbPlayer.white_id && player_id != dbPlayer.black_id && player_id != "observer") { res.render("unauthorized") }
 	    	else db.GameMove.findAll({
 	        	where: { match_id: match_id },
 	        	order: [ [ 'id', 'DESC' ]]
 	    	}).then((gameMoves)=>{
-	    		console.log(upToDate === "false");
-	    		if (gameMoves[1]) {
+	    		if (player_id == "observer") {
+	    			console.log(`sending moves for match ${match_id} to observer`);
+			    	res.send(gameMoves);
+	    		}
+	    		else if (gameMoves[1]) {
 	    			if (move_from && gameMoves[1].lastMove == player_color && gameMoves[1].from !== move_from && gameMoves[1].to !== move_to ) {
 	    				console.log("creating");
 			    		db.GameMove.create({ 
@@ -62,20 +69,15 @@ module.exports = (app)=>{
 					    	to: move_to,
 					    	promotion: promotion,
 					    	fen: fen
-					    }).then(() => { sendTheMoves(dbPlayer); }); 
+					    }).then(() => { sendTheMoves(); }); 
 			    	}
 			    	else if (upToDate === "false") {
 			    		console.log("sending moves to update");
-			    		db.GameMove.findAll({
-				        	where: { match_id: match_id },
-				        	order: [ [ 'id', 'DESC' ]]
-				    	}).then((gameMoves2)=>{	
-				    		res.send(gameMoves2);
-				    	});
+			    		res.send(gameMoves);
 			    	}
 			    	else { 
 			    		console.log("awaiting moves");
-			    		sendTheMoves(dbPlayer); 
+			    		sendTheMoves(); 
 			    	};
 			    }
 			    else if (gameMoves[0]) {
@@ -88,20 +90,15 @@ module.exports = (app)=>{
 					    	to: move_to,
 					    	promotion: promotion,
 					    	fen: fen
-					    }).then(() => { sendTheMoves(dbPlayer); }); 
+					    }).then(() => { sendTheMoves(); }); 
 			    	}
 			    	else if (upToDate === "false") {
 			    		console.log("sending moves to update2");
-			    		db.GameMove.findAll({
-				        	where: { match_id: match_id },
-				        	order: [ [ 'id', 'DESC' ]]
-				    	}).then((gameMoves2)=>{	
-				    		res.send(gameMoves2);
-				    	});
+			    		res.send(gameMoves);
 			    	}
 			    	else { 
 			    		console.log("awaiting moves2");
-			    		sendTheMoves(dbPlayer); 
+			    		sendTheMoves(); 
 			    	};
 			    }
 			    else {
@@ -114,16 +111,16 @@ module.exports = (app)=>{
 					    	to: move_to,
 					    	promotion: promotion,
 					    	fen: fen
-					    }).then(() => { sendTheMoves(dbPlayer); }); 
+					    }).then(() => { sendTheMoves(); }); 
 			    	}
 			    	else { 
 			    		console.log("awaiting moves3");
-			    		sendTheMoves(dbPlayer); 
+			    		sendTheMoves(); 
 			    	};
 			    }
 			});
       	});
-      	sendTheMoves = (dbPlayer) => {
+      	sendTheMoves = () => {
             db.GameMove.findAll({
 	        	where: { match_id: match_id },
 	        	order: [ [ 'id', 'DESC' ]]

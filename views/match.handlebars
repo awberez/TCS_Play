@@ -1,10 +1,11 @@
 <main>
     <p>Your color: {{player}}</p>
     <div id="myBoard" style="width: 100%; max-width: calc(100vh - 250px)"></div>
-    <br/>
+    <br/><br/>
     <label>Status:</label>
-    <div id="status"></div><br/>
-    <label>Select a piece for pawn promotions (you may change this at any time):</label>
+    <div id="status"></div>
+    <br/>
+    <label id="promotionsLabel">Select a piece for pawn promotions (you may change this at any time):</label>
     <div id="promotions">
         <input type="radio" id="queen" name="promotion" value="q" checked="default">
         <label for="queen">Queen</label>
@@ -14,13 +15,31 @@
         <label for="knight">Knight</label>
         <input type="radio" id="bishop" name="promotion" value="b">
         <label for="bishop">Bishop</label>
-    </div><br/>
+    </div>
+    <label id="flipLabel">Choose board perspective:</label>
+    <div id="flip">
+        <input type="radio" id="white" name="flip" value="white" checked="default">
+        <label for="white">White</label>
+        <input type="radio" id="black" name="flip" value="black">
+        <label for="black">Black</label>
+    </div>
+    <br/>
     <label>PGN:</label>
     <div id="pgn"></div>
     <script type="text/javascript">
 
         let decodedJson = decodeURIComponent("{{{encodedJson}}}"), userData = JSON.parse(decodedJson), movesMade = [], promotionPiece = "q";
         userData.upToDate = false;
+        console.log(userData);
+
+        if (userData.player_id == "observer") {
+            $('#promotionsLabel').hide();
+            $('#promotions').hide();
+        }
+        else {
+            $('#flipLabel').hide();
+            $('#flip').hide();
+        }
 
         var chess = new Chess();
 
@@ -33,8 +52,12 @@
         });
 
         $(document).ready(function(){
-            $('#promotions').change(function(){
-                promotionPiece = $("input[name='promotion']:checked").val();
+            $('#promotions').change(function(){ promotionPiece = $("input[name='promotion']:checked").val(); });
+        });
+
+        $(document).ready(function(){
+            $('#flip').change(function(){
+                $("input[name='flip']:checked").val() == "black" ? board.setOrientation(ChessUtils.ORIENTATION.black) : board.setOrientation(ChessUtils.ORIENTATION.white);
             });
         });
 
@@ -42,7 +65,7 @@
 
         function resetGame() {
           board.setPosition(ChessUtils.FEN.startId);
-          userData.player_color == "white" ? board.setOrientation(ChessUtils.ORIENTATION.white) : board.setOrientation(ChessUtils.ORIENTATION.black);
+          userData.player_color == "black" ? board.setOrientation(ChessUtils.ORIENTATION.black) : board.setOrientation(ChessUtils.ORIENTATION.white);
           chess.reset();
 
           updateGameInfo('Next player is white.');
@@ -160,11 +183,9 @@
                     }
                 }
                 userData.upToDate = true;
-                getMovesFromServer(userData);
+                if (userData.player_id != "observer") { getMovesFromServer(userData); };
             }
-            else {
-                board.enableUserInput();
-            }
+            else { if (userData.player_id != "observer") board.enableUserInput(); }
         };
 
         getMovesFromServer = (playerData)=>{
@@ -179,127 +200,11 @@
             });
         };
 
-        getMovesFromServer(userData);
-
-        /*let decodedJson = decodeURIComponent("{{{encodedJson}}}"), userData = JSON.parse(decodedJson);
-        userData.upToDate = false;
-        //console.log(userData);
-        let board = null, game = new Chess(), $status = $('#status'), $pgn = $('#pgn'), movesMade = [], promotionPiece = "q";
-
-        onDragStart = (source, piece, position, orientation)=>{
-          // do not pick up pieces if the game is over
-            if (game.game_over()) return false;
-          // do not pick up opponent's pieces
-            if ((game.turn() === 'w' && userData.player_color == "black") ||
-                (game.turn() === 'b' && userData.player_color == "white")) {
-                return false;
-            };
-          // only pick up pieces for the side to move
-            if ((game.turn() === 'w' && piece.search(/^b/) !== -1) ||
-                (game.turn() === 'b' && piece.search(/^w/) !== -1)) {
-                return false;
-            };
-        };
-
-        onDrop = (source, target)=>{
-          // see if the move is legal
-            let move = game.move({
-                from: source,
-                to: target,
-                promotion: promotionPiece
-            });
-          // illegal move
-            if (move === null) return 'snapback';
-            updateStatus(move.san, true);
-        };
-
-        // update the board position after the piece snap
-        // for castling, en passant, pawn promotion
-        onSnapEnd = ()=>{ board.position(game.fen()); };
-
-        updateStatus = (move, didPlayerMove)=>{
-            if (move) movesMade.push(move);
-            let status = '', moveColor = 'White'
-            if (game.turn() === 'b') { moveColor = 'Black'; };
-          // checkmate?
-            if (game.in_checkmate()) { status = 'Game over, ' + moveColor + ' is in checkmate.'; }
-          // draw?
-            else if (game.in_draw()) { status = 'Game over, drawn position'; }
-          // game still on
-            else {
-                status = moveColor + ' to move'
-            // check?
-                if (game.in_check()) { status += ', ' + moveColor + ' is in check'; };
-            };
-            $status.html(status);
-            $pgn.html(game.pgn());
-            let moveData = {
-                player_id: userData.player_id,
-                match_id: userData.match_id,
-                player_color: userData.player_color,
-                game_move: move
-            };
-            console.log(moveData);
-            if ((game.turn() === 'w' && userData.player_color == "black" && didPlayerMove) ||
-                (game.turn() === 'b' && userData.player_color == "white" && didPlayerMove)) {
-                    console.log("sending move");
-                    $.post("/getmove", moveData, (res)=>{ 
-                        if (res == "retry") { getMovesFromServer(moveData); }
-                        else {
-                            console.log(res);
-                            opponentMove(res);
-                        };
-                    });
-            };
-        };
-
-        opponentMove = (res)=>{
-            console.log(movesMade.length < res.length);
-            console.log(movesMade.length);
-            console.log(res.length);
-            if (movesMade.length < res.length) {
-                console.log("moving");
-                let n = res.length - movesMade.length;
-                for (i = n; 0 < i; i--) {
-                    console.log(res[i-1].move);
-                    game.move(res[i-1].move);
-                    board.position(game.fen());
-                    updateStatus(res[i-1].move, false);
-                }
-                userData.upToDate = true;
-                getMovesFromServer(userData);
-            }
+        if (userData.player_id == "observer") { 
+            getMovesFromServer(userData);
+            setInterval(()=>{ getMovesFromServer(userData)}, 5000); 
         }
-
-        let config = {
-            draggable: true,
-            position: 'start',
-            onDragStart: onDragStart,
-            onDrop: onDrop,
-            onSnapEnd: onSnapEnd
-        };
-        board = Chessboard('myBoard', config);
-        if (userData.player_color == "black") board.orientation('black');
-
-        $(document).ready(function(){
-            $('#promotions').change(function(){
-                promotionPiece = $("input[name='promotion']:checked").val();
-            });
-        });
-
-        getMovesFromServer = (playerData)=>{
-            console.log("asking for move");
-            $.post("/getmove", playerData, (res)=>{ 
-                if (res == "retry") { getMovesFromServer(playerData); }
-                else {
-                    console.log(res);
-                    opponentMove(res);
-                };
-            });
-        };
-
-        getMovesFromServer(userData);
-        updateStatus();*/
+        else { getMovesFromServer(userData); };
 
     </script>
 </main>
