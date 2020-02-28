@@ -28,7 +28,7 @@
     <div id="pgn"></div>
     <script type="text/javascript">
 
-        let decodedJson = decodeURIComponent("{{{encodedJson}}}"), userData = JSON.parse(decodedJson), movesMade = [], promotionPiece = "q";
+        let decodedJson = decodeURIComponent("{{{encodedJson}}}"), userData = JSON.parse(decodedJson), movesMade = [], promotionPiece = "q", observerInterval;
         userData.upToDate = false;
         console.log(userData);
 
@@ -41,109 +41,86 @@
             $('#flip').hide();
         }
 
-        var chess = new Chess();
-
-        var board = new Chessboard('myBoard', {
-          position: ChessUtils.FEN.startId,
-          eventHandlers: {
-            onPieceSelected: pieceSelected,
-            onMove: pieceMove
-          }
-        });
-
-        $(document).ready(function(){
-            $('#promotions').change(function(){ promotionPiece = $("input[name='promotion']:checked").val(); });
-        });
+        $(document).ready(function(){ $('#promotions').change(function(){ promotionPiece = $("input[name='promotion']:checked").val(); }); });
 
         $(document).ready(function(){
             $('#flip').change(function(){
-                $("input[name='flip']:checked").val() == "black" ? board.setOrientation(ChessUtils.ORIENTATION.black) : board.setOrientation(ChessUtils.ORIENTATION.white);
+                $("input[name='flip']:checked").val() == "black" 
+                    ? board.setOrientation(ChessUtils.ORIENTATION.black) 
+                    : board.setOrientation(ChessUtils.ORIENTATION.white);
             });
         });
 
-        resetGame();
+        resetGame = ()=>{
+            board.setPosition(ChessUtils.FEN.startId);
+            userData.player_color == "black" ? board.setOrientation(ChessUtils.ORIENTATION.black) : board.setOrientation(ChessUtils.ORIENTATION.white);
+            chess.reset();
+            updateGameInfo('Next player is white.');
+        };
 
-        function resetGame() {
-          board.setPosition(ChessUtils.FEN.startId);
-          userData.player_color == "black" ? board.setOrientation(ChessUtils.ORIENTATION.black) : board.setOrientation(ChessUtils.ORIENTATION.white);
-          chess.reset();
-
-          updateGameInfo('Next player is white.');
-        }
-
-        function updateGameInfo(status) {
+        updateGameInfo = (status)=>{
           $('#status').html(status);
           $('#pgn').html(chess.pgn());
-        }
+        };
 
-        function pieceMove(move) {
-
-          var nextPlayer,
-            status,
-            chessMove = chess.move({
-              from: move.from,
-              to: move.to,
-              promotion: promotionPiece
-            });
-
-
-          nextPlayer = 'white';
-          if (chess.turn() === 'b') {
-            nextPlayer = 'black';
-          }
-
-          if (chessMove !== null) {
-            movesMade.push(chessMove);
-            if (chess.in_checkmate() === true) {
-              status = 'CHECKMATE! Player ' + nextPlayer + ' lost.';
-            } else if (chess.in_draw() === true) {
-              status = 'DRAW!';
-            } else {
-              status = 'Next player is ' + nextPlayer + '.';
-
-              if (chess.in_check() === true) {
-                status = 'CHECK! ' + status;        
-              }
-            }
-
-            let moveData = {
-                player_id: userData.player_id,
-                match_id: userData.match_id,
-                player_color: userData.player_color,
-                from: move.from,
-                to: move.to,
-                promotion: promotionPiece,
-                fen: chess.fen(),
-            };
-
-            console.log("sending move");
+        getMovesFromServer = (playerData)=>{
             board.enableUserInput(false);
-            $.post("/getmove", moveData, (res)=>{ 
-                if (res == "retry") { getMovesFromServer(moveData); }
+            console.log("asking for move");
+            $.post("/getmove", playerData, (res)=>{ 
+                if (res == "retry") { getMovesFromServer(playerData); }
                 else {
                     console.log(res);
                     opponentMove(res);
                 };
             });
+        };
 
-            updateGameInfo(status); 
+        pieceMove = (move)=>{
+            let nextPlayer, status,
+            chessMove = chess.move({
+              from: move.from,
+              to: move.to,
+              promotion: promotionPiece
+            });
+            nextPlayer = 'white';
+            if (chess.turn() === 'b') { nextPlayer = 'black'; };
+            if (chessMove !== null) {
+                movesMade.push(chessMove);
+                if (chess.in_checkmate() === true) { status = 'CHECKMATE! Player ' + nextPlayer + ' lost.'; } 
+                else if (chess.in_draw() === true) { status = 'DRAW!'; } 
+                else {
+                    status = 'Next player is ' + nextPlayer + '.';
+                    if (chess.in_check() === true) { status = 'CHECK! ' + status; };
+                };
+                let moveData = {
+                    player_id: userData.player_id,
+                    match_id: userData.match_id,
+                    player_color: userData.player_color,
+                    from: move.from,
+                    to: move.to,
+                    promotion: promotionPiece,
+                    fen: chess.fen(),
+                };
+                board.enableUserInput(false);
+                console.log("sending move");
+                $.post("/getmove", moveData, (res)=>{ 
+                    if (res == "retry") { getMovesFromServer(moveData); }
+                    else {
+                        console.log(res);
+                        opponentMove(res);
+                    };
+                });
+                updateGameInfo(status); 
+            };
+            return chess.fen();
+        };
 
-          }
-
-          return chess.fen();
-        }
-
-        function pieceSelected(notationSquare) {
-          var i,
-            movesNotation,
-            movesPosition = [];
-
-          movesNotation = chess.moves({square: notationSquare, verbose: true});
-          for (i = 0; i < movesNotation.length; i++) {
-            movesPosition.push(ChessUtils.convertNotationSquareToIndex(movesNotation[i].to));
-          }
-          return movesPosition;
-        }
+        pieceSelected = (notationSquare)=>{
+            let i, movesNotation, movesPosition = [];
+            movesNotation = chess.moves({square: notationSquare, verbose: true});
+            for (i = 0; i < movesNotation.length; i++) { movesPosition.push(ChessUtils.convertNotationSquareToIndex(movesNotation[i].to)); };
+            return movesPosition;
+        };
 
         opponentMove = (res)=>{
             console.log(movesMade.length < res.length);
@@ -163,24 +140,17 @@
                     console.log(chess.pgn());
                     nextPlayer = 'white';
                     let status;
-                    if (chess.turn() === 'b') {
-                        nextPlayer = 'black';
-                    }
-
+                    if (chess.turn() === 'b') { nextPlayer = 'black'; }
                     if (chess.in_checkmate() === true) {
                         status = 'CHECKMATE! Player ' + nextPlayer + ' lost.';
-                    } else if (chess.in_draw() === true) {
-                      status = 'DRAW!';
-                    } else {
-                      status = 'Next player is ' + nextPlayer + '.';
-
-                    if (chess.in_check() === true) {
-                        status = 'CHECK! ' + status;        
+                        clearInterval(observerInterval);
+                    } 
+                    else if (chess.in_draw() === true) { status = 'DRAW!'; }
+                    else {
+                        status = 'Next player is ' + nextPlayer + '.';
+                        if (chess.in_check() === true) { status = 'CHECK! ' + status; }
                     }
-
                     updateGameInfo(status); 
-
-                    }
                 }
                 userData.upToDate = true;
                 if (userData.player_id != "observer") { getMovesFromServer(userData); };
@@ -188,21 +158,20 @@
             else { if (userData.player_id != "observer") board.enableUserInput(); }
         };
 
-        getMovesFromServer = (playerData)=>{
-            board.enableUserInput(false);
-            console.log("asking for move");
-            $.post("/getmove", playerData, (res)=>{ 
-                if (res == "retry") { getMovesFromServer(playerData); }
-                else {
-                    console.log(res);
-                    opponentMove(res);
-                };
-            });
-        };
+        let chess = new Chess(),
+        board = new Chessboard('myBoard', {
+          position: ChessUtils.FEN.startId,
+          eventHandlers: {
+            onPieceSelected: pieceSelected,
+            onMove: pieceMove
+          }
+        });
+
+        resetGame();
 
         if (userData.player_id == "observer") { 
             getMovesFromServer(userData);
-            setInterval(()=>{ getMovesFromServer(userData)}, 5000); 
+            observerInterval = setInterval(()=>{ getMovesFromServer(userData)}, 5000); 
         }
         else { getMovesFromServer(userData); };
 
