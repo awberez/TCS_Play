@@ -28,7 +28,7 @@
     <div id="pgn"></div>
     <script type="text/javascript">
 
-        let decodedJson = decodeURIComponent("{{{encodedJson}}}"), userData = JSON.parse(decodedJson), movesMade = [], promotionPiece = "q", observerInterval, timeoutData;
+        let decodedJson = decodeURIComponent("{{{encodedJson}}}"), userData = JSON.parse(decodedJson), movesMade = [], promotionPiece = "q", timeoutData, observerTimeout;
         userData.upToDate = false;
         console.log(userData);
 
@@ -57,7 +57,7 @@
                 console.log("renewing request");
                 getMovesFromServer(timeoutData);
             }, 10000);
-            $.post("/getmove", playerData, (res)=>{ 
+            $.post("/getmove", playerData, (res)=>{
                 clearTimeout(getMovesTimeout);
                 if (res == "retry") { 
                     console.log("retrying");
@@ -114,6 +114,7 @@
             console.log(movesMade.length < res.length);
             console.log(movesMade.length);
             console.log(res.length);
+            clearTimeout(observerTimeout);
             if (movesMade.length < res.length) {
                 console.log("moving");
                 let n = res.length - movesMade.length;
@@ -129,10 +130,7 @@
                     nextPlayer = 'white';
                     let status;
                     if (chess.turn() === 'b') { nextPlayer = 'black'; };
-                    if (chess.in_checkmate() === true) {
-                        status = 'CHECKMATE! Player ' + nextPlayer + ' lost.';
-                        clearInterval(observerInterval);
-                    } 
+                    if (chess.in_checkmate() === true) { status = 'CHECKMATE! Player ' + nextPlayer + ' lost.'; } 
                     else if (chess.in_draw() === true) { status = 'DRAW!'; }
                     else {
                         status = 'Next player is ' + nextPlayer + '.';
@@ -141,9 +139,11 @@
                     updateGameInfo(status); 
                 }
                 userData.upToDate = true;
-                if (userData.player_id != "observer") { getMovesFromServer(userData); };
+                if (userData.player_id != "observer" && !chess.in_checkmate()) { getMovesFromServer(userData); }
+                else if (!chess.in_checkmate()) { observerTimeout = setTimeout(()=>{ getMovesFromServer(userData)}, 5000); };
             }
-            else if (userData.player_id != "observer") { board.enableUserInput(); };
+            else if (userData.player_id != "observer" && !chess.in_checkmate()) { board.enableUserInput(); }
+            else if (!chess.in_checkmate()) { setTimeout(()=>{ observerTimeout = getMovesFromServer(userData)}, 5000); };
         };
 
         let chess = new Chess(),
@@ -156,12 +156,7 @@
         });
 
         resetGame();
-
-        if (userData.player_id == "observer") { 
-            getMovesFromServer(userData);
-            observerInterval = setInterval(()=>{ getMovesFromServer(userData)}, 5000); 
-        }
-        else { getMovesFromServer(userData); };
+        getMovesFromServer(userData);
 
     </script>
 </main>
