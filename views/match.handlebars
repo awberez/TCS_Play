@@ -28,7 +28,7 @@
     <div id="pgn"></div>
     <script type="text/javascript">
 
-        let decodedJson = decodeURIComponent("{{{encodedJson}}}"), userData = JSON.parse(decodedJson), movesMade = [], promotionPiece = "q", observerInterval;
+        let decodedJson = decodeURIComponent("{{{encodedJson}}}"), userData = JSON.parse(decodedJson), movesMade = [], promotionPiece = "q", observerInterval, timeoutData;
         userData.upToDate = false;
         console.log(userData);
 
@@ -52,8 +52,17 @@
         getMovesFromServer = (playerData)=>{
             board.enableUserInput(false);
             console.log("asking for next move");
+            timeoutData = playerData;
+            getMovesTimeout = setTimeout(()=>{
+                console.log("renewing request");
+                getMovesFromServer(timeoutData);
+            }, 10000);
             $.post("/getmove", playerData, (res)=>{ 
-                if (res == "retry") { getMovesFromServer(playerData); }
+                clearTimeout(getMovesTimeout);
+                if (res == "retry") { 
+                    console.log("retrying");
+                    getMovesFromServer(playerData); 
+                }
                 else if (res == "game complete") { console.log("Game has been completed") }
                 else {
                     console.log(res);
@@ -119,7 +128,7 @@
                     console.log(chess.pgn());
                     nextPlayer = 'white';
                     let status;
-                    if (chess.turn() === 'b') { nextPlayer = 'black'; }
+                    if (chess.turn() === 'b') { nextPlayer = 'black'; };
                     if (chess.in_checkmate() === true) {
                         status = 'CHECKMATE! Player ' + nextPlayer + ' lost.';
                         clearInterval(observerInterval);
@@ -127,14 +136,14 @@
                     else if (chess.in_draw() === true) { status = 'DRAW!'; }
                     else {
                         status = 'Next player is ' + nextPlayer + '.';
-                        if (chess.in_check() === true) { status = 'CHECK! ' + status; }
+                        if (chess.in_check() === true) { status = 'CHECK! ' + status; };
                     }
                     updateGameInfo(status); 
                 }
                 userData.upToDate = true;
                 if (userData.player_id != "observer") { getMovesFromServer(userData); };
             }
-            else { if (userData.player_id != "observer") board.enableUserInput(); }
+            else if (userData.player_id != "observer") { board.enableUserInput(); };
         };
 
         let chess = new Chess(),

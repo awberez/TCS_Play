@@ -1,16 +1,16 @@
 $(function(){
 
 	$("#createGame").click(()=>{
-		getGameLinks = ()=> {
+		getGameLinks = ()=>{
 			let match = ~~(Math.random() * 1000000) - 1, white = 1, black = 2;
 			$.get(`/newgame/${match}/${white}/${black}`, (res)=>{ 
 				if (res == "success") {
+					let matchUrl = `${window.location.href}match/${match}/`;
 					$("#gameLinks").empty().append(`
-						<a id="whiteLink" href=/match/${match}/${white} target="blank">White Player Link</a><p id="whiteUrl">Copyable URL: </p>
-						<a id="blackLink" href=/match/${match}/${black} target="blank">Black Player Link</a><p id="blackUrl">Copyable URL: </p>
+						<a id="whiteLink" href=${matchUrl}${white} target="blank">White Player Link</a><p>Copyable URL: ${matchUrl}${white}</p>
+						<a id="blackLink" href=${matchUrl}${black} target="blank">Black Player Link</a><p>Copyable URL: ${matchUrl}${black}</p>
+						<a id="blackLink" href=${matchUrl}observer target="blank">Observer Link</a>    <p>Copyable URL: ${matchUrl}observer</p>
 					`);
-					$("#whiteUrl").html(`Copyable URL: ${window.location.href.slice(0, -1)}${$("#whiteLink").attr("href")}`);
-					$("#blackUrl").html(`Copyable URL: ${window.location.href.slice(0, -1)}${$("#blackLink").attr("href")}`);
 				}
 				else { getGameLinks(); };
 			});
