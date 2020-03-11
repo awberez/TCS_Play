@@ -1,63 +1,8 @@
 const db = require("../models"), Sequelize = require('sequelize'), Op = Sequelize.Op, colors = require("colors");
 
-let waitForMove = {};
-
 module.exports = (app)=>{
 
-	let io = app.get('socketio');
-
-	io.of('/match').on('connection', (client)=>{
-
-	  	client.on('join', (data)=>{
-	  		client.join(`match/${data.match_id}`);
-	        console.log(colors.red(data));
-	        client.emit('messages', 'Connected to server');
-	        db.GameMove.findAll({
-	        	where: { match_id: data.match_id },
-	        	order: [ [ 'id', 'DESC' ]]
-	    	}).then((gameMoves)=>{
-	    		client.emit('moves', gameMoves);
-	    	});
-	    });
-
-	  	client.on('moveMade', (data)=>{
-	  		colorConsole = (message)=>{ 
-	  			data.player_color == "white" 
-	  				? console.log(colors.yellow(message)) 
-	  				: data.player_color == "black"
-	  					? console.log(colors.cyan(message))
-	  					: console.log(colors.magenta(message)); 
-  			};
-	  		colorConsole(data);
-	  		db.GameMove.findAll({
-	        	where: { match_id: data.match_id },
-	        	order: [ [ 'id', 'DESC' ]]
-	    	}).then((gameMoves)=>{
-    			if ((gameMoves[1] && data.from && gameMoves[1].lastMove == data.player_color && gameMoves[1].from !== data.from && gameMoves[1].to !== data.to) || 
-    				(gameMoves[0] && data.from && gameMoves[0].lastMove !== data.player_color) || 
-    				(data.from && data.player_color == "white")) {
-    				colorConsole(`adding new move from ${data.player_color} player in match ${data.match_id}`);
-		    		db.GameMove.create({ 
-				    	match_id: data.match_id,
-				    	lastMove: data.player_color,
-				    	from: data.from,
-				    	to: data.to,
-				    	promotion: data.promotion,
-				    	fen: data.fen
-				    }).then(() => { 
-				    	db.GameMove.findAll({
-				        	where: { match_id: data.match_id },
-				        	order: [ [ 'id', 'DESC' ]]
-				    	}).then((gameMoves2)=>{
-				    		io.of('/match').to(`match/${data.match_id}`).emit('moves', gameMoves2);
-				    	});
-				    }); 
-		    	}
-			});
-	    });
-
-	});
-
+	const io = app.get('socketio'), match = io.of('/match');
 
 	app.get("/newgame/:id/:white/:black", (req, res)=>{
 		db.GameList.findOne({
@@ -98,5 +43,56 @@ module.exports = (app)=>{
 	    				: res.render("unauthorized");
       	});
   	});
+
+  	match.on('connection', (client)=>{
+  		//add socket to the room for a specific game and return all moves for that game
+	  	client.on('join', (data)=>{
+	  		console.log(colors.red(data));
+	  		client.join(`match/${data.match_id}`);
+	        client.emit('messages', 'Connected to server');
+	        db.GameMove.findAll({
+	        	where: { match_id: data.match_id },
+	        	order: [ [ 'id', 'DESC' ]]
+	    	}).then((gameMoves)=>{
+	    		client.emit('moves', gameMoves);
+	    	});
+	    });
+	  	//update game database with new move, then return all moves to every socket in the game's room
+	  	client.on('moveMade', (data)=>{
+	  		colorConsole = (message)=>{ 
+	  			data.player_color == "white" 
+	  				? console.log(colors.yellow(message)) 
+	  				: data.player_color == "black"
+	  					? console.log(colors.cyan(message))
+	  					: console.log(colors.magenta(message)); 
+  			};
+	  		colorConsole(data);
+	  		db.GameMove.findAll({
+	        	where: { match_id: data.match_id },
+	        	order: [ [ 'id', 'DESC' ]]
+	    	}).then((gameMoves)=>{
+    			if ((gameMoves[1] && data.from && gameMoves[1].lastMove == data.player_color && gameMoves[1].from !== data.from && gameMoves[1].to !== data.to) || 
+    				(gameMoves[0] && data.from && gameMoves[0].lastMove !== data.player_color) || 
+    				(data.from && data.player_color == "white")) {
+    				colorConsole(`adding new move from ${data.player_color} player in match ${data.match_id}`);
+		    		db.GameMove.create({ 
+				    	match_id: data.match_id,
+				    	lastMove: data.player_color,
+				    	from: data.from,
+				    	to: data.to,
+				    	promotion: data.promotion,
+				    	fen: data.fen
+				    }).then(() => { 
+				    	db.GameMove.findAll({
+				        	where: { match_id: data.match_id },
+				        	order: [ [ 'id', 'DESC' ]]
+				    	}).then((gameMoves2)=>{
+				    		match.to(`match/${data.match_id}`).emit('moves', gameMoves2);
+				    	});
+				    }); 
+		    	}
+			});
+	    });
+	});
 
 };
