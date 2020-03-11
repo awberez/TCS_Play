@@ -22,11 +22,12 @@ module.exports = (app)=>{
 
 	  	client.on('moveMade', (data)=>{
 	  		colorConsole = (message)=>{ 
-  			data.player_color == "white" 
-  				? console.log(colors.yellow(message)) 
-  				: data.player_color == "black"
-  					? console.log(colors.cyan(message))
-  					: console.log(colors.magenta(message)); };
+	  			data.player_color == "white" 
+	  				? console.log(colors.yellow(message)) 
+	  				: data.player_color == "black"
+	  					? console.log(colors.cyan(message))
+	  					: console.log(colors.magenta(message)); 
+  			};
 	  		colorConsole(data);
 	  		db.GameMove.findAll({
 	        	where: { match_id: data.match_id },
@@ -52,7 +53,6 @@ module.exports = (app)=>{
 				    	});
 				    }); 
 		    	}
-		    	else { io.of('/match').to(`match/${data.match_id}`).emit('moves', gameMoves); };
 			});
 	    });
 

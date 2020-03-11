@@ -99,9 +99,8 @@
         };
 
         opponentMove = (res)=>{
-            console.log(movesMade.length < res.length);
-            console.log(movesMade.length);
-            console.log(res.length);
+            console.log(`Moves recorded: ${movesMade.length}`);
+            console.log(`Total moves: ${res.length}`);
             if (movesMade.length < res.length) {
                 console.log("moving");
                 let n = res.length - movesMade.length;
@@ -125,7 +124,6 @@
                     }
                     updateGameInfo(status); 
                 }
-                if (userData.player_id != "observer" && !chess.in_checkmate()) { socket.emit('moveMade', userData); }
             }
             else if (userData.player_id != "observer" && !chess.in_checkmate()) { board.enableUserInput(); }
         };
