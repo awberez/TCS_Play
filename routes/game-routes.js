@@ -4,6 +4,103 @@ let waitForMove = {};
 
 module.exports = (app)=>{
 
+	let io = app.get('socketio');
+
+	io.of('/match').on('connection', (client)=>{
+
+	  	client.on('join', (data)=>{
+	  		client.join(`match/${data.match_id}`);
+	        console.log(colors.red(data));
+	        client.emit('messages', 'Connected to server');
+	        db.GameMove.findAll({
+	        	where: { match_id: data.match_id },
+	        	order: [ [ 'id', 'DESC' ]]
+	    	}).then((gameMoves)=>{
+	    		client.emit('moves', gameMoves);
+	    	});
+	    });
+
+	  	client.on('moveMade', (data)=>{
+	  		colorConsole = (message)=>{ 
+  			data.player_color == "white" 
+  				? console.log(colors.yellow(message)) 
+  				: data.player_color == "black"
+  					? console.log(colors.cyan(message))
+  					: console.log(colors.magenta(message)); };
+	  		colorConsole(data);
+	  		db.GameMove.findAll({
+	        	where: { match_id: data.match_id },
+	        	order: [ [ 'id', 'DESC' ]]
+	    	}).then((gameMoves)=>{
+	    		if (gameMoves[1]) {
+	    			if (data.from && gameMoves[1].lastMove == data.player_color && gameMoves[1].from !== data.from && gameMoves[1].to !== data.to ) {
+	    				colorConsole(`adding new move from ${data.player_color} player in match ${data.match_id}`);
+			    		db.GameMove.create({ 
+					    	match_id: data.match_id,
+					    	lastMove: data.player_color,
+					    	from: data.from,
+					    	to: data.to,
+					    	promotion: data.promotion,
+					    	fen: data.fen
+					    }).then(() => { 
+					    	db.GameMove.findAll({
+					        	where: { match_id: data.match_id },
+					        	order: [ [ 'id', 'DESC' ]]
+					    	}).then((gameMoves2)=>{
+					    		io.of('/match').to(`match/${data.match_id}`).emit('moves', gameMoves2);
+					    	});
+					    }); 
+			    	}
+			    	else { io.of('/match').to(`match/${data.match_id}`).emit('moves', gameMoves); };
+			    }
+			    else if (gameMoves[0]) {
+	    			if (data.from && gameMoves[0].lastMove !== data.player_color) {
+	    				colorConsole(`adding new move from ${data.player_color} player in match ${data.match_id}`);
+			    		db.GameMove.create({ 
+					    	match_id: data.match_id,
+					    	lastMove: data.player_color,
+					    	from: data.from,
+					    	to: data.to,
+					    	promotion: data.promotion,
+					    	fen: data.fen
+					    }).then(() => { 
+					    	db.GameMove.findAll({
+					        	where: { match_id: data.match_id },
+					        	order: [ [ 'id', 'DESC' ]]
+					    	}).then((gameMoves2)=>{
+					    		io.of('/match').to(`match/${data.match_id}`).emit('moves', gameMoves2);
+					    	});
+					    }); 
+			    	}
+			    	else { io.of('/match').to(`match/${data.match_id}`).emit('moves', gameMoves); };
+			    }
+			    else {
+			    	if (data.from && data.player_color == "white") {
+			    		colorConsole(`adding new move from white player in match ${data.match_id}`);
+			    		db.GameMove.create({ 
+					    	match_id: data.match_id,
+					    	lastMove: data.player_color,
+					    	from: data.from,
+					    	to: data.to,
+					    	promotion: data.promotion,
+					    	fen: data.fen
+					    }).then(() => { 
+					    	db.GameMove.findAll({
+					        	where: { match_id: data.match_id },
+					        	order: [ [ 'id', 'DESC' ]]
+					    	}).then((gameMoves2)=>{
+					    		io.of('/match').to(`match/${data.match_id}`).emit('moves', gameMoves2);
+					    	});
+					    }); 
+			    	}
+			    	else { io.of('/match').to(`match/${data.match_id}`).emit('moves', gameMoves); };
+			    }
+			});
+	    });
+
+	});
+
+
 	app.get("/newgame/:id/:white/:black", (req, res)=>{
 		db.GameList.findOne({
 	        where: { match_id: req.params.id }
@@ -44,7 +141,7 @@ module.exports = (app)=>{
       	});
   	});
 
-  	app.post("/getmove", (req, res)=>{
+  	/*app.post("/getmove", (req, res)=>{
   		let match_id = req.body.match_id, player_id = req.body.player_id, player_color = req.body.player_color, upToDate = req.body.upToDate, move_from, move_to, promotion, fen;
   		colorConsole = (message)=>{ 
   			player_color == "white" 
@@ -192,6 +289,6 @@ module.exports = (app)=>{
 	    		}
 			});
 		};
-  	});
+  	});*/
 
 };

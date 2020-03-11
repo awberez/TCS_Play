@@ -27,8 +27,8 @@
     <label>PGN:</label>
     <div id="pgn"></div>
     <script type="text/javascript">
-
-        let decodedJson = decodeURIComponent("{{{encodedJson}}}"), userData = JSON.parse(decodedJson), movesMade = [], promotionPiece = "q", timeoutData, observerTimeout;
+        let decodedJson = decodeURIComponent("{{{encodedJson}}}"), userData = JSON.parse(decodedJson), url = window.location.origin, socket = io('/match'),
+        movesMade = [], promotionPiece = "q", timeoutData, observerTimeout;
         userData.upToDate = false;
         console.log(userData);
 
@@ -36,6 +36,18 @@
 
         $(document).ready(function(){ $('#promotions').change(function(){ promotionPiece = $("input[name='promotion']:checked").val(); }); });
         $(document).ready(function(){ $('#flip').click(function(){ board.setOrientation(ChessUtils.ORIENTATION.flip) }); });
+
+        socket.on('connect', (data)=>{
+            socket.emit('join', userData);
+        });
+        socket.on('messages', (data)=>{
+            console.log(data);
+        });
+        socket.on('moves', (data)=>{
+            console.log("moves received");
+            console.log(data);
+            opponentMove(data);
+        });
 
         resetGame = ()=>{
             board.setPosition(ChessUtils.FEN.startId);
@@ -49,7 +61,7 @@
           $('#pgn').html(chess.pgn());
         };
 
-        getMovesFromServer = (playerData)=>{
+        /*getMovesFromServer = (playerData)=>{
             board.enableUserInput(false);
             console.log("asking for next move");
             timeoutData = playerData;
@@ -69,7 +81,7 @@
                     opponentMove(res);
                 };
             });
-        };
+        };*/
 
         pieceMove = (move)=>{
             let nextPlayer, status,
@@ -97,7 +109,8 @@
                     promotion: promotionPiece,
                     fen: chess.fen(),
                 };
-                getMovesFromServer(moveData);
+                socket.emit('moveMade', moveData);
+                //getMovesFromServer(moveData);
                 updateGameInfo(status); 
             };
             return chess.fen();
@@ -139,11 +152,11 @@
                     updateGameInfo(status); 
                 }
                 userData.upToDate = true;
-                if (userData.player_id != "observer" && !chess.in_checkmate()) { getMovesFromServer(userData); }
-                else if (!chess.in_checkmate()) { observerTimeout = setTimeout(()=>{ getMovesFromServer(userData)}, 5000); };
+                if (userData.player_id != "observer" && !chess.in_checkmate()) { socket.emit('moveMade', userData); }
+                //else if (!chess.in_checkmate()) { observerTimeout = setTimeout(()=>{ getMovesFromServer(userData)}, 5000); };
             }
             else if (userData.player_id != "observer" && !chess.in_checkmate()) { board.enableUserInput(); }
-            else if (!chess.in_checkmate()) { setTimeout(()=>{ observerTimeout = getMovesFromServer(userData)}, 5000); };
+            //else if (!chess.in_checkmate()) { setTimeout(()=>{ observerTimeout = getMovesFromServer(userData)}, 5000); };
         };
 
         let chess = new Chess(),
@@ -156,7 +169,7 @@
         });
 
         resetGame();
-        getMovesFromServer(userData);
+        //getMovesFromServer(userData);
 
     </script>
 </main>
