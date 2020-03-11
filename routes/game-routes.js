@@ -32,69 +32,27 @@ module.exports = (app)=>{
 	        	where: { match_id: data.match_id },
 	        	order: [ [ 'id', 'DESC' ]]
 	    	}).then((gameMoves)=>{
-	    		if (gameMoves[1]) {
-	    			if (data.from && gameMoves[1].lastMove == data.player_color && gameMoves[1].from !== data.from && gameMoves[1].to !== data.to ) {
-	    				colorConsole(`adding new move from ${data.player_color} player in match ${data.match_id}`);
-			    		db.GameMove.create({ 
-					    	match_id: data.match_id,
-					    	lastMove: data.player_color,
-					    	from: data.from,
-					    	to: data.to,
-					    	promotion: data.promotion,
-					    	fen: data.fen
-					    }).then(() => { 
-					    	db.GameMove.findAll({
-					        	where: { match_id: data.match_id },
-					        	order: [ [ 'id', 'DESC' ]]
-					    	}).then((gameMoves2)=>{
-					    		io.of('/match').to(`match/${data.match_id}`).emit('moves', gameMoves2);
-					    	});
-					    }); 
-			    	}
-			    	else { io.of('/match').to(`match/${data.match_id}`).emit('moves', gameMoves); };
-			    }
-			    else if (gameMoves[0]) {
-	    			if (data.from && gameMoves[0].lastMove !== data.player_color) {
-	    				colorConsole(`adding new move from ${data.player_color} player in match ${data.match_id}`);
-			    		db.GameMove.create({ 
-					    	match_id: data.match_id,
-					    	lastMove: data.player_color,
-					    	from: data.from,
-					    	to: data.to,
-					    	promotion: data.promotion,
-					    	fen: data.fen
-					    }).then(() => { 
-					    	db.GameMove.findAll({
-					        	where: { match_id: data.match_id },
-					        	order: [ [ 'id', 'DESC' ]]
-					    	}).then((gameMoves2)=>{
-					    		io.of('/match').to(`match/${data.match_id}`).emit('moves', gameMoves2);
-					    	});
-					    }); 
-			    	}
-			    	else { io.of('/match').to(`match/${data.match_id}`).emit('moves', gameMoves); };
-			    }
-			    else {
-			    	if (data.from && data.player_color == "white") {
-			    		colorConsole(`adding new move from white player in match ${data.match_id}`);
-			    		db.GameMove.create({ 
-					    	match_id: data.match_id,
-					    	lastMove: data.player_color,
-					    	from: data.from,
-					    	to: data.to,
-					    	promotion: data.promotion,
-					    	fen: data.fen
-					    }).then(() => { 
-					    	db.GameMove.findAll({
-					        	where: { match_id: data.match_id },
-					        	order: [ [ 'id', 'DESC' ]]
-					    	}).then((gameMoves2)=>{
-					    		io.of('/match').to(`match/${data.match_id}`).emit('moves', gameMoves2);
-					    	});
-					    }); 
-			    	}
-			    	else { io.of('/match').to(`match/${data.match_id}`).emit('moves', gameMoves); };
-			    }
+    			if ((gameMoves[1] && data.from && gameMoves[1].lastMove == data.player_color && gameMoves[1].from !== data.from && gameMoves[1].to !== data.to) || 
+    				(gameMoves[0] && data.from && gameMoves[0].lastMove !== data.player_color) || 
+    				(data.from && data.player_color == "white")) {
+    				colorConsole(`adding new move from ${data.player_color} player in match ${data.match_id}`);
+		    		db.GameMove.create({ 
+				    	match_id: data.match_id,
+				    	lastMove: data.player_color,
+				    	from: data.from,
+				    	to: data.to,
+				    	promotion: data.promotion,
+				    	fen: data.fen
+				    }).then(() => { 
+				    	db.GameMove.findAll({
+				        	where: { match_id: data.match_id },
+				        	order: [ [ 'id', 'DESC' ]]
+				    	}).then((gameMoves2)=>{
+				    		io.of('/match').to(`match/${data.match_id}`).emit('moves', gameMoves2);
+				    	});
+				    }); 
+		    	}
+		    	else { io.of('/match').to(`match/${data.match_id}`).emit('moves', gameMoves); };
 			});
 	    });
 
