@@ -27,9 +27,7 @@
     <label>PGN:</label>
     <div id="pgn"></div>
     <script type="text/javascript">
-        let decodedJson = decodeURIComponent("{{{encodedJson}}}"), userData = JSON.parse(decodedJson), url = window.location.origin, socket = io('/match'),
-        movesMade = [], promotionPiece = "q", timeoutData, observerTimeout;
-        userData.upToDate = false;
+        let decodedJson = decodeURIComponent("{{{encodedJson}}}"), userData = JSON.parse(decodedJson), socket = io('/match'), movesMade = [], promotionPiece = "q";
         console.log(userData);
 
         userData.player_id == "observer" ? $('#promotionsChoice').hide() : $('#flipButton').hide();
@@ -61,28 +59,6 @@
           $('#pgn').html(chess.pgn());
         };
 
-        /*getMovesFromServer = (playerData)=>{
-            board.enableUserInput(false);
-            console.log("asking for next move");
-            timeoutData = playerData;
-            getMovesTimeout = setTimeout(()=>{
-                console.log("renewing request");
-                getMovesFromServer(timeoutData);
-            }, 10000);
-            $.post("/getmove", playerData, (res)=>{
-                clearTimeout(getMovesTimeout);
-                if (res == "retry") { 
-                    console.log("retrying");
-                    getMovesFromServer(playerData); 
-                }
-                else if (res == "game complete") { console.log("Game has been completed") }
-                else {
-                    console.log(res);
-                    opponentMove(res);
-                };
-            });
-        };*/
-
         pieceMove = (move)=>{
             let nextPlayer, status,
             chessMove = chess.move({
@@ -110,7 +86,6 @@
                     fen: chess.fen(),
                 };
                 socket.emit('moveMade', moveData);
-                //getMovesFromServer(moveData);
                 updateGameInfo(status); 
             };
             return chess.fen();
@@ -127,7 +102,6 @@
             console.log(movesMade.length < res.length);
             console.log(movesMade.length);
             console.log(res.length);
-            clearTimeout(observerTimeout);
             if (movesMade.length < res.length) {
                 console.log("moving");
                 let n = res.length - movesMade.length;
@@ -151,12 +125,9 @@
                     }
                     updateGameInfo(status); 
                 }
-                userData.upToDate = true;
                 if (userData.player_id != "observer" && !chess.in_checkmate()) { socket.emit('moveMade', userData); }
-                //else if (!chess.in_checkmate()) { observerTimeout = setTimeout(()=>{ getMovesFromServer(userData)}, 5000); };
             }
             else if (userData.player_id != "observer" && !chess.in_checkmate()) { board.enableUserInput(); }
-            //else if (!chess.in_checkmate()) { setTimeout(()=>{ observerTimeout = getMovesFromServer(userData)}, 5000); };
         };
 
         let chess = new Chess(),
@@ -169,7 +140,6 @@
         });
 
         resetGame();
-        //getMovesFromServer(userData);
 
     </script>
 </main>
