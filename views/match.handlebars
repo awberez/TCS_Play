@@ -72,9 +72,9 @@
                 <div id="blackCon">Black: disconnected</div>
                 <div id="observerCon">Observers: 0</div>
             `);
-            for (let object of data) { 
-                if (object.connection == "white") { $('#whiteCon').html("White: connected"); }
-                else if (object.connection == "black") { $('#blackCon').html("Black: connected"); }
+            for (let name of data) { 
+                if (name == "white") { $('#whiteCon').html("White: connected"); }
+                else if (name == "black") { $('#blackCon').html("Black: connected"); }
                 else {
                     observers++;
                     $('#observerCon').html(`Observers: ${observers}`);
