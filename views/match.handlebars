@@ -1,36 +1,58 @@
 <main>
-    <p>Your color: {{player}}</p>
-    <div id="myBoard" style="width: 100%; max-width: calc(100vh - 250px)"></div>
-    <br/>
-    <div id="flipButton">
-        <button id="flip" type="button">Flip Board Perspective</button>
-        <br/>
-    </div>
-    <br/>
-    <label>Status:</label>
-    <div id="status"></div>
-    <br/>
-    <div id="promotionsChoice">
-        <label>Select a piece for pawn promotions (you may change this at any time):</label>
-        <div id="promotions">
-            <input type="radio" id="queen" name="promotion" value="q" checked="default">
-            <label for="queen">Queen</label>
-            <input type="radio" id="rook" name="promotion" value="r">
-            <label for="rook">Rook</label>
-            <input type="radio" id="knight" name="promotion" value="n">
-            <label for="knight">Knight</label>
-            <input type="radio" id="bishop" name="promotion" value="b">
-            <label for="bishop">Bishop</label>
+    <div class="row">
+        <div class="col-12 col-md-8 text-center">
+            <div id="myBoard" style="width: 100%; max-width: calc(100vh - 100px)"></div>
         </div>
-        <br/>
+        <div class="col-12 col-md-2 order-md-first">
+            <div class="row">
+                <div class="col-4 col-md-12">
+                    <div class="playerInfo">
+                        <label>Your color:</label>
+                        <div>{{player}}</div>
+                        <br/>
+                    </div>
+                    <div id="flipButton">
+                        <button id="flip" type="button">Flip Board Perspective</button>
+                        <br/>
+                        <br/>
+                    </div>
+                    <label>Status:</label>
+                    <div id="status"></div>
+                    <br/>
+                </div>
+                <div class="col-4 col-md-12">
+                    <label>Connections:</label>
+                    <div id="connections"></div>
+                    <br/>
+                </div>
+                <div class="col-4 col-md-12">
+                    <div id="promotionsChoice" class="playerInfo">
+                        <label>Pawn promotions:</label>
+                        <div id="promotions">
+                            <input type="radio" id="queen" name="promotion" value="q" checked="default">
+                            <label for="queen">Queen</label><br/>
+                            <input type="radio" id="rook" name="promotion" value="r">
+                            <label for="rook">Rook</label><br/>
+                            <input type="radio" id="knight" name="promotion" value="n">
+                            <label for="knight">Knight</label><br/>
+                            <input type="radio" id="bishop" name="promotion" value="b">
+                            <label for="bishop">Bishop</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-2">
+            <label>PGN:</label>
+            <div id="pgn"></div>
+        </div>
     </div>
-    <label>PGN:</label>
-    <div id="pgn"></div>
     <script type="text/javascript">
-        let decodedJson = decodeURIComponent("{{{encodedJson}}}"), userData = JSON.parse(decodedJson), socket = io('/match'), movesMade = [], promotionPiece = "q";
+        let decodedJson = decodeURIComponent("{{{encodedJson}}}"), userData = JSON.parse(decodedJson), socket = io('/match'), 
+        movesMade = [], promotionPiece = "q", nextPlayer = 'white', status;
         console.log(userData);
 
-        userData.player_id == "observer" ? $('#promotionsChoice').hide() : $('#flipButton').hide();
+        userData.player_id == "observer" ? $('.playerInfo').hide() : $('#flipButton').hide();
 
         $(document).ready(function(){ $('#promotions').change(function(){ promotionPiece = $("input[name='promotion']:checked").val(); }); });
         $(document).ready(function(){ $('#flip').click(function(){ board.setOrientation(ChessUtils.ORIENTATION.flip) }); });
@@ -40,6 +62,14 @@
         });
         socket.on('messages', (data)=>{
             console.log(data);
+        });
+        socket.on('status', (data)=>{
+            $('#connections').empty();
+            for (let object of data) {
+                $('#connections').append(`
+                    <div>${object.connection}</div>
+                `);
+            };
         });
         socket.on('moves', (data)=>{
             console.log("moves received");
@@ -51,7 +81,8 @@
             board.setPosition(ChessUtils.FEN.startId);
             userData.player_color == "black" ? board.setOrientation(ChessUtils.ORIENTATION.black) : board.setOrientation(ChessUtils.ORIENTATION.white);
             chess.reset();
-            updateGameInfo('Next player is white.');
+            board.enableUserInput(false);
+            updateGameInfo('Next move is white.');
         };
 
         updateGameInfo = (status)=>{
@@ -60,8 +91,7 @@
         };
 
         pieceMove = (move)=>{
-            let nextPlayer, status,
-            chessMove = chess.move({
+            let chessMove = chess.move({
               from: move.from,
               to: move.to,
               promotion: promotionPiece
@@ -73,7 +103,7 @@
                 if (chess.in_checkmate() === true) { status = 'CHECKMATE! Player ' + nextPlayer + ' lost.'; } 
                 else if (chess.in_draw() === true) { status = 'DRAW!'; } 
                 else {
-                    status = 'Next player is ' + nextPlayer + '.';
+                    status = 'Next move is ' + nextPlayer + '.';
                     if (chess.in_check() === true) { status = 'CHECK! ' + status; };
                 };
                 let moveData = {
@@ -85,6 +115,7 @@
                     promotion: promotionPiece,
                     fen: chess.fen(),
                 };
+                board.enableUserInput(false);
                 socket.emit('moveMade', moveData);
                 updateGameInfo(status); 
             };
@@ -114,18 +145,17 @@
                     board.setPosition(res[i-1].fen);
                     console.log(chess.pgn());
                     nextPlayer = 'white';
-                    let status;
                     if (chess.turn() === 'b') { nextPlayer = 'black'; };
                     if (chess.in_checkmate() === true) { status = 'CHECKMATE! Player ' + nextPlayer + ' lost.'; } 
                     else if (chess.in_draw() === true) { status = 'DRAW!'; }
                     else {
-                        status = 'Next player is ' + nextPlayer + '.';
+                        status = 'Next move is ' + nextPlayer + '.';
                         if (chess.in_check() === true) { status = 'CHECK! ' + status; };
                     }
                     updateGameInfo(status); 
                 }
             }
-            else if (userData.player_id != "observer" && !chess.in_checkmate()) { board.enableUserInput(); }
+            if (userData.player_id != "observer" && userData.player_color == nextPlayer && !chess.in_checkmate()) { board.enableUserInput(); }
         };
 
         let chess = new Chess(),
