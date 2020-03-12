@@ -57,9 +57,7 @@ module.exports = (app)=>{
 	        db.GameMove.findAll({
 	        	where: { match_id: match_id },
 	        	order: [ [ 'id', 'DESC' ]]
-	    	}).then((gameMoves)=>{
-	    		client.emit('moves', gameMoves);
-	    	});
+	    	}).then((gameMoves)=>{ client.emit('moves', gameMoves); });
 	    });
   		client.on('disconnect', ()=>{
   			matchConnections[`${match_id}`] = matchConnections[`${match_id}`].filter(e => e.socket_id !== client.id);
@@ -87,9 +85,7 @@ module.exports = (app)=>{
 				    	db.GameMove.findAll({
 				        	where: { match_id: match_id },
 				        	order: [ [ 'id', 'DESC' ]]
-				    	}).then((gameMoves2)=>{
-				    		match.to(`match/${match_id}`).emit('moves', gameMoves2);
-				    	});
+				    	}).then((gameMoves2)=>{ match.to(`match/${match_id}`).emit('moves', gameMoves2); });
 				    }); 
 		    	};
 			});

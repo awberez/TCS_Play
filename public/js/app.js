@@ -1,6 +1,8 @@
 $(function(){
 
 	$("#createGame").click(()=>{
+		$("#createGame").prop('disabled', true);
+		setTimeout(()=>{ $("#createGame").prop('disabled', false); }, 1000);
 		getGameLinks = ()=>{
 			let match = ~~(Math.random() * 1000000) - 1, white = 1, black = 2;
 			$.get(`/newgame/${match}/${white}/${black}`, (res)=>{ 

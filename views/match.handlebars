@@ -60,16 +60,15 @@
         socket.on('connect', (data)=>{
             socket.emit('join', userData);
         });
+        socket.on('disconnect', (data)=>{
+            $('#connections').html(`<div>Disconnected</div>`);
+        });
         socket.on('messages', (data)=>{
             console.log(data);
         });
         socket.on('status', (data)=>{
             $('#connections').empty();
-            for (let object of data) {
-                $('#connections').append(`
-                    <div>${object.connection}</div>
-                `);
-            };
+            for (let object of data) { $('#connections').append(`<div>${object.connection}</div>`); };
         });
         socket.on('moves', (data)=>{
             console.log("moves received");
