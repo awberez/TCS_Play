@@ -45,10 +45,10 @@ module.exports = (app)=>{
   	});
 
   	match.on('connection', (client)=>{
-  		let match_id, player_color;
+  		let match_id, player_color, player_name;
 	  	client.on('join', (data)=>{
-	  		console.log(colors.magenta(data));
-	  		match_id = data.match_id, player_color = data.player_color;
+	  		match_id = data.match_id, player_color = data.player_color, player_name = `${player_color == "white" || player_color == "black" ? player_color : `observer ${client.id.substr(6)}`}`;
+	  		console.log(colors.magenta(`${player_name} has connected to match ${match_id}`));
 	  		client.join(`match/${match_id}`);
 	        client.emit('messages', 'Connected to server');
 	        let socketInfo = {connection: player_color, socket_id: client.id};
@@ -60,7 +60,7 @@ module.exports = (app)=>{
 	    	}).then((gameMoves)=>{ client.emit('moves', gameMoves); });
 	    });
   		client.on('disconnect', ()=>{
-  			console.log(colors.red(`${player_color} has disconnected from match ${match_id}`));
+  			console.log(colors.red(`${player_name} has disconnected from match ${match_id}`));
   			matchConnections[`${match_id}`] = matchConnections[`${match_id}`].filter(e => e.socket_id !== client.id);
   			match.to(`match/${match_id}`).emit('status', matchConnections[`${match_id}`]);
   		});
