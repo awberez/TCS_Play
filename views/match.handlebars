@@ -22,7 +22,9 @@
                 </div>
                 <div class="col-4 col-md-12">
                     <label>Connections:</label>
-                    <div id="connections"></div>
+                    <div id="connections">
+                        <div>Disconnected</div>
+                    </div>
                     <br/>
                 </div>
                 <div class="col-4 col-md-12">
@@ -67,8 +69,24 @@
             console.log(data);
         });
         socket.on('status', (data)=>{
-            $('#connections').empty();
-            for (let object of data) { $('#connections').append(`<div>${object.connection}</div>`); };
+            let observers = 0;
+            $('#connections').html(`
+                <div id="whiteCon">White: disconnected</div>
+                <div id="blackCon">Black: disconnected</div>
+                <div id="observerCon">Observers: 0</div>
+            `);
+            for (let object of data) { 
+                if (object.connection == "white") {
+                    $('#whiteCon').html("White: connected");
+                }
+                else if (object.connection == "black") {
+                    $('#blackCon').html("Black: connected");
+                }
+                else {
+                    observers++;
+                    $('#observerCon').html(`Observers: ${observers}`);
+                };
+            };
         });
         socket.on('moves', (data)=>{
             console.log("moves received");
