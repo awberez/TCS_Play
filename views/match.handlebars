@@ -7,7 +7,7 @@
             <div class="row">
                 <div class="col-4 col-md-12">
                     <div class="playerInfo">
-                        <label>Your color:</label>
+                        <label style="font-weight: bold">Your color:</label>
                         <div>{{player}}</div>
                         <br/>
                     </div>
@@ -16,12 +16,12 @@
                         <br/>
                         <br/>
                     </div>
-                    <label>Status:</label>
+                    <label style="font-weight: bold">Status:</label>
                     <div id="status"></div>
                     <br/>
                 </div>
                 <div class="col-4 col-md-12">
-                    <label>Connections:</label>
+                    <label style="font-weight: bold">Connections:</label>
                     <div id="connections">
                         <div>Disconnected</div>
                     </div>
@@ -29,7 +29,7 @@
                 </div>
                 <div class="col-4 col-md-12">
                     <div id="promotionsChoice" class="playerInfo">
-                        <label>Pawn promotions:</label>
+                        <label style="font-weight: bold">Pawn promotions:</label>
                         <div id="promotions">
                             <input type="radio" id="queen" name="promotion" value="q" checked="default">
                             <label for="queen">Queen</label><br/>
@@ -45,7 +45,7 @@
             </div>
         </div>
         <div class="col-12 col-md-2">
-            <label>PGN:</label>
+            <label style="font-weight: bold">PGN:</label>
             <div id="pgn"></div>
         </div>
     </div>
@@ -65,9 +65,6 @@
         socket.on('disconnect', (data)=>{
             $('#connections').html(`<div>Disconnected</div>`);
         });
-        socket.on('messages', (data)=>{
-            console.log(data);
-        });
         socket.on('status', (data)=>{
             let observers = 0;
             $('#connections').html(`
@@ -76,17 +73,16 @@
                 <div id="observerCon">Observers: 0</div>
             `);
             for (let object of data) { 
-                if (object.connection == "white") {
-                    $('#whiteCon').html("White: connected");
-                }
-                else if (object.connection == "black") {
-                    $('#blackCon').html("Black: connected");
-                }
+                if (object.connection == "white") { $('#whiteCon').html("White: connected"); }
+                else if (object.connection == "black") { $('#blackCon').html("Black: connected"); }
                 else {
                     observers++;
                     $('#observerCon').html(`Observers: ${observers}`);
                 };
             };
+        });
+        socket.on('messages', (data)=>{
+            console.log(data);
         });
         socket.on('moves', (data)=>{
             console.log("moves received");

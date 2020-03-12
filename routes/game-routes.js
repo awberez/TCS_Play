@@ -45,13 +45,13 @@ module.exports = (app)=>{
   	});
 
   	match.on('connection', (client)=>{
-  		let match_id;
+  		let match_id, player_color;
 	  	client.on('join', (data)=>{
 	  		console.log(colors.magenta(data));
-	  		match_id = data.match_id;
+	  		match_id = data.match_id, player_color = data.player_color;
 	  		client.join(`match/${match_id}`);
 	        client.emit('messages', 'Connected to server');
-	        let socketInfo = {connection: data.player_color, socket_id: client.id};
+	        let socketInfo = {connection: player_color, socket_id: client.id};
 	        matchConnections[`${match_id}`] ? matchConnections[`${match_id}`].push(socketInfo) : matchConnections[`${match_id}`] = [socketInfo];
 	        match.to(`match/${match_id}`).emit('status', matchConnections[`${match_id}`]);
 	        db.GameMove.findAll({
@@ -60,23 +60,24 @@ module.exports = (app)=>{
 	    	}).then((gameMoves)=>{ client.emit('moves', gameMoves); });
 	    });
   		client.on('disconnect', ()=>{
+  			console.log(colors.red(`${player_color} has disconnected from match ${match_id}`));
   			matchConnections[`${match_id}`] = matchConnections[`${match_id}`].filter(e => e.socket_id !== client.id);
   			match.to(`match/${match_id}`).emit('status', matchConnections[`${match_id}`]);
   		});
 	  	client.on('moveMade', (data)=>{
-	  		colorConsole = (message)=>{ data.player_color == "white" ? console.log(colors.yellow(message)) : console.log(colors.cyan(message)); };
+	  		colorConsole = (message)=>{ player_color == "white" ? console.log(colors.yellow(message)) : console.log(colors.cyan(message)); };
 	  		colorConsole(data);
 	  		db.GameMove.findAll({
 	        	where: { match_id: match_id },
 	        	order: [ [ 'id', 'DESC' ]]
 	    	}).then((gameMoves)=>{
-    			if ((gameMoves[1] && data.from && gameMoves[1].lastMove == data.player_color && gameMoves[1].from !== data.from && gameMoves[1].to !== data.to) || 
-    				(gameMoves[0] && data.from && gameMoves[0].lastMove !== data.player_color) || 
-    				(data.from && data.player_color == "white")) {
-    				colorConsole(`adding new move from ${data.player_color} player in match ${match_id}`);
+    			if ((gameMoves[1] && data.from && gameMoves[1].lastMove == player_color && gameMoves[1].from !== data.from && gameMoves[1].to !== data.to) || 
+    				(gameMoves[0] && data.from && gameMoves[0].lastMove !== player_color) || 
+    				(data.from && player_color == "white")) {
+    				colorConsole(`adding new move from ${player_color} player in match ${match_id}`);
 		    		db.GameMove.create({ 
 				    	match_id: match_id,
-				    	lastMove: data.player_color,
+				    	lastMove: player_color,
 				    	from: data.from,
 				    	to: data.to,
 				    	promotion: data.promotion,
