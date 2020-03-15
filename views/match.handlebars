@@ -8,11 +8,14 @@
                 <div class="col-4 col-md-12">
                     <div id="connections">
                         <div style="font-weight: bold">White:</div>
-                        <p>disconnected</p>
+                        <div id="whiteName"></div>
+                        <div id="whiteStatus" style="font-style: italic">disconnected</div>
                         <div style="font-weight: bold">Black:</div>
-                        <p>disconnected</p>
+                        <div id="blackName"></div>
+                        <div id="blackStatus" style="font-style: italic">disconnected</div>
                         <div style="font-weight: bold">Observers:</div>
-                        <p>none</p>
+                        <div id="noObservers" style="font-style: italic">none</div>
+                        <div id="observers">none</div>
                     </div>
                     <br/>
                 </div>
@@ -56,10 +59,12 @@
     <script type="text/javascript">
         let decodedJson = decodeURIComponent("{{{encodedJson}}}"), userData = JSON.parse(decodedJson), socket = io('/match'), 
         movesMade = [], promotionPiece = "q", nextPlayer = 'white', status;
+       
         console.log(userData);
-
+        
         userData.player_color == "observer" ? $('.playerInfo').hide() : $('#flipButton').hide();
-
+        $('#whiteName').html(`${userData.white_name}`);
+        $('#blackName').html(`${userData.black_name}`);
         $(document).ready(function(){ $('#promotions').change(function(){ promotionPiece = $("input[name='promotion']:checked").val(); }); });
         $(document).ready(function(){ $('#flip').click(function(){ board.setOrientation(ChessUtils.ORIENTATION.flip) }); });
 
@@ -68,26 +73,16 @@
         });
         socket.on('disconnect', (data)=>{
             console.log("Disconnected from server");
-            $('#connections').html(`<div>Disconnected</div>`);
+            resetConnections();
         });
         socket.on('status', (data)=>{
-            $('#connections').html(`
-                <div style="font-weight: bold">White:</div>
-                <p id="whiteCon">disconnected</p>
-                <div style="font-weight: bold">Black:</div>
-                <p id="blackCon">disconnected</p>
-                <div style="font-weight: bold">Observers:</div>
-                <div id="observerCon">
-                    <div id="noObservers">none</div>
-                    <div id="observerDiv"></div>
-                </div>
-            `);
+            resetConnections();
             for (let user of data) { 
-                if (user.color == "white") { $('#whiteCon').html(`${user.name}`); }
-                else if (user.color == "black") { $('#blackCon').html(`${user.name}`); }
+                if (user.color == "white") { $('#whiteStatus').html(`connected`); }
+                else if (user.color == "black") { $('#blackStatus').html(`connected`); }
                 else { 
                     $('#noObservers').empty();
-                    $('#observerDiv').append(`${user.name}<br/>`); 
+                    $('#observers').append(`${user.name}<br/>`); 
                 };
             };
         });
@@ -99,6 +94,13 @@
             console.log(data);
             opponentMove(data);
         });
+
+        resetConnections = ()=>{
+            $('#whiteStatus').html(`disconnected`);
+            $('#blackStatus').html(`disconnected`);
+            $('#noObservers').html(`none`);
+            $('#observers').empty();
+        };
 
         resetGame = ()=>{
             board.setPosition(ChessUtils.FEN.startId);
