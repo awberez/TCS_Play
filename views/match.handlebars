@@ -6,6 +6,10 @@
         <div class="col-12 col-md-2 order-md-first">
             <div class="row">
                 <div class="col-4 col-md-12">
+                    <div id="connections"></div>
+                    <br/>
+                </div>
+                <div class="col-4 col-md-12">
                     <div class="playerInfo">
                         <label style="font-weight: bold">Your color:</label>
                         <div>{{player}}</div>
@@ -18,13 +22,6 @@
                     </div>
                     <label style="font-weight: bold">Status:</label>
                     <div id="status"></div>
-                    <br/>
-                </div>
-                <div class="col-4 col-md-12">
-                    <label style="font-weight: bold">Connections:</label>
-                    <div id="connections">
-                        <div>Disconnected</div>
-                    </div>
                     <br/>
                 </div>
                 <div class="col-4 col-md-12">
@@ -67,18 +64,23 @@
             $('#connections').html(`<div>Disconnected</div>`);
         });
         socket.on('status', (data)=>{
-            let observers = 0;
             $('#connections').html(`
-                <div id="whiteCon">White: disconnected</div>
-                <div id="blackCon">Black: disconnected</div>
-                <div id="observerCon">Observers: 0</div>
+                <div style="font-weight: bold">White:</div>
+                <p id="whiteCon">disconnected</p>
+                <div style="font-weight: bold">Black:</div>
+                <p id="blackCon">disconnected</p>
+                <div style="font-weight: bold">Observers:</div>
+                <div id="observerCon">
+                    <div id="noObservers">none</div>
+                    <div id="observerDiv"></div>
+                </div>
             `);
-            for (let name of data) { 
-                if (name == "white") { $('#whiteCon').html("White: connected"); }
-                else if (name == "black") { $('#blackCon').html("Black: connected"); }
-                else {
-                    observers++;
-                    $('#observerCon').html(`Observers: ${observers}`);
+            for (let user of data) { 
+                if (user.color == "white") { $('#whiteCon').html(`${user.name}`); }
+                else if (user.color == "black") { $('#blackCon').html(`${user.name}`); }
+                else { 
+                    $('#noObservers').empty();
+                    $('#observerDiv').append(`${user.name}<br/>`); 
                 };
             };
         });
