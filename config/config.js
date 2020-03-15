@@ -3,7 +3,7 @@
   "development": {
     "username": "root",
     "password": "sqlWorld1",
-    "database": "stuffalexwants_db",
+    "database": "tcsPlay_db",
     "host": "127.0.0.1",
     "dialect": "mysql"
   },

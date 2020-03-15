@@ -4,17 +4,33 @@ module.exports = (app)=>{
 
 	let io = app.get('socketio'), match = io.of('/match'), matchConnections = {};
 
-	app.get("/newgame/:id/:white/:black", (req, res)=>{
+	app.post("/newgame", (req, res)=>{
+		console.log(colors.white(req.body));
 		db.GameList.findOne({
-	        where: { match_id: req.params.id }
+	        where: { match_id: req.body.match_id }
 	    }).then((dbGame)=>{
 	    	if (!dbGame) {
 		    	db.GameList.create({ 
-			    	match_id: req.params.id,
-					white_id: req.params.white,
-			    	black_id: req.params.black
+			    	match_id: req.body.match_id,
+					white_id: req.body.white_player.id,
+			    	black_id: req.body.black_player.id
 			    }).then(() => {
-		            res.send("success");
+			    	let observers = [];
+			    	for (let observer of req.body.observers) { observers.push({ match_id: req.body.match_id, observer_id: observer.id }); };
+			    	db.ObserveList.bulkCreate(observers)
+			    	.then(() => {
+			    		let names = [];
+			    		names.push(
+				    		{ user_id: req.body.white_player.id, user_name: req.body.white_player.username },
+			    			{ user_id: req.body.black_player.id, user_name: req.body.black_player.username }
+			    		);
+			    		for (let observer of req.body.observers) { names.push({ user_id: observer.id, user_name: observer.username }); };
+			    		db.NameList.bulkCreate(names, {
+			    			updateOnDuplicate: ["user_name"]
+			    		}).then(() => {
+			    			res.send("success");
+			    		});
+			    	});
 		        });
 		    }
 		    else { res.send("failure"); }
@@ -25,22 +41,41 @@ module.exports = (app)=>{
 	    db.GameList.findOne({
 	        where: { match_id: req.params.id }
 	    }).then((dbPlayer)=>{
-	    	let userData = {
-	    		match_id: req.params.id,
-	    		player_id: req.params.player_id,
-	    		player_color: req.params.player_id == "observer" 
-	    			? "observer" 
-	    			: req.params.player_id == dbPlayer.black_id 
-	    				? "black" 
-	    				: "white"
+	    	if (req.params.player_id == (dbPlayer.white_id || dbPlayer.black_id)) {
+	    		db.NameList.findOne({
+	    			where: { user_id: req.params.player_id }
+	    		}).then((dbName)=>{
+	    			let userData = {
+			    		match_id: req.params.id,
+			    		player_id: req.params.player_id,
+			    		player_name: dbName.user_name,
+			    		player_color: req.params.player_id == dbPlayer.white_id ? "white" : "black"
+			    	}
+			    	req.params.player_id == dbPlayer.white_id 
+			    		? res.render("match", { player: "white", encodedJson : encodeURIComponent(JSON.stringify(userData)) })
+			    		: res.render("match", { player: "black", encodedJson : encodeURIComponent(JSON.stringify(userData)) });
+	    		})
 	    	}
-	    	req.params.player_id == dbPlayer.black_id
-	    		? res.render("match", { match_id: dbPlayer.match_id, player: "black", encodedJson : encodeURIComponent(JSON.stringify(userData)) })
-	    		: req.params.player_id == dbPlayer.white_id
-	    			? res.render("match", { match_id: dbPlayer.match_id, player: "white", encodedJson : encodeURIComponent(JSON.stringify(userData)) })
-	    			: req.params.player_id == "observer"
-	    				? res.render("match", { match_id: dbPlayer.match_id, player: "observer", encodedJson : encodeURIComponent(JSON.stringify(userData)) })
-	    				: res.render("unauthorized");
+	    	else {
+	    		db.ObserveList.findAll({
+	    			where: { match_id: req.params.id }
+	    		}).then((dbObservers)=>{
+	    			if (dbObservers.some(e => e.observer_id == req.params.player_id)) {
+	    				db.NameList.findOne({
+	    					where: { user_id: req.params.player_id }
+	    				}).then((dbName)=>{
+	    					let userData = {
+					    		match_id: req.params.id,
+					    		player_id: req.params.player_id,
+					    		player_name: dbName.user_name,
+					    		player_color: "observer"
+					    	}
+					    	res.render("match", { player: "observer", encodedJson : encodeURIComponent(JSON.stringify(userData)) });
+	    				});
+					}
+					else { res.render("unauthorized"); };
+	    		});
+	    	};
       	});
   	});
 
@@ -61,7 +96,7 @@ module.exports = (app)=>{
   		client.on('disconnect', ()=>{
   			console.log(colors.red(`${player_name} has disconnected from match ${match_id}`));
   			matchConnections[`${match_id}`] = matchConnections[`${match_id}`].filter(e => e !== player_name);
-  			match.to(`match/${match_id}`).emit('status', matchConnections[`${match_id}`]);
+  			matchConnections[`${match_id}`].length === 0 ? delete matchConnections[`${match_id}`] : match.to(`match/${match_id}`).emit('status', matchConnections[`${match_id}`]);
   		});
 	  	client.on('moveMade', (data)=>{
 	  		colorConsole = (message)=>{ data.player_color == "white" ? console.log(colors.yellow(message)) : console.log(colors.cyan(message)); };

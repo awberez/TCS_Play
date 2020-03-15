@@ -54,7 +54,7 @@
         movesMade = [], promotionPiece = "q", nextPlayer = 'white', status;
         console.log(userData);
 
-        userData.player_id == "observer" ? $('.playerInfo').hide() : $('#flipButton').hide();
+        userData.player_color == "observer" ? $('.playerInfo').hide() : $('#flipButton').hide();
 
         $(document).ready(function(){ $('#promotions').change(function(){ promotionPiece = $("input[name='promotion']:checked").val(); }); });
         $(document).ready(function(){ $('#flip').click(function(){ board.setOrientation(ChessUtils.ORIENTATION.flip) }); });
@@ -63,6 +63,7 @@
             socket.emit('join', userData);
         });
         socket.on('disconnect', (data)=>{
+            console.log("Disconnected from server");
             $('#connections').html(`<div>Disconnected</div>`);
         });
         socket.on('status', (data)=>{
@@ -168,7 +169,7 @@
                     updateGameInfo(status); 
                 }
             }
-            if (userData.player_id != "observer" && userData.player_color == nextPlayer && !chess.in_checkmate()) { board.enableUserInput(); }
+            if (userData.player_color != "observer" && userData.player_color == nextPlayer && !chess.in_checkmate()) { board.enableUserInput(); }
         };
 
         let chess = new Chess(),
