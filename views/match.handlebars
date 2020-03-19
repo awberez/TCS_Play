@@ -56,6 +56,7 @@
             <div id="pgn"></div>
         </div>
         <div class="col-12">
+            <br />
             <div id="chatDiv">
             </div>
         </div>
@@ -156,6 +157,8 @@
                 };
                 board.enableUserInput(false);
                 socket.emit('moveMade', moveData);
+                //chat test
+                socket.emit('chat', `I've made a move: ${move.from}-${move.to}`);
                 updateGameInfo(status); 
             };
             return chess.fen();

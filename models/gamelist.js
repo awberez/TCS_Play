@@ -7,6 +7,7 @@ module.exports = function(sequelize, DataTypes) {
     },
     match_id: {type: DataTypes.INTEGER,
         allowNull: false,
+        unique: true
     },
     white_id: {type: DataTypes.INTEGER,
         allowNull: false,
