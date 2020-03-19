@@ -15,7 +15,7 @@
                         <div id="blackStatus" style="font-style: italic">disconnected</div>
                         <div style="font-weight: bold">Observers:</div>
                         <div id="noObservers" style="font-style: italic">none</div>
-                        <div id="observers">none</div>
+                        <div id="observers"></div>
                     </div>
                     <br/>
                 </div>
@@ -55,10 +55,14 @@
             <label style="font-weight: bold">PGN:</label>
             <div id="pgn"></div>
         </div>
+        <div class="col-12">
+            <div id="chatDiv">
+            </div>
+        </div>
     </div>
     <script type="text/javascript">
         let decodedJson = decodeURIComponent("{{{encodedJson}}}"), userData = JSON.parse(decodedJson), socket = io('/match'), 
-        movesMade = [], promotionPiece = "q", nextPlayer = 'white', status;
+        movesMade = [], promotionPiece = "q", nextPlayer = 'white', status, chatMessages = [];
        
         console.log(userData);
         
@@ -76,14 +80,21 @@
             resetConnections();
         });
         socket.on('status', (data)=>{
+            console.log(data);
             resetConnections();
             for (let user of data) { 
                 if (user.color == "white") { $('#whiteStatus').html(`connected`); }
                 else if (user.color == "black") { $('#blackStatus').html(`connected`); }
                 else { 
-                    $('#noObservers').empty();
+                    $('#noObservers').hide();
                     $('#observers').append(`${user.name}<br/>`); 
                 };
+            };
+            console.log(data.some(e => e.id == userData.player_id));
+            if (!data.some(e => e.id == userData.player_id)) {
+                console.log("fail");
+                socket.close();
+                socket.open();
             };
         });
         socket.on('messages', (data)=>{
@@ -94,11 +105,14 @@
             console.log(data);
             opponentMove(data);
         });
+        socket.on('chat', (data)=>{
+            displayChat(data);
+        });
 
         resetConnections = ()=>{
             $('#whiteStatus').html(`disconnected`);
             $('#blackStatus').html(`disconnected`);
-            $('#noObservers').html(`none`);
+            $('#noObservers').show();
             $('#observers').empty();
         };
 
@@ -182,6 +196,19 @@
             }
             if (userData.player_color != "observer" && userData.player_color == nextPlayer && !chess.in_checkmate()) { board.enableUserInput(); }
         };
+
+        displayChat = (res)=>{
+            console.log(`Messages recorded: ${chatMessages.length}`);
+            console.log(`Total messages: ${res.length}`);
+            if (chatMessages.length < res.length) {
+                let n = res.length - chatMessages.length;
+                for (i = n; 0 < i; i--) {
+                    console.log(res[i-1].player_message);
+                    chatMessages.push(res)
+                    $('#chatDiv').append(`<div>${res[i-1].player_name}: ${res[i-1].player_message}</div>`)
+                }
+            }
+        }
 
         let chess = new Chess(),
         board = new Chessboard('myBoard', {

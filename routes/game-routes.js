@@ -86,38 +86,53 @@ module.exports = (app)=>{
   	});
 
   	match.on('connection', (client)=>{
-  		let match_id, player_name;
-	  	client.on('join', (data)=>{
-	  		match_id = data.match_id, player_name = `${data.player_color == "white" || data.player_color == "black" ? data.player_color : `observer ${data.player_id}`}`;
-	  		console.log(colors.magenta(`${player_name} has connected to match ${match_id}`));
-	  		client.join(`match/${match_id}`);
+
+		client.on('join', (data)=>{
+	  		client.match_id = data.match_id, client.room = `match/${client.match_id}`, client.player_name = data.player_name, client.player_id = data.player_id, 
+	  		client.color = `${data.player_color == "white" || data.player_color == "black" ? data.player_color : `observer ${data.player_id}`}`;
+	  		console.log(colors.magenta(`${client.player_name} has connected to match ${client.match_id}`));
+	  		client.join(client.room);
 	        client.emit('messages', 'Connected to server');
-	        let playerInfo = { color: player_name, name: data.player_name };
-	        matchConnections[`${match_id}`] ? matchConnections[`${match_id}`].push(playerInfo) : matchConnections[`${match_id}`] = [playerInfo];
-	        match.to(`match/${match_id}`).emit('status', matchConnections[`${match_id}`]);
+	        let playerInfo = { color: client.color, name: client.player_name, id: client.player_id };
+	        if (matchConnections[`${client.match_id}`]) {
+		        	matchConnections[`${client.match_id}`] = matchConnections[`${client.match_id}`].filter(e => e.color !== client.color);
+		        	matchConnections[`${client.match_id}`].push(playerInfo);
+		        }
+		    else { matchConnections[`${client.match_id}`] = [playerInfo] };
+		    match.to(client.room).emit('status', matchConnections[`${client.match_id}`]);
 	        db.GameMove.findAll({
-	        	where: { match_id: match_id },
+	        	where: { match_id: client.match_id },
 	        	order: [ [ 'id', 'DESC' ]]
-	    	}).then((gameMoves)=>{ client.emit('moves', gameMoves); });
+	    	}).then((gameMoves)=>{ 
+	    		db.GameChat.findAll({
+	        		where: { match_id: client.match_id },
+	        		order: [ [ 'id', 'DESC' ]]
+		    	}).then((gameChat)=>{ 
+		    		client.emit('moves', gameMoves); 
+		    		client.emit('chat', gameChat);
+		    	});
+	    	});
 	    });
+
   		client.on('disconnect', ()=>{
-  			console.log(colors.red(`${player_name} has disconnected from match ${match_id}`));
-  			matchConnections[`${match_id}`] = matchConnections[`${match_id}`].filter(e => e.color !== player_name);
-  			matchConnections[`${match_id}`].length === 0 ? delete matchConnections[`${match_id}`] : match.to(`match/${match_id}`).emit('status', matchConnections[`${match_id}`]);
+  			console.log(colors.red(`${client.color} has disconnected from match ${client.match_id}`));
+  			matchConnections[`${client.match_id}`] = matchConnections[`${client.match_id}`].filter(e => e.color !== client.color);
+  			matchConnections[`${client.match_id}`].length === 0 ? delete matchConnections[`${client.match_id}`] : match.to(client.room).emit('status', matchConnections[`${client.match_id}`]);
   		});
+
 	  	client.on('moveMade', (data)=>{
 	  		colorConsole = (message)=>{ data.player_color == "white" ? console.log(colors.yellow(message)) : console.log(colors.cyan(message)); };
 	  		colorConsole(data);
 	  		db.GameMove.findAll({
-	        	where: { match_id: match_id },
+	        	where: { match_id: client.match_id },
 	        	order: [ [ 'id', 'DESC' ]]
 	    	}).then((gameMoves)=>{
     			if ((gameMoves[1] && data.from && gameMoves[1].lastMove == data.player_color && gameMoves[1].from !== data.from && gameMoves[1].to !== data.to) || 
     				(gameMoves[0] && data.from && gameMoves[0].lastMove !== data.player_color) || 
     				(data.from && data.player_color == "white")) {
-    				colorConsole(`adding new move from ${data.player_color} player in match ${match_id}`);
+    				colorConsole(`adding new move from ${data.player_color} player in match ${client.match_id}`);
 		    		db.GameMove.create({ 
-				    	match_id: match_id,
+				    	match_id: client.match_id,
 				    	lastMove: data.player_color,
 				    	from: data.from,
 				    	to: data.to,
@@ -125,13 +140,29 @@ module.exports = (app)=>{
 				    	fen: data.fen
 				    }).then(() => { 
 				    	db.GameMove.findAll({
-				        	where: { match_id: match_id },
+				        	where: { match_id: client.match_id },
 				        	order: [ [ 'id', 'DESC' ]]
-				    	}).then((gameMoves2)=>{ match.to(`match/${match_id}`).emit('moves', gameMoves2); });
+				    	}).then((gameMoves2)=>{ match.to(client.room).emit('moves', gameMoves2); });
 				    }); 
 		    	};
 			});
 	    });
+
+	  	client.on('chat', (message)=>{
+	  		db.GameChat.create({
+	  			match_id: client.match_id,
+	  			player_name: client.player_name,
+	  			player_message: message
+	  		}).then(()=>{
+	  			db.GameChat.findAll({
+	        		where: { match_id: client.match_id },
+	        		order: [ [ 'id', 'DESC' ]]
+		    	}).then((gameChat)=>{
+	  				match.to(client.room).emit('chat', gameChat);
+	  			});
+	  		})
+	  	});
+
 	});
 
 };
