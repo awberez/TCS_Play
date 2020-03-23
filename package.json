@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/awberez/TCS_Play#readme",
   "dependencies": {
+    "bad-words": "^3.0.3",
     "chess.js": "^0.10.2",
     "colors": "^1.4.0",
     "express": "^4.17.1",

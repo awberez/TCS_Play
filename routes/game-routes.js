@@ -1,4 +1,4 @@
-const db = require("../models"), Sequelize = require('sequelize'), Op = Sequelize.Op, colors = require("colors");
+const db = require("../models"), Sequelize = require('sequelize'), Op = Sequelize.Op, colors = require("colors"), Filter = require('bad-words'), filter = new Filter();
 
 module.exports = (app)=>{
 
@@ -106,8 +106,10 @@ module.exports = (app)=>{
 
   		client.on('disconnect', ()=>{
   			console.log(colors.red(`${client.color} has disconnected from match ${client.match_id}`));
-  			matchConnections[`${client.match_id}`] = matchConnections[`${client.match_id}`].filter(e => e.color !== client.color);
-  			matchConnections[`${client.match_id}`].length === 0 ? delete matchConnections[`${client.match_id}`] : match.to(client.room).emit('status', matchConnections[`${client.match_id}`]);
+  			if (matchConnections[`${client.match_id}`]) {
+  				matchConnections[`${client.match_id}`] = matchConnections[`${client.match_id}`].filter(e => e.color !== client.color);
+  				matchConnections[`${client.match_id}`].length === 0 ? delete matchConnections[`${client.match_id}`] : match.to(client.room).emit('status', matchConnections[`${client.match_id}`]);
+  			}
   		});
 
 	  	client.on('moveMade', (data)=>{
@@ -137,7 +139,7 @@ module.exports = (app)=>{
 	  		db.GameChat.create({
 	  			match_id: client.match_id,
 	  			player_name: client.player_name,
-	  			player_message: message
+	  			player_message: filter.clean(message)
 	  		}).then(()=>{ sendMatchContent(db.GameChat, 'chat'); })
 	  	});
 
