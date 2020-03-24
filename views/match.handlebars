@@ -58,11 +58,11 @@
         <div class="col-12">
             <br />
             <div class="row justify-content-md-center">
-                <div id="chatBox" class="col-12 col-md-10" style="overflow-y: scroll; overflow-x:wrap; height: 150px; border: 1px solid black; display: flex; flex-direction: column-reverse;">
+                <div id="chatBox" class="col-12 col-md-10" style="overflow-y: scroll; overflow-x:wrap; height: 150px; border: 1px solid black">
                     <div id="chatDiv"></div>
                 </div>
                 <div id="chatTypeBox" class="col-12 col-md-10">
-                    <input class="inputMessage" placeholder="Type here..."/>
+                    <input id="inputMessage" style="width:calc(100% - 54px)" placeholder="Type here..."/><button onClick=sendMessage()>Send</button>
                 </div>
             </div>
         </div>
@@ -76,8 +76,9 @@
         userData.player_color == "observer" ? $('.playerInfo').hide() : $('#flipButton').hide();
         $('#whiteName').html(`${userData.white_name}`);
         $('#blackName').html(`${userData.black_name}`);
-        $(document).ready(function(){ $('#promotions').change(function(){ promotionPiece = $("input[name='promotion']:checked").val(); }); });
-        $(document).ready(function(){ $('#flip').click(function(){ board.setOrientation(ChessUtils.ORIENTATION.flip) }); });
+        $(document).ready(()=>{ $('#promotions').change(function(){ promotionPiece = $("input[name='promotion']:checked").val(); }); });
+        $(document).ready(()=>{ $('#flip').click(function(){ board.setOrientation(ChessUtils.ORIENTATION.flip) }); });
+        $(window).keydown((event)=>{ if (event.which === 13 && document.activeElement === document.getElementById('inputMessage')) { sendMessage(); }; });
 
         socket.on('connect', (data)=>{
             socket.emit('join', userData);
@@ -166,12 +167,6 @@
                 };
                 board.enableUserInput(false);
                 socket.emit('moveMade', moveData);
-                //chat test
-                let chatData = {
-                    text: `I've <i>made</i> a move: ${move.from}-${move.to}`,
-                    fen: chess.fen(),
-                }
-                socket.emit('chat', chatData);
                 updateGameInfo(status); 
             };
             return chess.fen();
@@ -213,9 +208,18 @@
             if (userData.player_color != "observer" && userData.player_color == nextPlayer && !chess.in_checkmate()) { board.enableUserInput(); }
         };
 
-        cleanInput = (input) => {
-            return $('<div/>').text(input).html();
-        }
+        sendMessage = () => {
+            console.log("message");
+            let message = $('#inputMessage').val();
+            if (message) {
+                $('#inputMessage').val('')
+                let chatData = {
+                    text: message,
+                    fen: chess.fen(),
+                }
+                socket.emit('chat', chatData);
+            };
+        };
 
         displayChat = (res)=>{
             console.log(`Messages recorded: ${chatMessages.length}`);
@@ -232,7 +236,12 @@
                         minute: 'numeric',
                         hour: 'numeric'
                     });
-                    $('#chatDiv').append(`<div id="messageID${chatMessages.length}">[${localTime}] <b>${res[i].player_name}</b>: ${res[i].player_message}</div>`);
+                    $('#chatDiv').append(`
+                        <div id="messageID${chatMessages.length}" class=${res[i].player_name == userData.white_name ? "whiteMessage" : "blackMessage"}>
+                            [${localTime}] <b>${res[i].player_name}</b>: ${res[i].player_message}
+                        </div>
+                    `);
+                    document.getElementById("chatBox").scrollTop = document.getElementById("chatBox").scrollHeight;
                 }
             }
         }
