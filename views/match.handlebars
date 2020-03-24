@@ -1,7 +1,7 @@
 <main>
     <div class="row">
         <div class="col-12 col-md-8 text-center">
-            <div id="myBoard" style="width: 100%; max-width: calc(100vh - 100px)"></div>
+            <div id="myBoard" style="width: 100%; max-width: calc(100vh - 300px)"></div>
         </div>
         <div class="col-12 col-md-2 order-md-first">
             <div class="row">
@@ -35,7 +35,7 @@
                     <br/>
                 </div>
                 <div class="col-4 col-md-12">
-                    <div id="promotionsChoice" class="playerInfo">
+                    <div id="promotionsChoice" class="playerInput">
                         <label style="font-weight: bold">Pawn promotions:</label>
                         <div id="promotions">
                             <input type="radio" id="queen" name="promotion" value="q" checked="default">
@@ -61,7 +61,7 @@
                 <div id="chatBox" class="col-12 col-md-10" style="overflow-y: scroll; overflow-x:wrap; height: 150px; border: 1px solid black">
                     <div id="chatDiv"></div>
                 </div>
-                <div id="chatTypeBox" class="col-12 col-md-10">
+                <div id="chatTypeBox" class="col-12 col-md-10 playerInput">
                     <input id="inputMessage" style="width:calc(100% - 54px)" placeholder="Type here..."/><button onClick=sendMessage()>Send</button>
                 </div>
             </div>
@@ -73,7 +73,7 @@
        
         console.log(userData);
         
-        userData.player_color == "observer" ? $('.playerInfo').hide() : $('#flipButton').hide();
+        userData.player_color == "observer" ? $('.playerInput').hide() : $('#flipButton').hide();
         $('#whiteName').html(`${userData.white_name}`);
         $('#blackName').html(`${userData.black_name}`);
         $(document).ready(()=>{ $('#promotions').change(function(){ promotionPiece = $("input[name='promotion']:checked").val(); }); });
