@@ -51,7 +51,9 @@ module.exports = (app)=>{
 			    		let userData = {
 				    		match_id: req.params.id,
 				    		player_id: req.params.player_id,
+				    		white_id: dbGame.white_id,
 				    		white_name: dbWhite.user_name,
+				    		black_id: dbGame.black_id,
 				    		black_name: dbBlack.user_name
 				    	}
 				    	if (req.params.player_id == dbGame.white_id) {
@@ -90,7 +92,7 @@ module.exports = (app)=>{
 		client.on('join', (data)=>{
 	  		client.match_id = data.match_id, client.room = `match/${client.match_id}`, client.player_name = data.player_name, client.player_id = data.player_id, 
 	  		client.color = `${data.player_color == "white" || data.player_color == "black" ? data.player_color : `observer ${data.player_id}`}`;
-	  		console.log(colors.magenta(`${client.player_name} has connected to match ${client.match_id}`));
+	  		console.log(colors.magenta(`${client.color} has connected to match ${client.match_id}`));
 	  		client.join(client.room);
 	        client.emit('messages', 'Connected to server');
 	        let playerInfo = { color: client.color, name: client.player_name, id: client.player_id };
@@ -138,11 +140,10 @@ module.exports = (app)=>{
 	  	client.on('chat', (message)=>{
 	  		db.GameChat.create({
 	  			match_id: client.match_id,
-	  			player_name: client.player_name,
+	  			player_id: client.player_id,
 	  			player_message: sanitizeHtml(filter.clean(message.text), {
 	  				allowedTags: [],
 					allowedAttributes: {},
-					disallowedTagsMode: 'escape'
 	  			}),
 	  			fen: message.fen
 	  		}).then(()=>{ sendMatchContent(db.GameChat, 'chat'); })

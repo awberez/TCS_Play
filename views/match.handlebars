@@ -1,6 +1,6 @@
 <main>
-    <div class="row">
-        <div class="col-12 col-md-8 text-center">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-8 col-lg-6 text-center">
             <div id="myBoard" style="width: 100%; max-width: calc(100vh - 300px)"></div>
         </div>
         <div class="col-12 col-md-2 order-md-first">
@@ -57,11 +57,11 @@
         </div>
         <div class="col-12">
             <br />
-            <div class="row justify-content-md-center">
-                <div id="chatBox" class="col-12 col-md-10" style="overflow-y: scroll; overflow-x:wrap; height: 150px; border: 1px solid black">
+            <div class="row justify-content-center">
+                <div id="chatBox" class="col-12 col-md-10 col-lg-8" style="overflow-y: scroll; overflow-x:wrap; height: 150px; border: 1px solid black">
                     <div id="chatDiv"></div>
                 </div>
-                <div id="chatTypeBox" class="col-12 col-md-10 playerInput">
+                <div id="chatTypeBox" class="col-12 col-md-10 col-lg-8 playerInput">
                     <input id="inputMessage" style="width:calc(100% - 54px)" placeholder="Type here..."/><button onClick=sendMessage()>Send</button>
                 </div>
             </div>
@@ -70,8 +70,6 @@
     <script type="text/javascript">
         let decodedJson = decodeURIComponent("{{{encodedJson}}}"), userData = JSON.parse(decodedJson), socket = io('/match'), 
         movesMade = [], promotionPiece = "q", nextPlayer = 'white', status, chatMessages = [];
-       
-        console.log(userData);
         
         userData.player_color == "observer" ? $('.playerInput').hide() : $('#flipButton').hide();
         $('#whiteName').html(`${userData.white_name}`);
@@ -193,7 +191,6 @@
                     });
                     movesMade.push(chessMove);
                     board.setPosition(res[i].fen);
-                    console.log(chess.pgn());
                     nextPlayer = 'white';
                     if (chess.turn() === 'b') { nextPlayer = 'black'; };
                     if (chess.in_checkmate() === true) { status = 'CHECKMATE! Player ' + nextPlayer + ' lost.'; } 
@@ -227,7 +224,6 @@
             if (chatMessages.length < res.length) {
                 let n = res.length - chatMessages.length;
                 for (i = n-1; 0 <= i; i--) {
-                    console.log(res[i].player_message);
                     chatMessages.push(res)
                     let localTime = new Date(res[i].createdAt).toLocaleDateString(undefined, {
                         day:'numeric',
@@ -237,8 +233,8 @@
                         hour: 'numeric'
                     });
                     $('#chatDiv').append(`
-                        <div id="messageID${chatMessages.length}" class=${res[i].player_name == userData.white_name ? "whiteMessage" : "blackMessage"}>
-                            [${localTime}] <b>${res[i].player_name}</b>: ${res[i].player_message}
+                        <div id="messageID${chatMessages.length}" class=${res[i].player_id == userData.white_id ? "whiteMessage" : "blackMessage"}>
+                            [${localTime}] <b>${res[i].player_id == userData.white_id ? userData.white_name : userData.black_name}</b>: ${res[i].player_message}
                         </div>
                     `);
                     document.getElementById("chatBox").scrollTop = document.getElementById("chatBox").scrollHeight;

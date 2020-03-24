@@ -8,7 +8,7 @@ module.exports = function(sequelize, DataTypes) {
     match_id: {type: DataTypes.INTEGER,
         allowNull: false,
     },
-    player_name: {type: DataTypes.STRING,
+    player_id: {type: DataTypes.INTEGER,
         allowNull: false,
     },
     player_message: {type: DataTypes.STRING,
