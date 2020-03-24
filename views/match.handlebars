@@ -81,40 +81,31 @@
         socket.on('connect', (data)=>{
             socket.emit('join', userData);
         });
+
         socket.on('disconnect', (data)=>{
             console.log("Disconnected from server");
             resetConnections();
         });
-        socket.on('status', (data)=>{
-            console.log(data);
-            resetConnections();
-            for (let user of data) { 
-                if (user.color == "white") { $('#whiteStatus').html(`connected`); }
-                else if (user.color == "black") { $('#blackStatus').html(`connected`); }
-                else { 
-                    $('#noObservers').hide();
-                    $('#observers').append(`${user.name}<br/>`); 
-                };
-            };
-            console.log(data.some(e => e.id == userData.player_id));
-            if (!data.some(e => e.id == userData.player_id)) {
-                console.log("fail");
-                socket.close();
-                socket.open();
-            };
-        });
+
         socket.on('messages', (data)=>{
             console.log(data);
         });
+
         socket.on('alert', (data)=>{
             alert(data);
         });
+
+        socket.on('status', (data)=>{
+            setStatus(data);
+        });
+
         socket.on('moves', (data)=>{
-            console.log("moves received");
-            console.log(data);
+            console.log(`${movesMade.length < data.length - 1 ? "moves" : "move"} received`);
             opponentMove(data);
         });
+        
         socket.on('chat', (data)=>{
+            console.log(`${chatMessages.length < data.length - 1 ? "messages" : "message"} received`);
             displayChat(data);
         });
 
@@ -137,6 +128,23 @@
           $('#status').html(status);
           $('#pgn').html(chess.pgn());
         };
+
+        setStatus = (res)=>{
+            resetConnections();
+            for (let user of res) { 
+                if (user.color == "white") { $('#whiteStatus').html(`connected`); }
+                else if (user.color == "black") { $('#blackStatus').html(`connected`); }
+                else { 
+                    $('#noObservers').hide();
+                    $('#observers').append(`${user.name}<br/>`); 
+                };
+            };
+            if (!res.some(e => e.id == userData.player_id)) {
+                console.log("fail");
+                socket.close();
+                socket.open();
+            };
+        }
 
         pieceMove = (move)=>{
             let chessMove = chess.move({
@@ -164,6 +172,7 @@
                     fen: chess.fen(),
                 };
                 board.enableUserInput(false);
+                console.log("move sent");
                 socket.emit('moveMade', moveData);
                 updateGameInfo(status); 
             };
@@ -178,10 +187,10 @@
         };
 
         opponentMove = (res)=>{
-            console.log(`Moves recorded: ${movesMade.length}`);
-            console.log(`Total moves: ${res.length}`);
+            console.log(`moves recorded: ${movesMade.length}`);
+            console.log(`total moves: ${res.length}`);
             if (movesMade.length < res.length) {
-                console.log("moving");
+                console.log("displaying new moves");
                 let n = res.length - movesMade.length;
                 for (i = n-1; 0 <= i; i--) {
                     let chessMove = chess.move({
@@ -206,7 +215,6 @@
         };
 
         sendMessage = () => {
-            console.log("message");
             let message = $('#inputMessage').val();
             if (message) {
                 $('#inputMessage').val('')
@@ -214,14 +222,16 @@
                     text: message,
                     fen: chess.fen(),
                 }
+                console.log("message sent");
                 socket.emit('chat', chatData);
             };
         };
 
         displayChat = (res)=>{
-            console.log(`Messages recorded: ${chatMessages.length}`);
-            console.log(`Total messages: ${res.length}`);
+            console.log(`messages recorded: ${chatMessages.length}`);
+            console.log(`total messages: ${res.length}`);
             if (chatMessages.length < res.length) {
+                console.log("displaying new messages");
                 let n = res.length - chatMessages.length;
                 for (i = n-1; 0 <= i; i--) {
                     chatMessages.push(res)
