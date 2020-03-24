@@ -1,4 +1,4 @@
-const db = require("../models"), Sequelize = require('sequelize'), Op = Sequelize.Op, colors = require("colors"), Filter = require('bad-words'), filter = new Filter();
+const db = require("../models"), Sequelize = require('sequelize'), Op = Sequelize.Op, colors = require("colors"), Filter = require('bad-words'), filter = new Filter(), sanitizeHtml = require('sanitize-html');
 
 module.exports = (app)=>{
 
@@ -39,7 +39,7 @@ module.exports = (app)=>{
 
   	app.get("/match/:id/:player_id", (req, res)=>{
 	    db.GameList.findOne({
-	        where: { match_id: req.params.id }
+	        where: { match_id: { [Op.eq]: req.params.id } }
 	    }).then((dbGame)=>{
 	    	if(dbGame) {
 		    	db.NameList.findOne({
@@ -65,7 +65,7 @@ module.exports = (app)=>{
 				    	}
 				    	else {
 				    		db.ObserveList.findAll({
-				    			where: { match_id: req.params.id }
+				    			where: { match_id: { [Op.eq]: req.params.id } }
 				    		}).then((dbObservers)=>{
 				    			if (dbObservers.some(e => e.observer_id == req.params.player_id)) {
 				    				db.NameList.findOne({
@@ -139,7 +139,12 @@ module.exports = (app)=>{
 	  		db.GameChat.create({
 	  			match_id: client.match_id,
 	  			player_name: client.player_name,
-	  			player_message: filter.clean(message)
+	  			player_message: sanitizeHtml(filter.clean(message.text), {
+	  				allowedTags: [],
+					allowedAttributes: {},
+					disallowedTagsMode: 'escape'
+	  			}),
+	  			fen: message.fen
 	  		}).then(()=>{ sendMatchContent(db.GameChat, 'chat'); })
 	  	});
 

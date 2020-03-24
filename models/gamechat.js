@@ -14,6 +14,9 @@ module.exports = function(sequelize, DataTypes) {
     player_message: {type: DataTypes.STRING,
         allowNull: false,
     },
+    fen: {type: DataTypes.STRING,
+        allowNull: false
+    },
     createdAt: DataTypes.DATE,
     updatedAt: DataTypes.DATE,
     
