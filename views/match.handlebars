@@ -69,7 +69,7 @@
     </div>
     <script type="text/javascript">
         let decodedJson = decodeURIComponent("{{{encodedJson}}}"), userData = JSON.parse(decodedJson), socket = io('/match'), 
-        movesMade = [], promotionPiece = "q", nextPlayer = 'white', status, chatMessages = [];
+        movesMade = [], promotionPiece = "q", nextPlayer = 'white', status, connection = false, chatMessages = [];
         
         userData.player_color == "observer" ? $('.playerInput').hide() : $('#flipButton').hide();
         $('#whiteName').html(`${userData.white_name}`);
@@ -80,11 +80,19 @@
 
         socket.on('connect', (data)=>{
             socket.emit('join', userData);
+            connection = true;
         });
 
         socket.on('disconnect', (data)=>{
             console.log("Disconnected from server");
+            connection = false;
+            board.enableUserInput(false);
             resetConnections();
+        });
+
+        socket.on('reconnect', ()=>{
+            connection = true;
+            board.enableUserInput();
         });
 
         socket.on('messages', (data)=>{
@@ -101,9 +109,9 @@
 
         socket.on('moves', (data)=>{
             console.log(`${movesMade.length < data.length - 1 ? "moves" : "move"} received`);
-            opponentMove(data);
+            displayMove(data);
         });
-        
+
         socket.on('chat', (data)=>{
             console.log(`${chatMessages.length < data.length - 1 ? "messages" : "message"} received`);
             displayChat(data);
@@ -156,11 +164,11 @@
             if (chess.turn() === 'b') { nextPlayer = 'black'; };
             if (chessMove !== null) {
                 movesMade.push(chessMove);
-                if (chess.in_checkmate() === true) { status = 'CHECKMATE! Player ' + nextPlayer + ' lost.'; } 
-                else if (chess.in_draw() === true) { status = 'DRAW!'; } 
+                if (chess.in_checkmate()) { status = 'CHECKMATE! Player ' + nextPlayer + ' lost.'; } 
+                else if (chess.in_draw() || chess.in_threefold_repetition() || chess.in_stalemate()) { status = 'DRAW!'; } 
                 else {
                     status = 'Next move is ' + nextPlayer + '.';
-                    if (chess.in_check() === true) { status = 'CHECK! ' + status; };
+                    if (chess.in_check()) { status = 'CHECK! ' + status; };
                 };
                 let moveData = {
                     player_id: userData.player_id,
@@ -186,7 +194,7 @@
             return movesPosition;
         };
 
-        opponentMove = (res)=>{
+        displayMove = (res)=>{
             console.log(`moves recorded: ${movesMade.length}`);
             console.log(`total moves: ${res.length}`);
             if (movesMade.length < res.length) {
@@ -202,21 +210,26 @@
                     board.setPosition(res[i].fen);
                     nextPlayer = 'white';
                     if (chess.turn() === 'b') { nextPlayer = 'black'; };
-                    if (chess.in_checkmate() === true) { status = 'CHECKMATE! Player ' + nextPlayer + ' lost.'; } 
-                    else if (chess.in_draw() === true) { status = 'DRAW!'; }
+                    if (chess.in_checkmate()) { status = 'CHECKMATE! Player ' + nextPlayer + ' lost.'; } 
+                    else if (chess.in_draw() || chess.in_threefold_repetition() || chess.in_stalemate() ) { status = 'DRAW!'; }
                     else {
                         status = 'Next move is ' + nextPlayer + '.';
-                        if (chess.in_check() === true) { status = 'CHECK! ' + status; };
+                        if (chess.in_check()) { status = 'CHECK! ' + status; };
                     }
                     updateGameInfo(status); 
                 }
             }
-            if (userData.player_color != "observer" && userData.player_color == nextPlayer && !chess.in_checkmate()) { board.enableUserInput(); }
+            if (userData.player_color != "observer" && 
+                userData.player_color == nextPlayer && 
+                !chess.in_checkmate() &&
+                !chess.in_draw() &&
+                !chess.in_threefold_repetition() &&
+                !chess.in_stalemate()) { board.enableUserInput(); }
         };
 
         sendMessage = () => {
             let message = $('#inputMessage').val();
-            if (message) {
+            if (message && connection) {
                 $('#inputMessage').val('')
                 let chatData = {
                     text: message,
@@ -254,11 +267,11 @@
 
         let chess = new Chess(),
         board = new Chessboard('myBoard', {
-          position: ChessUtils.FEN.startId,
-          eventHandlers: {
-            onPieceSelected: pieceSelected,
-            onMove: pieceMove
-          }
+            position: ChessUtils.FEN.startId,
+            eventHandlers: {
+                onPieceSelected: pieceSelected,
+                onMove: pieceMove
+            }
         });
 
         resetGame();
