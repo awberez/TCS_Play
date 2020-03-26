@@ -137,7 +137,7 @@
                 else if (user.color == "black") { $('#blackStatus').html(`connected`); }
                 else { 
                     $('#noObservers').hide();
-                    $('#observers').append(`${user.name}<br/>`); 
+                    $('#observers').append(`${ user.is_coach ? `${user.name}&#9734;` : user.name}<br/>`); 
                 };
             };
             if (!res.some(e => e.id == userData.player_id)) {

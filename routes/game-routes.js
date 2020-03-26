@@ -125,10 +125,11 @@ module.exports = (app)=>{
 	  		client.join(client.room);
 	        client.emit('messages', 'Connected to server');
 	        let playerInfo = { color: client.color, name: client.player_name, id: client.player_id };
+	        if (data.is_coach) { playerInfo.is_coach = true };
 	        if (matchConnections[`${client.match_id}`]) {
-		        	matchConnections[`${client.match_id}`] = matchConnections[`${client.match_id}`].filter(e => e.color !== client.color);
-		        	matchConnections[`${client.match_id}`].push(playerInfo);
-		        }
+	        	matchConnections[`${client.match_id}`] = matchConnections[`${client.match_id}`].filter(e => e.color !== client.color);
+	        	matchConnections[`${client.match_id}`].push(playerInfo);
+	        }
 		    else { matchConnections[`${client.match_id}`] = [playerInfo] };
 		    match.to(client.room).emit('status', matchConnections[`${client.match_id}`]);
 	        sendMatchContent(db.GameMove, 'moves');
