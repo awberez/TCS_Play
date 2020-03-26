@@ -132,14 +132,23 @@
 
         setConStatus = (res)=>{
             resetConnections();
-            for (let user of res) { 
+            let coaches = [], observers = [];
+            for (let user of res) {
                 if (user.color == "white") { $('#whiteStatus').html(`connected`); }
                 else if (user.color == "black") { $('#blackStatus').html(`connected`); }
-                else { 
-                    $('#noObservers').hide();
-                    $('#observers').append(`${ user.is_coach ? `${user.name}&#9734;` : user.name}<br/>`); 
-                };
+                else if (user.is_coach) { coaches.push(user) }
+                else { observers.push(user); };
             };
+            if (coaches.length !== 0) {
+                $('#noObservers').hide();
+                coaches.sort((a, b) => (a.name > b.name) ? 1 : -1);
+                for (coach of coaches) {  $('#observers').append(`${coach.name}&#9734;<br/>`); }
+            }
+            if (observers.length !== 0) {
+                $('#noObservers').hide();
+                observers.sort((a, b) => (a.name > b.name) ? 1 : -1);
+                for (observer of observers) {  $('#observers').append(`${observer.name}<br/>`); }
+            }
             if (!res.some(e => e.id == userData.player_id)) {
                 console.log("fail");
                 socket.close();
