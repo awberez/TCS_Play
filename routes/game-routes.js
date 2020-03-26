@@ -104,6 +104,7 @@ module.exports = (app)=>{
 		    match.to(client.room).emit('status', matchConnections[`${client.match_id}`]);
 	        sendMatchContent(db.GameMove, 'moves');
 	    	sendMatchContent(db.GameChat, 'chat');
+
 	    });
 
   		client.on('disconnect', ()=>{
@@ -132,7 +133,10 @@ module.exports = (app)=>{
 				    	to: data.to,
 				    	promotion: data.promotion,
 				    	fen: data.fen
-				    }).then(() => { sendMatchContent(db.GameMove, 'moves'); }); 
+				    }).then(() => { 
+				    	sendMatchContent(db.GameMove, 'moves');
+				    	if (data.game_end) { db.GameList.update( {in_progress: data.game_end}, {returning: true, where: {match_id: client.match_id}} ); };
+				    }); 
 		    	};
 			});
 	    });
@@ -149,11 +153,22 @@ module.exports = (app)=>{
 	  		}).then(()=>{ sendMatchContent(db.GameChat, 'chat'); })
 	  	});
 
+	  	client.on('resign', (data)=>{
+	  		db.GameList.update( {in_progress: "resignation", loser_id: client.player_id}, {returning: true, where: {match_id: client.match_id}} ).then(()=>{
+				match.to(client.room).emit('resign', client.player_id);
+	  		});
+	  	});
+
 	  	sendMatchContent = (dbTable, channel)=>{
 	  		dbTable.findAll({
 	        	where: { match_id: client.match_id },
 	        	order: [ [ 'id', 'DESC' ]]
-	    	}).then((dbData)=>{ match.to(client.room).emit(channel, dbData); });
+	    	}).then((dbData)=>{ 
+	    		match.to(client.room).emit(channel, dbData); 
+	    		db.GameList.findOne({
+	    			where: { match_id: client.match_id }
+	    		}).then((dbMatch)=>{ if (dbMatch.in_progress == "resignation") { match.to(client.room).emit('resign', dbMatch.loser_id); }; });
+	    	});
 	  	};
 
 	});

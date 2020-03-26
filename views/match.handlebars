@@ -52,6 +52,11 @@
             </div>
         </div>
         <div class="col-12 col-md-2">
+            <div class="playerInput">
+                <button id="resign" type="button">Resign</button>
+                <br/>
+                <br/>
+            </div>
             <label style="font-weight: bold">PGN:</label>
             <div id="pgn"></div>
         </div>
@@ -69,13 +74,14 @@
     </div>
     <script type="text/javascript">
         let decodedJson = decodeURIComponent("{{{encodedJson}}}"), userData = JSON.parse(decodedJson), socket = io('/match'), 
-        movesMade = [], promotionPiece = "q", nextPlayer = 'white', status, connection = false, chatMessages = [];
+        movesMade = [], promotionPiece = "q", nextPlayer = 'white', status, connection = false, resignation = false, gameEnd = false, chatMessages = [];
         
         userData.player_color == "observer" ? $('.playerInput').hide() : $('#flipButton').hide();
         $('#whiteName').html(`${userData.white_name}`);
         $('#blackName').html(`${userData.black_name}`);
-        $(document).ready(()=>{ $('#promotions').change(function(){ promotionPiece = $("input[name='promotion']:checked").val(); }); });
-        $(document).ready(()=>{ $('#flip').click(function(){ board.setOrientation(ChessUtils.ORIENTATION.flip) }); });
+        $(document).ready(()=>{ $('#promotions').change(()=>{ promotionPiece = $("input[name='promotion']:checked").val(); }); });
+        $(document).ready(()=>{ $('#flip').click(()=>{ board.setOrientation(ChessUtils.ORIENTATION.flip) }); });
+        $(document).ready(()=>{ $('#resign').click(()=>{ resignGame(); }); });
         $(window).keydown((event)=>{ if (event.which === 13 && document.activeElement === document.getElementById('inputMessage')) { sendMessage(); }; });
 
         socket.on('connect', (data)=>{
@@ -104,7 +110,7 @@
         });
 
         socket.on('status', (data)=>{
-            setStatus(data);
+            setConStatus(data);
         });
 
         socket.on('moves', (data)=>{
@@ -117,6 +123,14 @@
             displayChat(data);
         });
 
+        socket.on('resign', (data)=>{
+            resignation = true;
+            board.enableUserInput(false);
+            $("#resign").attr("disabled", true);
+            status = `RESIGNATION! ${data == userData.white_id ? "White" : "Black"} has resigned!`
+            updateGameInfo();
+        });
+
         resetConnections = ()=>{
             $('#whiteStatus').html(`disconnected`);
             $('#blackStatus').html(`disconnected`);
@@ -124,20 +138,7 @@
             $('#observers').empty();
         };
 
-        resetGame = ()=>{
-            board.setPosition(ChessUtils.FEN.startId);
-            userData.player_color == "black" ? board.setOrientation(ChessUtils.ORIENTATION.black) : board.setOrientation(ChessUtils.ORIENTATION.white);
-            chess.reset();
-            board.enableUserInput(false);
-            updateGameInfo('Next move is white.');
-        };
-
-        updateGameInfo = (status)=>{
-          $('#status').html(status);
-          $('#pgn').html(chess.pgn());
-        };
-
-        setStatus = (res)=>{
+        setConStatus = (res)=>{
             resetConnections();
             for (let user of res) { 
                 if (user.color == "white") { $('#whiteStatus').html(`connected`); }
@@ -152,7 +153,33 @@
                 socket.close();
                 socket.open();
             };
-        }
+        };
+
+        resetGame = ()=>{
+            board.setPosition(ChessUtils.FEN.startId);
+            userData.player_color == "black" ? board.setOrientation(ChessUtils.ORIENTATION.black) : board.setOrientation(ChessUtils.ORIENTATION.white);
+            chess.reset();
+            board.enableUserInput(false);
+            status = 'Next move is white.';
+            updateGameInfo();
+        };
+
+        updateGameInfo = ()=>{
+          $('#status').html(status);
+          $('#pgn').html(chess.pgn());
+        };
+
+        changeGameStatus = ()=>{
+            nextPlayer = 'White';
+            if (chess.turn() === 'b') { nextPlayer = 'Black'; };
+            if (chess.in_checkmate()) { gameEnd = "checkmate", status = `CHECKMATE! ${nextPlayer == 'White' ? "Black" : "White"} wins!`; } 
+            else if (chess.in_draw() || chess.in_threefold_repetition() || chess.in_stalemate()) { gameEnd = "draw", status = 'DRAW!'; } 
+            else {
+                status = `Next move is ${nextPlayer}.`;
+                if (chess.in_check()) { status = `CHECK! ${status}`; };
+            };
+            updateGameInfo(); 
+        };
 
         pieceMove = (move)=>{
             let chessMove = chess.move({
@@ -160,16 +187,9 @@
               to: move.to,
               promotion: promotionPiece
             });
-            nextPlayer = 'white';
-            if (chess.turn() === 'b') { nextPlayer = 'black'; };
             if (chessMove !== null) {
                 movesMade.push(chessMove);
-                if (chess.in_checkmate()) { status = 'CHECKMATE! Player ' + nextPlayer + ' lost.'; } 
-                else if (chess.in_draw() || chess.in_threefold_repetition() || chess.in_stalemate()) { status = 'DRAW!'; } 
-                else {
-                    status = 'Next move is ' + nextPlayer + '.';
-                    if (chess.in_check()) { status = 'CHECK! ' + status; };
-                };
+                changeGameStatus();
                 let moveData = {
                     player_id: userData.player_id,
                     match_id: userData.match_id,
@@ -178,11 +198,11 @@
                     to: move.to,
                     promotion: promotionPiece,
                     fen: chess.fen(),
+                    game_end: gameEnd
                 };
                 board.enableUserInput(false);
                 console.log("move sent");
                 socket.emit('moveMade', moveData);
-                updateGameInfo(status); 
             };
             return chess.fen();
         };
@@ -208,23 +228,15 @@
                     });
                     movesMade.push(chessMove);
                     board.setPosition(res[i].fen);
-                    nextPlayer = 'white';
-                    if (chess.turn() === 'b') { nextPlayer = 'black'; };
-                    if (chess.in_checkmate()) { status = 'CHECKMATE! Player ' + nextPlayer + ' lost.'; } 
-                    else if (chess.in_draw() || chess.in_threefold_repetition() || chess.in_stalemate() ) { status = 'DRAW!'; }
-                    else {
-                        status = 'Next move is ' + nextPlayer + '.';
-                        if (chess.in_check()) { status = 'CHECK! ' + status; };
-                    }
-                    updateGameInfo(status); 
-                }
-            }
+                    changeGameStatus();
+                };
+            };
             if (userData.player_color != "observer" && 
-                userData.player_color == nextPlayer && 
+                userData.player_color == nextPlayer.toLowerCase() && 
                 !chess.in_checkmate() &&
                 !chess.in_draw() &&
                 !chess.in_threefold_repetition() &&
-                !chess.in_stalemate()) { board.enableUserInput(); }
+                !chess.in_stalemate()) { board.enableUserInput(); };
         };
 
         sendMessage = () => {
@@ -261,9 +273,14 @@
                         </div>
                     `);
                     document.getElementById("chatBox").scrollTop = document.getElementById("chatBox").scrollHeight;
-                }
-            }
-        }
+                };
+            };
+        };
+
+        resignGame = ()=>{
+            let resign = confirm("Are you sure you want to resign?");
+            if (resign && !resignation) { socket.emit('resign', true); };
+        };
 
         let chess = new Chess(),
         board = new Chessboard('myBoard', {
