@@ -15,11 +15,10 @@ module.exports = function(sequelize, DataTypes) {
     black_id: {type: DataTypes.INTEGER,
         allowNull: false,
     },
-    in_progress: {type: DataTypes.STRING,
+    in_progress: {type: DataTypes.BOOLEAN,
         defaultValue: true,
         allowNull: false,
     },
-    loser_id: {type: DataTypes.INTEGER},
     createdAt: DataTypes.DATE,
     updatedAt: DataTypes.DATE,
     

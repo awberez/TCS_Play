@@ -9,19 +9,22 @@ module.exports = function(sequelize, DataTypes) {
         allowNull: false,
     },
     from: {type: DataTypes.STRING,
-        allowNull: false
+        allowNull: true
     },
     to: {type: DataTypes.STRING,
-        allowNull: false
+        allowNull: true
     },
     promotion: {type: DataTypes.STRING,
-        allowNull: false
+        allowNull: true
     },
     fen: {type: DataTypes.STRING,
         allowNull: false
     },
     lastMove: {type: DataTypes.STRING,
         allowNull: false
+    },
+    resign_id: {type: DataTypes.INTEGER,
+        allowNull: true
     },
     createdAt: DataTypes.DATE,
     updatedAt: DataTypes.DATE,  

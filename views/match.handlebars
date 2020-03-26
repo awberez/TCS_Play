@@ -123,14 +123,6 @@
             displayChat(data);
         });
 
-        socket.on('resign', (data)=>{
-            resignation = true;
-            board.enableUserInput(false);
-            $("#resign").attr("disabled", true);
-            status = `RESIGNATION! ${data == userData.white_id ? "White" : "Black"} has resigned!`
-            updateGameInfo();
-        });
-
         resetConnections = ()=>{
             $('#whiteStatus').html(`disconnected`);
             $('#blackStatus').html(`disconnected`);
@@ -172,8 +164,8 @@
         changeGameStatus = ()=>{
             nextPlayer = 'White';
             if (chess.turn() === 'b') { nextPlayer = 'Black'; };
-            if (chess.in_checkmate()) { gameEnd = "checkmate", status = `CHECKMATE! ${nextPlayer == 'White' ? "Black" : "White"} wins!`; } 
-            else if (chess.in_draw() || chess.in_threefold_repetition() || chess.in_stalemate()) { gameEnd = "draw", status = 'DRAW!'; } 
+            if (chess.in_checkmate()) { gameEnd = true, status = `CHECKMATE! ${nextPlayer == 'White' ? "Black" : "White"} wins!`; } 
+            else if (chess.in_draw() || chess.in_threefold_repetition() || chess.in_stalemate()) { gameEnd = true, status = 'DRAW!'; } 
             else {
                 status = `Next move is ${nextPlayer}.`;
                 if (chess.in_check()) { status = `CHECK! ${status}`; };
@@ -221,14 +213,22 @@
                 console.log("displaying new moves");
                 let n = res.length - movesMade.length;
                 for (i = n-1; 0 <= i; i--) {
-                    let chessMove = chess.move({
-                      from: res[i].from,
-                      to: res[i].to,
-                      promotion: res[i].promotion
-                    });
-                    movesMade.push(chessMove);
-                    board.setPosition(res[i].fen);
-                    changeGameStatus();
+                    if (!res[i].resign_id) {
+                        let chessMove = chess.move({
+                          from: res[i].from,
+                          to: res[i].to,
+                          promotion: res[i].promotion
+                        });
+                        movesMade.push(chessMove);
+                        board.setPosition(res[i].fen);
+                        changeGameStatus();
+                    }
+                    else {
+                        resignation = true;
+                        $("#resign").attr("disabled", true);
+                        status = `RESIGNATION! ${res[i].resign_id == userData.white_id ? "White" : "Black"} has resigned!`;
+                        updateGameInfo();
+                    };
                 };
             };
             if (userData.player_color != "observer" && 
@@ -236,7 +236,9 @@
                 !chess.in_checkmate() &&
                 !chess.in_draw() &&
                 !chess.in_threefold_repetition() &&
-                !chess.in_stalemate()) { board.enableUserInput(); };
+                !chess.in_stalemate() &&
+                !resignation) { board.enableUserInput(); }
+            else { board.enableUserInput(false); };
         };
 
         sendMessage = () => {
@@ -279,7 +281,19 @@
 
         resignGame = ()=>{
             let resign = confirm("Are you sure you want to resign?");
-            if (resign && !resignation) { socket.emit('resign', true); };
+            if (resign && !resignation) {
+                gameEnd = true;
+                let resignData = {
+                    player_id: userData.player_id,
+                    match_id: userData.match_id,
+                    player_color: userData.player_color,
+                    fen: chess.fen(),
+                    game_end: gameEnd,
+                    resign: true
+                };
+                console.log("resignation sent");
+                socket.emit('moveMade', resignData);
+            };
         };
 
         let chess = new Chess(),
