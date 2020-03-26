@@ -15,16 +15,16 @@ module.exports = (app)=>{
 					white_id: req.body.white_player.id,
 			    	black_id: req.body.black_player.id
 			    }).then(() => {
-			    	let observers = [];
-			    	for (let observer of req.body.observers) { observers.push({ match_id: req.body.match_id, observer_id: observer.id }); };
-			    	db.ObserveList.bulkCreate(observers)
+			    	let coaches = [];
+			    	for (let coach of req.body.coaches) { coaches.push({ match_id: req.body.match_id, coach_id: coach.id }); };
+			    	db.CoachList.bulkCreate(coaches)
 			    	.then(() => {
 			    		let names = [];
 			    		names.push(
 				    		{ user_id: req.body.white_player.id, user_name: req.body.white_player.username },
 			    			{ user_id: req.body.black_player.id, user_name: req.body.black_player.username }
 			    		);
-			    		for (let observer of req.body.observers) { names.push({ user_id: observer.id, user_name: observer.username }); };
+			    		for (let coach of req.body.coaches) { names.push({ user_id: coach.id, user_name: coach.username }); };
 			    		db.NameList.bulkCreate(names, {
 			    			updateOnDuplicate: ["user_name"]
 			    		}).then(() => {
@@ -55,7 +55,7 @@ module.exports = (app)=>{
 				    		white_name: dbWhite.user_name,
 				    		black_id: dbGame.black_id,
 				    		black_name: dbBlack.user_name
-				    	}
+				    	};
 				    	if (req.params.player_id == dbGame.white_id) {
 				    		userData.player_name = dbWhite.user_name, userData.player_color = "white";
 				    		console.log(userData);
@@ -66,20 +66,49 @@ module.exports = (app)=>{
 				    		res.render("match", { player: "Black", encodedJson : encodeURIComponent(JSON.stringify(userData)) });
 				    	}
 				    	else {
-				    		db.ObserveList.findAll({
+				    		db.CoachList.findAll({
 				    			where: { match_id: { [Op.eq]: req.params.id } }
-				    		}).then((dbObservers)=>{
-				    			if (dbObservers.some(e => e.observer_id == req.params.player_id)) {
+				    		}).then((dbCoaches)=>{
+				    			if (dbCoaches.some(e => e.coach_id == req.params.player_id)) {
 				    				db.NameList.findOne({
 				    					where: { user_id: req.params.player_id }
-				    				}).then((dbObserver)=>{
-				    					userData.player_name = dbObserver.user_name, userData.player_color = "observer";
-								    	res.render("match", { player: "observer", encodedJson : encodeURIComponent(JSON.stringify(userData)) });
+				    				}).then((dbCoach)=>{
+				    					userData.player_name = dbCoach.user_name, userData.player_color = "observer", userData.is_coach = true;
+								    	res.render("match", { encodedJson : encodeURIComponent(JSON.stringify(userData)) });
 				    				});
 								}
 								else { res.render("unauthorized"); };
 				    		});
 				    	};
+			    	});
+		    	});
+			}
+			else { res.render("unauthorized"); };
+      	});
+  	});
+
+  	app.get("/observe/:id/:observer_id/:observer_name", (req, res)=>{
+  		db.GameList.findOne({
+	        where: { match_id: { [Op.eq]: req.params.id } }
+	    }).then((dbGame)=>{
+	    	if(dbGame) {
+		    	db.NameList.findOne({
+		    		where: { user_id: dbGame.white_id }
+			    }).then((dbWhite)=>{
+			    	db.NameList.findOne({
+			    		where: { user_id: dbGame.black_id }
+			    	}).then((dbBlack)=>{
+			    		let userData = {
+				    		match_id: req.params.id,
+				    		player_id: req.params.observer_id,
+				    		player_name: req.params.observer_name,
+				    		player_color: "observer",
+				    		white_id: dbGame.white_id,
+				    		white_name: dbWhite.user_name,
+				    		black_id: dbGame.black_id,
+				    		black_name: dbBlack.user_name
+				    	};
+			    		res.render("match", { encodedJson : encodeURIComponent(JSON.stringify(userData)) });
 			    	});
 		    	});
 			}

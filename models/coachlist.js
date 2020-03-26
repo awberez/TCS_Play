@@ -1,5 +1,5 @@
 module.exports = function(sequelize, DataTypes) {
-  let ObserveList = sequelize.define("ObserveList", {
+  let CoachList = sequelize.define("CoachList", {
     id: {type: DataTypes.INTEGER,
         allowNull: false,
         autoIncrement: true,
@@ -8,12 +8,12 @@ module.exports = function(sequelize, DataTypes) {
     match_id: {type: DataTypes.INTEGER,
         allowNull: false,
     },
-    observer_id: {type: DataTypes.INTEGER,
+    coach_id: {type: DataTypes.INTEGER,
         allowNull: false,
     },
     createdAt: DataTypes.DATE,
     updatedAt: DataTypes.DATE,
     
   });
-  return ObserveList;
+  return CoachList;
 };

@@ -20,7 +20,7 @@
                     <br/>
                 </div>
                 <div class="col-4 col-md-12">
-                    <div class="playerInfo">
+                    <div class="playerInput">
                         <label style="font-weight: bold">Your color:</label>
                         <div>{{player}}</div>
                         <br/>
@@ -75,7 +75,7 @@
     <script type="text/javascript">
         let decodedJson = decodeURIComponent("{{{encodedJson}}}"), userData = JSON.parse(decodedJson), socket = io('/match'), 
         movesMade = [], promotionPiece = "q", nextPlayer = 'white', status, connection = false, resignation = false, gameEnd = false, chatMessages = [];
-        
+        console.log(userData);
         userData.player_color == "observer" ? $('.playerInput').hide() : $('#flipButton').hide();
         $('#whiteName').html(`${userData.white_name}`);
         $('#blackName').html(`${userData.black_name}`);
