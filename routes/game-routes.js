@@ -148,38 +148,48 @@ module.exports = (app)=>{
 	  	client.on('moveMade', (data)=>{
 	  		colorConsole = (message)=>{ client.color == "white" ? console.log(colors.yellow(message)) : console.log(colors.cyan(message)); };
 	  		colorConsole(data);
-	  		db.GameMove.findAll({
-	        	where: { match_id: client.match_id },
-	        	order: [ [ 'id', 'DESC' ]]
-	    	}).then((gameMoves)=>{
-	    		if (data.resign) {
-	    			colorConsole(`${client.color} player has resigned`);
-	    			db.GameMove.create({ 
-				    	match_id: client.match_id,
-				    	lastMove: client.color,
-				    	fen: data.fen,
-				    	resign_id: client.player_id
-				    }).then(() => { 
-				    	sendMatchContent(db.GameMove, 'moves');
-				    	db.GameList.update( {in_progress: false}, {returning: true, where: {match_id: client.match_id}} );
-				    }); 
-	    		}
-    			else if ((gameMoves[1] && data.from && gameMoves[1].lastMove == client.color && gameMoves[1].from !== data.from && gameMoves[1].to !== data.to) || 
-    				(gameMoves[0] && data.from && gameMoves[0].lastMove !== client.color) || 
-    				(data.from && client.color == "white")) {
-    				colorConsole(`adding new move from ${client.color} player in match ${client.match_id}`);
-		    		db.GameMove.create({ 
-				    	match_id: client.match_id,
-				    	lastMove: client.color,
-				    	from: data.from,
-				    	to: data.to,
-				    	promotion: data.promotion,
-				    	fen: data.fen
-				    }).then(() => { 
-				    	sendMatchContent(db.GameMove, 'moves');
-				    	if (data.game_end) { db.GameList.update( {in_progress: false}, {returning: true, where: {match_id: client.match_id}} ); };
-				    }); 
-		    	};
+	  		db.GameList.findOne({
+		        where: { match_id: client.match_id }
+		    }).then((dbGame)=>{
+		    	if (dbGame.in_progress) {
+			  		db.GameMove.findAll({
+			        	where: { match_id: client.match_id },
+			        	order: [ [ 'id', 'DESC' ]]
+			    	}).then((gameMoves)=>{
+			    		if (data.resign) {
+			    			colorConsole(`${client.color} player has resigned`);
+			    			db.GameMove.create({ 
+						    	match_id: client.match_id,
+						    	lastMove: client.color,
+						    	fen: data.fen,
+						    	resign_id: client.player_id
+						    }).then(() => { 
+						    	db.GameList.update( {in_progress: false}, {returning: true, where: {match_id: client.match_id}} ).then(()=>{
+									sendMatchContent(db.GameMove, 'moves');
+						    	});
+						    }); 
+			    		}
+		    			else if ((gameMoves[1] && data.from && gameMoves[1].lastMove == client.color && gameMoves[1].from !== data.from && gameMoves[1].to !== data.to) || 
+		    				(gameMoves[0] && data.from && gameMoves[0].lastMove !== client.color) || 
+		    				(data.from && client.color == "white")) {
+		    				colorConsole(`adding new move from ${client.color} player in match ${client.match_id}`);
+				    		db.GameMove.create({ 
+						    	match_id: client.match_id,
+						    	lastMove: client.color,
+						    	from: data.from,
+						    	to: data.to,
+						    	promotion: data.promotion,
+						    	fen: data.fen
+						    }).then(() => { 
+						    	if (data.game_end) { db.GameList.update( {in_progress: false}, {returning: true, where: {match_id: client.match_id}} ).then(()=>{
+										sendMatchContent(db.GameMove, 'moves');
+						    		}); 
+						    	}
+						    	else { sendMatchContent(db.GameMove, 'moves'); };
+						    }); 
+				    	};
+					});
+				}
 			});
 	    });
 
