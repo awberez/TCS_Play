@@ -192,9 +192,6 @@
                 movesMade.push(chessMove);
                 changeGameStatus();
                 let moveData = {
-                    player_id: userData.player_id,
-                    match_id: userData.match_id,
-                    player_color: userData.player_color,
                     from: move.from,
                     to: move.to,
                     promotion: promotionPiece,
@@ -293,9 +290,6 @@
             if (resign && !resignation) {
                 gameEnd = true;
                 let resignData = {
-                    player_id: userData.player_id,
-                    match_id: userData.match_id,
-                    player_color: userData.player_color,
                     fen: chess.fen(),
                     game_end: gameEnd,
                     resign: true

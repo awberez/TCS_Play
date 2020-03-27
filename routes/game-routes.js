@@ -163,11 +163,7 @@ module.exports = (app)=>{
 						    	lastMove: client.color,
 						    	fen: data.fen,
 						    	resign_id: client.player_id
-						    }).then(() => { 
-						    	db.GameList.update( {in_progress: false}, {returning: true, where: {match_id: client.match_id}} ).then(()=>{
-									sendMatchContent(db.GameMove, 'moves');
-						    	});
-						    }); 
+						    }).then(() => { db.GameList.update( {in_progress: false}, {returning: true, where: {match_id: client.match_id}} ).then(()=>{ sendMatchContent(db.GameMove, 'moves'); }); }); 
 			    		}
 		    			else if ((gameMoves[1] && data.from && gameMoves[1].lastMove == client.color && gameMoves[1].from !== data.from && gameMoves[1].to !== data.to) || 
 		    				(gameMoves[0] && data.from && gameMoves[0].lastMove !== client.color) || 
@@ -181,10 +177,7 @@ module.exports = (app)=>{
 						    	promotion: data.promotion,
 						    	fen: data.fen
 						    }).then(() => { 
-						    	if (data.game_end) { db.GameList.update( {in_progress: false}, {returning: true, where: {match_id: client.match_id}} ).then(()=>{
-										sendMatchContent(db.GameMove, 'moves');
-						    		}); 
-						    	}
+						    	if (data.game_end) { db.GameList.update( {in_progress: false}, {returning: true, where: {match_id: client.match_id}} ).then(()=>{ sendMatchContent(db.GameMove, 'moves'); }); }
 						    	else { sendMatchContent(db.GameMove, 'moves'); };
 						    }); 
 				    	};
@@ -203,12 +196,6 @@ module.exports = (app)=>{
 	  			}),
 	  			fen: message.fen
 	  		}).then(()=>{ sendMatchContent(db.GameChat, 'chat'); })
-	  	});
-
-	  	client.on('resign', (data)=>{
-	  		db.GameList.update( {in_progress: "resignation", loser_id: client.player_id}, {returning: true, where: {match_id: client.match_id}} ).then(()=>{
-				match.to(client.room).emit('resign', client.player_id);
-	  		});
 	  	});
 
 	  	sendMatchContent = (dbTable, channel)=>{
