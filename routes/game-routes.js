@@ -60,8 +60,8 @@ module.exports = (app)=>{
 				    		userData.player_name = dbWhite.user_name, userData.player_color = "white";
 				    		console.log(userData);
 				    		res.render("match", { player: "White", encodedJson : encodeURIComponent(JSON.stringify(userData)) });
-				    	}
-				    	else if (req.params.player_id == dbGame.black_id) {
+				    	} else 
+				    	if (req.params.player_id == dbGame.black_id) {
 				    		userData.player_name = dbBlack.user_name, userData.player_color = "black";
 				    		res.render("match", { player: "Black", encodedJson : encodeURIComponent(JSON.stringify(userData)) });
 				    	}
@@ -164,9 +164,9 @@ module.exports = (app)=>{
 						    	fen: data.fen,
 						    	resign_id: client.player_id
 						    }).then(() => { db.GameList.update( {in_progress: false}, {returning: true, where: {match_id: client.match_id}} ).then(()=>{ sendMatchContent(db.GameMove, 'moves'); }); }); 
-			    		}
-		    			else if ((gameMoves[1] && data.from && gameMoves[1].lastMove == client.color && gameMoves[1].from !== data.from && gameMoves[1].to !== data.to) || 
-		    				(gameMoves[0] && data.from && gameMoves[0].lastMove !== client.color) || 
+			    		} else 
+			    		if ((gameMoves[1] && data.from && gameMoves[1].lastMove == client.color && gameMoves[1].from !== data.from && gameMoves[1].to !== data.to && data.move_id == gameMoves.length + 1) || 
+		    				(gameMoves[0] && data.from && gameMoves[0].lastMove !== client.color && data.move_id == gameMoves.length + 1) || 
 		    				(data.from && client.color == "white")) {
 		    				colorConsole(`adding new move from ${client.color} player in match ${client.match_id}`);
 				    		db.GameMove.create({ 

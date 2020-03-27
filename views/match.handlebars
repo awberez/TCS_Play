@@ -134,9 +134,9 @@
             resetConnections();
             let coaches = [], observers = [];
             for (let user of res) {
-                if (user.color == "white") { $('#whiteStatus').html(`connected`); }
-                else if (user.color == "black") { $('#blackStatus').html(`connected`); }
-                else if (user.is_coach) { coaches.push(user) }
+                if (user.color == "white") { $('#whiteStatus').html(`connected`); } else 
+                if (user.color == "black") { $('#blackStatus').html(`connected`); } else 
+                if (user.is_coach) { coaches.push(user) }
                 else { observers.push(user); };
             };
             if (coaches.length !== 0) {
@@ -173,8 +173,8 @@
         changeGameStatus = ()=>{
             nextPlayer = 'White';
             if (chess.turn() === 'b') { nextPlayer = 'Black'; };
-            if (chess.in_checkmate()) { gameEnd = true, status = `CHECKMATE! ${nextPlayer == 'White' ? "Black" : "White"} wins!`; } 
-            else if (chess.in_draw() || chess.in_threefold_repetition() || chess.in_stalemate()) { gameEnd = true, status = 'DRAW!'; } 
+            if (chess.in_checkmate()) { gameEnd = true, status = `CHECKMATE! ${nextPlayer == 'White' ? "Black" : "White"} wins!`; } else 
+            if (chess.in_draw() || chess.in_threefold_repetition() || chess.in_stalemate()) { gameEnd = true, status = 'DRAW!'; } 
             else {
                 status = `Next move is ${nextPlayer}.`;
                 if (chess.in_check()) { status = `CHECK! ${status}`; };
@@ -196,11 +196,13 @@
                     to: move.to,
                     promotion: promotionPiece,
                     fen: chess.fen(),
-                    game_end: gameEnd
+                    game_end: gameEnd,
+                    move_id: movesMade.length
                 };
                 board.enableUserInput(false);
                 console.log("move sent");
-                socket.emit('moveMade', moveData);
+                if (socket.connected) { socket.emit('moveMade', moveData); }
+                else { socket.on('reconnect', ()=>{ socket.emit('moveMade', moveData); }) };
             };
             return chess.fen();
         };
