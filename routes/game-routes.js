@@ -15,22 +15,24 @@ module.exports = (app)=>{
 					white_id: req.body.white_player.id,
 			    	black_id: req.body.black_player.id
 			    }).then(() => {
-			    	let coaches = [];
-			    	for (let coach of req.body.coaches) { coaches.push({ match_id: req.body.match_id, coach_id: coach.id }); };
-			    	db.CoachList.bulkCreate(coaches)
-			    	.then(() => {
-			    		let names = [];
-			    		names.push(
-				    		{ user_id: req.body.white_player.id, user_name: req.body.white_player.username },
-			    			{ user_id: req.body.black_player.id, user_name: req.body.black_player.username }
-			    		);
-			    		for (let coach of req.body.coaches) { names.push({ user_id: coach.id, user_name: coach.username }); };
-			    		db.NameList.bulkCreate(names, {
-			    			updateOnDuplicate: ["user_name"]
-			    		}).then(() => {
-			    			res.send("success");
-			    		});
-			    	});
+			    	if (req.body.coaches && req.body.coaches.length !== 0) {
+				    	let coaches = [];
+				    	for (let coach of req.body.coaches) { coaches.push({ match_id: req.body.match_id, coach_id: coach.id }); };
+				    	db.CoachList.bulkCreate(coaches)
+				    	.then(() => {
+				    		let names = [];
+				    		names.push(
+					    		{ user_id: req.body.white_player.id, user_name: req.body.white_player.username },
+				    			{ user_id: req.body.black_player.id, user_name: req.body.black_player.username }
+				    		);
+				    		for (let coach of req.body.coaches) { names.push({ user_id: coach.id, user_name: coach.username }); };
+				    		db.NameList.bulkCreate(names, {
+				    			updateOnDuplicate: ["user_name"]
+				    		}).then(() => {
+				    			res.send("success");
+				    		});
+				    	});
+				    };
 		        });
 		    }
 		    else { res.send("failure"); }

@@ -6,8 +6,14 @@ VALUES TO PLAY WITH
 These values are safe to set and can be used to customize the appearence of the board.
 
 */
-
-
+@font-face {
+  font-family: LOC Chess Pieceset;
+  src: url(LOCPieces.woff);
+}
+@font-face {
+  font-family: LOC Chess Pieceset;
+  src: url(LOCPieces.tff);
+}
 /* 
 Customizing the chessboard 
 */
@@ -32,9 +38,13 @@ Customizing chess pieces
 */
 div.chess_board div.chess_player_white {
 	color: #285e8e;
+	font-family: "LOC Chess Pieceset",Fallback,sans-serif;
+	position: relative;
 }
 div.chess_board div.chess_player_black {
 	color: #BD4932;
+	font-family: "LOC Chess Pieceset",Fallback,sans-serif;
+	position: relative;
 }
 
 div.chess_board div.chess_square_selected div.chess_player_white {
