@@ -74,7 +74,7 @@
     </div>
     <script type="text/javascript">
         let decodedJson = decodeURIComponent("{{{encodedJson}}}"), userData = JSON.parse(decodedJson), socket = io('/match'), 
-        movesMade = [], promotionPiece = "q", nextPlayer = 'white', status, connection = false, resignation = false, gameEnd = false, chatMessages = [];
+        movesMade = [], promotionPiece = "q", nextPlayer = 'white', status, resignation = false, gameEnd = false, chatMessages = [];
         console.log(userData);
         userData.player_color == "observer" ? $('.playerInput').hide() : $('#flipButton').hide();
         $('#whiteName').html(`${userData.white_name}`);
@@ -86,19 +86,17 @@
 
         socket.on('connect', (data)=>{
             socket.emit('join', userData);
-            connection = true;
         });
 
         socket.on('disconnect', (data)=>{
             console.log("Disconnected from server");
-            connection = false;
             board.enableUserInput(false);
+            $("#resign").attr("disabled", true); 
             resetConnections();
         });
 
-        socket.on('reconnect', ()=>{
-            connection = true;
-            board.enableUserInput();
+        socket.on('reconnect', ()=>{ 
+            $("#resign").attr("disabled", false); 
         });
 
         socket.on('messages', (data)=>{
@@ -251,7 +249,7 @@
 
         sendMessage = () => {
             let message = $('#inputMessage').val();
-            if (message && connection) {
+            if (message && socket.connected) {
                 $('#inputMessage').val('')
                 let chatData = {
                     text: message,
@@ -294,11 +292,13 @@
                 let resignData = {
                     fen: chess.fen(),
                     game_end: gameEnd,
-                    resign: true
+                    resign: true,
+                    move_id: movesMade.length
                 };
                 console.log("resignation sent");
-                socket.emit('moveMade', resignData);
-            };
+                if (socket.connected) { socket.emit('moveMade', resignData); }
+                else { socket.on('reconnect', ()=>{ socket.emit('moveMade', resignData); }) };
+            }
         };
 
         let chess = new Chess(),

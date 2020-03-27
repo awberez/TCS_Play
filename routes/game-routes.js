@@ -156,7 +156,7 @@ module.exports = (app)=>{
 			        	where: { match_id: client.match_id },
 			        	order: [ [ 'id', 'DESC' ]]
 			    	}).then((gameMoves)=>{
-			    		if (data.resign) {
+			    		if (data.resign && data.move_id == gameMoves.length) {
 			    			colorConsole(`${client.color} player has resigned`);
 			    			db.GameMove.create({ 
 						    	match_id: client.match_id,
