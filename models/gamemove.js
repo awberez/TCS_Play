@@ -26,6 +26,9 @@ module.exports = function(sequelize, DataTypes) {
     resign_id: {type: DataTypes.INTEGER,
         allowNull: true
     },
+    coach_comment: {type: DataTypes.STRING,
+        allowNull: true
+    },
     createdAt: DataTypes.DATE,
     updatedAt: DataTypes.DATE,  
   });

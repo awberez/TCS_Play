@@ -167,7 +167,7 @@ module.exports = (app)=>{
 			    		} else 
 			    		if ((gameMoves[1] && data.from && gameMoves[1].lastMove == client.color && gameMoves[1].from !== data.from && gameMoves[1].to !== data.to && data.move_id == gameMoves.length + 1) || 
 		    				(gameMoves[0] && data.from && gameMoves[0].lastMove !== client.color && data.move_id == gameMoves.length + 1) || 
-		    				(data.from && client.color == "white")) {
+		    				(!gameMoves[0] && data.from && client.color == "white")) {
 		    				colorConsole(`adding new move from ${client.color} player in match ${client.match_id}`);
 				    		db.GameMove.create({ 
 						    	match_id: client.match_id,
