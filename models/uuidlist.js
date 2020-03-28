@@ -1,19 +1,22 @@
 module.exports = function(sequelize, DataTypes) {
-  let CoachList = sequelize.define("CoachList", {
+  let UuidList = sequelize.define("UuidList", {
     id: {type: DataTypes.INTEGER,
         allowNull: false,
         autoIncrement: true,
         primaryKey:true
     },
+    uuid: {type: DataTypes.STRING,
+        allowedNull: false,
+        unique: true
+    },
     match_id: {type: DataTypes.INTEGER,
         allowNull: false,
     },
-    coach_id: {type: DataTypes.INTEGER,
+    user_id: {type: DataTypes.INTEGER,
         allowNull: false,
     },
     createdAt: DataTypes.DATE,
     updatedAt: DataTypes.DATE,
-    
   });
-  return CoachList;
+  return UuidList;
 };

@@ -45,12 +45,12 @@ button:disabled {
 	background: white;
 }
 
-#chatTypeBox {
-	width:calc(100% - 54px);
+#inputMessage {
+	width:calc(100% - 54px)
 }
 
 #myBoard {
 	width: 100%; 
 	max-width: calc(100vh - 300px);
-	border: 25px solid #6598ad;
+	border: 25px solid #6598ad;	
 }

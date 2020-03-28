@@ -4,15 +4,16 @@ module.exports = (app)=>{
 
 	let io = app.get('socketio'), match = io.of('/match'), matchConnections = {};
 
-  /*example:
+  /*example newgame req json:
   	{ 	match_id: '492241',
-  		white_player: { id: '123', username: 'WhitePlayerName' },
-  		black_player: { id: '321', username: 'BlackPlayerName' },
+  		white_player: { id: '123', username: 'WhitePlayerName', uuid: '4244-4114-6867-5666' },
+  		black_player: { id: '321', username: 'BlackPlayerName', uuid: '6533-4566-8453-1568' },
   		coaches: [ 
-  			{ id: '101', username: 'FirstCoachName' },
-     		{ id: '202', username: 'SecondCoachName' },
-     		{ id: '303', username: 'ThirdCoachName' } 
-     		] }*/
+  			{ id: '101', username: 'FirstCoachName', uuid: '6577-9754-7642-3555' },
+     		{ id: '202', username: 'SecondCoachName', uuid: '9096-2757-7524-5321' },
+     		{ id: '303', username: 'ThirdCoachName', uuid: '8683-3462-4663-8019' } 
+     	] 
+    }*/
 
 	app.post("/newgame", (req, res)=>{
 		console.log(colors.white(req.body));
@@ -25,56 +26,49 @@ module.exports = (app)=>{
 					white_id: req.body.white_player.id,
 			    	black_id: req.body.black_player.id
 			    }).then(() => {
+			    	let uuids = [], names = [];
+			    	uuids.push(
+			    		{ match_id: req.body.match_id, user_id: req.body.white_player.id, uuid: req.body.white_player.uuid },
+		    			{ match_id: req.body.match_id, user_id: req.body.black_player.id, uuid: req.body.black_player.uuid }
+		    		);
+			    	names.push(
+			    		{ user_id: req.body.white_player.id, user_name: req.body.white_player.username },
+		    			{ user_id: req.body.black_player.id, user_name: req.body.black_player.username }
+		    		);
 			    	if (req.body.coaches && req.body.coaches.length !== 0) {
-				    	let coaches = [];
-				    	for (let coach of req.body.coaches) { coaches.push({ match_id: req.body.match_id, coach_id: coach.id }); };
-				    	db.CoachList.bulkCreate(coaches)
-				    	.then(() => {
-				    		let names = [];
-				    		names.push(
-					    		{ user_id: req.body.white_player.id, user_name: req.body.white_player.username },
-				    			{ user_id: req.body.black_player.id, user_name: req.body.black_player.username }
-				    		);
-				    		for (let coach of req.body.coaches) { names.push({ user_id: coach.id, user_name: coach.username }); };
-				    		db.NameList.bulkCreate(names, {
-				    			updateOnDuplicate: ["user_name"]
-				    		}).then(() => {
-				    			res.send("success");
-				    		});
-				    	});
-				    }
-				    else {
-						let names = [];
-			    		names.push(
-				    		{ user_id: req.body.white_player.id, user_name: req.body.white_player.username },
-			    			{ user_id: req.body.black_player.id, user_name: req.body.black_player.username }
-			    		);
+			    		for (let coach of req.body.coaches) { 
+			    			uuids.push({ match_id: req.body.match_id, user_id: coach.id, uuid: coach.uuid });
+			    			names.push({ user_id: coach.id, user_name: coach.username });
+			    		};
+			    	};
+			    	db.UuidList.bulkCreate(uuids).then(()=>{
 			    		db.NameList.bulkCreate(names, {
 			    			updateOnDuplicate: ["user_name"]
 			    		}).then(() => {
 			    			res.send("success");
 			    		});
-				    }
+			    	});
 		        });
 		    }
 		    else { res.send("failure"); }
 	    });
   	});
 
-  	/*example:
+  	/*example addcoach req json:
   	{   coaches: [ 
-  			{ match_id: 492241, id: '101', username: 'FirstCoachName' },
-     		{ match_id: 492241, id: '202', username: 'SecondCoachName' },
-     		{ match_id: 032950, id: '202', username: 'SecondCoachName' } 
-     		] }*/
+  			{ match_id: 492241, id: '101', username: 'FirstCoachName', uuid: '6577-9754-7642-3555' },
+     		{ match_id: 492241, id: '202', username: 'SecondCoachName', uuid: '9096-2757-7524-5321' },
+     		{ match_id: 032950, id: '202', username: 'SecondCoachName', uuid: '8683-3462-4663-8019' } 
+     	] 
+    }*/
 
   	app.post("/addcoach", (req, res)=>{
-		let coaches = [];
-    	for (let coach of req.body.coaches) { coaches.push({ match_id: coach.match_id, coach_id: coach.id }); };
-    	db.CoachList.bulkCreate(coaches)
-    	.then(() => {
-    		let names = [];
-    		for (let coach of req.body.coaches) { names.push({ user_id: coach.id, user_name: coach.username }); };
+		let uuids = [], names = [];
+    	for (let coach of req.body.coaches) { 
+			uuids.push({ match_id: req.body.match_id, user_id: coach.id, uuid: coach.uuid });
+			names.push({ user_id: coach.id, user_name: coach.username });
+		};
+		db.UuidList.bulkCreate(uuids).then(()=>{
     		db.NameList.bulkCreate(names, {
     			updateOnDuplicate: ["user_name"]
     		}).then(() => {
@@ -83,51 +77,48 @@ module.exports = (app)=>{
     	});
   	});
 
-  	app.get("/match/:id/:player_id", (req, res)=>{
-	    db.GameList.findOne({
-	        where: { match_id: { [Op.eq]: req.params.id } }
-	    }).then((dbGame)=>{
-	    	if(dbGame) {
-		    	db.NameList.findOne({
-		    		where: { user_id: dbGame.white_id }
-			    }).then((dbWhite)=>{
+  	app.get("/match/:uuid", (req, res)=>{
+	    db.UuidList.findOne({
+	        where: { uuid: { [Op.eq]: req.params.uuid } }
+	    }).then((dbUuid)=>{
+	    	if(dbUuid) {
+	    		db.GameList.findOne({
+			        where: { match_id: dbUuid.match_id }
+			    }).then((dbGame)=>{
 			    	db.NameList.findOne({
-			    		where: { user_id: dbGame.black_id }
-			    	}).then((dbBlack)=>{
-			    		let userData = {
-				    		match_id: req.params.id,
-				    		player_id: req.params.player_id,
-				    		white_id: dbGame.white_id,
-				    		white_name: dbWhite.user_name,
-				    		black_id: dbGame.black_id,
-				    		black_name: dbBlack.user_name
-				    	};
-				    	if (req.params.player_id == dbGame.white_id) {
-				    		userData.player_name = dbWhite.user_name, userData.player_color = "white";
-				    		console.log(userData);
-				    		res.render("match", { player: "White", encodedJson : encodeURIComponent(JSON.stringify(userData)) });
-				    	} else 
-				    	if (req.params.player_id == dbGame.black_id) {
-				    		userData.player_name = dbBlack.user_name, userData.player_color = "black";
-				    		res.render("match", { player: "Black", encodedJson : encodeURIComponent(JSON.stringify(userData)) });
-				    	}
-				    	else {
-				    		db.CoachList.findAll({
-				    			where: { match_id: { [Op.eq]: req.params.id } }
-				    		}).then((dbCoaches)=>{
-				    			if (dbCoaches.some(e => e.coach_id == req.params.player_id)) {
-				    				db.NameList.findOne({
-				    					where: { user_id: req.params.player_id }
-				    				}).then((dbCoach)=>{
-				    					userData.player_name = dbCoach.user_name, userData.player_color = "observer", userData.is_coach = true;
-								    	res.render("match", { encodedJson : encodeURIComponent(JSON.stringify(userData)) });
-				    				});
-								}
-								else { res.render("unauthorized"); };
-				    		});
-				    	};
+			    		where: { user_id: dbGame.white_id }
+				    }).then((dbWhite)=>{
+				    	db.NameList.findOne({
+				    		where: { user_id: dbGame.black_id }
+				    	}).then((dbBlack)=>{
+				    		let userData = {
+					    		match_id: dbUuid.match_id,
+					    		player_id: dbUuid.user_id,
+					    		white_id: dbGame.white_id,
+					    		white_name: dbWhite.user_name,
+					    		black_id: dbGame.black_id,
+					    		black_name: dbBlack.user_name
+					    	};
+					    	if (dbUuid.user_id == dbGame.white_id) {
+					    		userData.player_name = dbWhite.user_name, userData.player_color = "white";
+					    		console.log(userData);
+					    		res.render("match", { player: "White", encodedJson : encodeURIComponent(JSON.stringify(userData)) });
+					    	} else 
+					    	if (dbUuid.user_id == dbGame.black_id) {
+					    		userData.player_name = dbBlack.user_name, userData.player_color = "black";
+					    		res.render("match", { player: "Black", encodedJson : encodeURIComponent(JSON.stringify(userData)) });
+					    	}
+					    	else {
+					    		db.NameList.findOne({
+						    		where: { user_id: dbUuid.user_id }
+						    	}).then((dbCoach)=>{
+						    		userData.player_name = dbCoach.user_name, userData.player_color = "observer", userData.is_coach = true;
+									res.render("match", { encodedJson : encodeURIComponent(JSON.stringify(userData)) });
+						    	});
+					    	};
+				    	});
 			    	});
-		    	});
+			    });
 			}
 			else { res.render("unauthorized"); };
       	});
