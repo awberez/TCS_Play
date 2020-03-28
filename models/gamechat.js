@@ -5,10 +5,10 @@ module.exports = function(sequelize, DataTypes) {
         autoIncrement: true,
         primaryKey:true
     },
-    match_id: {type: DataTypes.INTEGER,
+    match_id: {type: DataTypes.STRING,
         allowNull: false,
     },
-    player_id: {type: DataTypes.INTEGER,
+    player_id: {type: DataTypes.STRING,
         allowNull: false,
     },
     player_message: {type: DataTypes.STRING,

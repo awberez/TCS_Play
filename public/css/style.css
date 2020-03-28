@@ -1,3 +1,12 @@
+@font-face {
+  font-family: LOC Chess Pieceset;
+  src: url(../chessboard-js-master/css/LOCPieces.woff);
+}
+@font-face {
+  font-family: LOC Chess Pieceset;
+  src: url(../chessboard-js-master/css/LOCPieces.ttf);
+}
+
 body {
 	background-image: url(../images/chess-bg.gif);
 }
@@ -18,16 +27,31 @@ button:disabled {
 	border-color: #82b1d9;
 }
 
+.chessPiece {
+	font-size: 20px;
+	font-weight: bold;
+	vertical-align: 10%;
+	font-family: "LOC Chess Pieceset",Fallback,sans-serif;
+}
+
+.white {
+	color: #285e8e;
+}
+
+.black {
+	color: #bd4932;
+}
+
 .headerTitle {
 	color: white;
 }
 
-.blackMessage {
-	background-color: #ededed;
+.whiteMessage {
+	background-color: rgb(40, 94, 142, 0.15);
 }
 
-.whiteMessage {
-
+.blackMessage {
+	background-color: rgb(189, 73, 50, 0.15);
 }
 
 .infoBox {
@@ -43,6 +67,10 @@ button:disabled {
 	border: 1px solid #428bca;
 	border-radius: 3px;
 	background: white;
+}
+
+.timeDisplay {
+	font-size: 12px;
 }
 
 #inputMessage {

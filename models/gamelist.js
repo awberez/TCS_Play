@@ -5,20 +5,26 @@ module.exports = function(sequelize, DataTypes) {
         autoIncrement: true,
         primaryKey:true
     },
-    match_id: {type: DataTypes.INTEGER,
+    match_id: {type: DataTypes.STRING,
         allowNull: false,
         unique: true
     },
-    white_id: {type: DataTypes.INTEGER,
+    white_id: {type: DataTypes.STRING,
         allowNull: false,
     },
-    black_id: {type: DataTypes.INTEGER,
+    black_id: {type: DataTypes.STRING,
         allowNull: false,
     },
     in_progress: {type: DataTypes.BOOLEAN,
         defaultValue: true,
         allowNull: false,
     },
+    logo: {type: DataTypes.STRING,
+        allowNull: true
+    }, 
+    header: {type: DataTypes.STRING,
+        allowNull: true
+    }, 
     createdAt: DataTypes.DATE,
     updatedAt: DataTypes.DATE,
     

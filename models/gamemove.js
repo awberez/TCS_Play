@@ -5,7 +5,7 @@ module.exports = function(sequelize, DataTypes) {
         autoIncrement: true,
         primaryKey:true
     },
-    match_id: {type: DataTypes.INTEGER,
+    match_id: {type: DataTypes.STRING,
         allowNull: false,
     },
     from: {type: DataTypes.STRING,
@@ -23,7 +23,7 @@ module.exports = function(sequelize, DataTypes) {
     lastMove: {type: DataTypes.STRING,
         allowNull: false
     },
-    resign_id: {type: DataTypes.INTEGER,
+    resign_id: {type: DataTypes.STRING,
         allowNull: true
     },
     coach_comment: {type: DataTypes.STRING,

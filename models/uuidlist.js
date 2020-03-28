@@ -9,10 +9,10 @@ module.exports = function(sequelize, DataTypes) {
         allowedNull: false,
         unique: true
     },
-    match_id: {type: DataTypes.INTEGER,
+    match_id: {type: DataTypes.STRING,
         allowNull: false,
     },
-    user_id: {type: DataTypes.INTEGER,
+    user_id: {type: DataTypes.STRING,
         allowNull: false,
     },
     createdAt: DataTypes.DATE,

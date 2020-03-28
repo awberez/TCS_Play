@@ -6,6 +6,8 @@ module.exports = (app)=>{
 
   /*example newgame req json:
   	{ 	match_id: '492241',
+	  	logo: 'logo png string',
+		header: 'header string,
   		white_player: { id: '123', username: 'WhitePlayerName', uuid: '4244-4114-6867-5666' },
   		black_player: { id: '321', username: 'BlackPlayerName', uuid: '6533-4566-8453-1568' },
   		coaches: [ 
@@ -26,10 +28,13 @@ module.exports = (app)=>{
     			where: { uuid: uuidList }
     		}).then((dbUuid)=>{
     			if (!dbGame && !dbUuid) {
+    				let newGame = {}
 			    	db.GameList.create({ 
 				    	match_id: req.body.match_id,
 						white_id: req.body.white_player.id,
-				    	black_id: req.body.black_player.id
+				    	black_id: req.body.black_player.id,
+				    	logo: req.body.logo,
+				    	header: req.body.header
 				    }).then(() => {
 				    	let uuids = [], names = [];
 				    	uuids.push(
@@ -109,6 +114,7 @@ module.exports = (app)=>{
 					    		black_id: dbGame.black_id,
 					    		black_name: dbBlack.user_name
 					    	};
+					    	if (dbGame.logo) { userData.logo = dbGame.logo; };
 					    	if (dbUuid.user_id == dbGame.white_id) {
 					    		userData.player_name = dbWhite.user_name, userData.player_color = "white";
 					    		console.log(userData);
