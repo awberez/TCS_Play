@@ -1,7 +1,56 @@
+body {
+	background-image: url(../images/chess-bg.gif);
+}
+
+button {
+	border-radius: 5px;
+	color: #428bca;
+	background: white;
+	border: 2px solid #428bca;
+}
+
+button:hover {
+	background: #c6cbd1;
+}
+
+button:disabled {
+	color: #82b1d9;
+	border-color: #82b1d9;
+}
+
+.headerTitle {
+	color: white;
+}
+
 .blackMessage {
 	background-color: #ededed;
 }
 
 .whiteMessage {
 
+}
+
+.infoBox {
+	background-color: white;
+	border: 1px solid #428bca;
+	border-radius: 3px;
+}
+
+#chatBox {
+	overflow-y: scroll; 
+	overflow-x:wrap; 
+	height: 150px; 
+	border: 1px solid #428bca;
+	border-radius: 3px;
+	background: white;
+}
+
+#chatTypeBox {
+	width:calc(100% - 54px);
+}
+
+#myBoard {
+	width: 100%; 
+	max-width: calc(100vh - 300px);
+	border: 25px solid #6598ad;
 }

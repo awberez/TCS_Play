@@ -4,6 +4,16 @@ module.exports = (app)=>{
 
 	let io = app.get('socketio'), match = io.of('/match'), matchConnections = {};
 
+  /*example:
+  	{ 	match_id: '492241',
+  		white_player: { id: '123', username: 'WhitePlayerName' },
+  		black_player: { id: '321', username: 'BlackPlayerName' },
+  		coaches: [ 
+  			{ id: '101', username: 'FirstCoachName' },
+     		{ id: '202', username: 'SecondCoachName' },
+     		{ id: '303', username: 'ThirdCoachName' } 
+     		] }*/
+
 	app.post("/newgame", (req, res)=>{
 		console.log(colors.white(req.body));
 		db.GameList.findOne({
@@ -32,11 +42,45 @@ module.exports = (app)=>{
 				    			res.send("success");
 				    		});
 				    	});
-				    };
+				    }
+				    else {
+						let names = [];
+			    		names.push(
+				    		{ user_id: req.body.white_player.id, user_name: req.body.white_player.username },
+			    			{ user_id: req.body.black_player.id, user_name: req.body.black_player.username }
+			    		);
+			    		db.NameList.bulkCreate(names, {
+			    			updateOnDuplicate: ["user_name"]
+			    		}).then(() => {
+			    			res.send("success");
+			    		});
+				    }
 		        });
 		    }
 		    else { res.send("failure"); }
 	    });
+  	});
+
+  	/*example:
+  	{   coaches: [ 
+  			{ match_id: 492241, id: '101', username: 'FirstCoachName' },
+     		{ match_id: 492241, id: '202', username: 'SecondCoachName' },
+     		{ match_id: 032950, id: '202', username: 'SecondCoachName' } 
+     		] }*/
+
+  	app.post("/addcoach", (req, res)=>{
+		let coaches = [];
+    	for (let coach of req.body.coaches) { coaches.push({ match_id: coach.match_id, coach_id: coach.id }); };
+    	db.CoachList.bulkCreate(coaches)
+    	.then(() => {
+    		let names = [];
+    		for (let coach of req.body.coaches) { names.push({ user_id: coach.id, user_name: coach.username }); };
+    		db.NameList.bulkCreate(names, {
+    			updateOnDuplicate: ["user_name"]
+    		}).then(() => {
+    			res.send("success");
+    		});
+    	});
   	});
 
   	app.get("/match/:id/:player_id", (req, res)=>{

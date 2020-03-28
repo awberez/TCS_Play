@@ -12,7 +12,7 @@ These values are safe to set and can be used to customize the appearence of the 
 }
 @font-face {
   font-family: LOC Chess Pieceset;
-  src: url(LOCPieces.tff);
+  src: url(LOCPieces.ttf);
 }
 /* 
 Customizing the chessboard 
@@ -100,7 +100,7 @@ div.chess_board div.chess_label {
 	font-family: "Helvetica Neue","Helvetica",Helvetica,Arial,sans-serif;
 	font-weight: normal;
 	font-style: normal;
-	font-variant: small-caps;
+/*	font-variant: small-caps; */
 }
 
 
