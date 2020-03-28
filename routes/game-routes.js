@@ -20,37 +20,47 @@ module.exports = (app)=>{
 		db.GameList.findOne({
 	        where: { match_id: req.body.match_id }
 	    }).then((dbGame)=>{
-	    	if (!dbGame) {
-		    	db.GameList.create({ 
-			    	match_id: req.body.match_id,
-					white_id: req.body.white_player.id,
-			    	black_id: req.body.black_player.id
-			    }).then(() => {
-			    	let uuids = [], names = [];
-			    	uuids.push(
-			    		{ match_id: req.body.match_id, user_id: req.body.white_player.id, uuid: req.body.white_player.uuid },
-		    			{ match_id: req.body.match_id, user_id: req.body.black_player.id, uuid: req.body.black_player.uuid }
-		    		);
-			    	names.push(
-			    		{ user_id: req.body.white_player.id, user_name: req.body.white_player.username },
-		    			{ user_id: req.body.black_player.id, user_name: req.body.black_player.username }
-		    		);
-			    	if (req.body.coaches && req.body.coaches.length !== 0) {
-			    		for (let coach of req.body.coaches) { 
-			    			uuids.push({ match_id: req.body.match_id, user_id: coach.id, uuid: coach.uuid });
-			    			names.push({ user_id: coach.id, user_name: coach.username });
-			    		};
-			    	};
-			    	db.UuidList.bulkCreate(uuids).then(()=>{
-			    		db.NameList.bulkCreate(names, {
-			    			updateOnDuplicate: ["user_name"]
-			    		}).then(() => {
-			    			res.send("success");
-			    		});
-			    	});
-		        });
-		    }
-		    else { res.send("failure"); }
+    		let uuidList = [req.body.white_player.uuid, req.body.black_player.uuid];
+    		if (req.body.coaches && req.body.coaches.length !== 0) { for (let coach of req.body.coaches) { uuidList.push(coach.uuid); }; };
+    		db.UuidList.findOne({
+    			where: { uuid: uuidList }
+    		}).then((dbUuid)=>{
+    			if (!dbGame && !dbUuid) {
+			    	db.GameList.create({ 
+				    	match_id: req.body.match_id,
+						white_id: req.body.white_player.id,
+				    	black_id: req.body.black_player.id
+				    }).then(() => {
+				    	let uuids = [], names = [];
+				    	uuids.push(
+				    		{ match_id: req.body.match_id, user_id: req.body.white_player.id, uuid: req.body.white_player.uuid },
+			    			{ match_id: req.body.match_id, user_id: req.body.black_player.id, uuid: req.body.black_player.uuid }
+			    		);
+				    	names.push(
+				    		{ user_id: req.body.white_player.id, user_name: req.body.white_player.username },
+			    			{ user_id: req.body.black_player.id, user_name: req.body.black_player.username }
+			    		);
+				    	if (req.body.coaches && req.body.coaches.length !== 0) {
+				    		for (let coach of req.body.coaches) { 
+				    			uuids.push({ match_id: req.body.match_id, user_id: coach.id, uuid: coach.uuid });
+				    			names.push({ user_id: coach.id, user_name: coach.username });
+				    		};
+				    	};
+				    	db.UuidList.bulkCreate(uuids).then(()=>{
+				    		db.NameList.bulkCreate(names, {
+				    			updateOnDuplicate: ["user_name"]
+				    		}).then(() => {
+				    			res.send("success");
+				    		});
+				    	});
+			        });
+			    }
+		    	else { 
+		    		console.log(colors.red("duplication rejection"));
+		    		res.send("failure"); 
+		    	}    
+		    });
+		    
 	    });
   	});
 
