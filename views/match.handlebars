@@ -71,7 +71,7 @@
         </div>
     </div>
     <script type="text/javascript">
-        let decodedJson = decodeURIComponent("{{{encodedJson}}}"), userData = JSON.parse(decodedJson), socket = io('/match'), 
+        let decodedJson = decodeURIComponent("{{{encodedJson}}}"), userData = JSON.parse(decodedJson), socket = io('/match'), moveTimeout, chatTimeout,
         movesMade = [], promotionPiece = "q", nextPlayer = 'white', status, resignation = false, gameEnd = false, chatMessages = [], topPlayer = "black",
         whiteName = `<div id="whiteName"><span class="whiteArrow">&rarr;</span> <span class="chessPiece white"></span> ${userData.white_name} <span id="whiteStatus" style="font-style: italic">(offline)</span> <span class="whiteArrow">&larr;</span></div>`,
         blackName = `<div id="blackName"><span class="blackArrow">&rarr;</span> <span class="chessPiece black"></span> ${userData.black_name} <span id="blackStatus" style="font-style: italic">(offline)</span> <span class="blackArrow">&larr;</span></div>`;
@@ -124,11 +124,13 @@
 
         socket.on('moves', (data)=>{
             console.log(`${movesMade.length < data.length - 1 ? "moves" : "move"} received`);
+            clearTimeout(moveTimeout);
             displayMove(data);
         });
 
         socket.on('chat', (data)=>{
             console.log(`${chatMessages.length < data.length - 1 ? "messages" : "message"} received`);
+            clearTimeout(chatTimeout);
             displayChat(data);
         });
 
@@ -171,6 +173,7 @@
             chess.reset();
             board.enableUserInput(false);
             status = 'White to move.';
+            nextPlayer = 'White';
             updateGameInfo();
         };
 
@@ -223,8 +226,22 @@
                 };
                 board.enableUserInput(false);
                 console.log("move sent");
-                if (socket.connected) { socket.emit('moveMade', moveData); }
-                else { socket.on('reconnect', ()=>{ socket.emit('moveMade', moveData); }) };
+                if (socket.connected) { 
+                    socket.emit('moveMade', moveData); 
+                    moveTimeout = setTimeout(()=>{
+                        socket.close();
+                        socket.open();
+                    }, 500);
+                }
+                else { 
+                    socket.on('reconnect', ()=>{ 
+                        socket.emit('moveMade', moveData); 
+                        moveTimeout = setTimeout(()=>{
+                            socket.close();
+                            socket.open();
+                        }, 500); 
+                    }); 
+                };
             };
             return chess.fen();
         };
@@ -281,6 +298,10 @@
                 }
                 console.log("message sent");
                 socket.emit('chat', chatData);
+                chatTimeout = setTimeout(()=>{
+                    socket.close();
+                    socket.open();
+                }, 500);
             };
         };
 
@@ -320,8 +341,22 @@
                     move_id: movesMade.length
                 };
                 console.log("resignation sent");
-                if (socket.connected) { socket.emit('moveMade', resignData); }
-                else { socket.on('reconnect', ()=>{ socket.emit('moveMade', resignData); }) };
+                if (socket.connected) { 
+                    socket.emit('moveMade', resignData); 
+                    moveTimeout = setTimeout(()=>{
+                        socket.close();
+                        socket.open();
+                    }, 500);
+                }
+                else { 
+                    socket.on('reconnect', ()=>{ 
+                        socket.emit('moveMade', resignData); 
+                        moveTimeout = setTimeout(()=>{
+                            socket.close();
+                            socket.open();
+                        }, 500);
+                    }) 
+                };
             }
         };
 
