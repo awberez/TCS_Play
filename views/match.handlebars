@@ -3,7 +3,7 @@
         <div class="row">
             <div class="col-12">
                 <br/>
-                <a href="https://thechessschool.net/users/sign_in"><span id="logoBox"></span></a>
+                <a href="https://thechessschool.net/home"><span id="logoBox"></span></a>
             </div>
             <hr/>
             <div class="col-12 text-center">
@@ -11,28 +11,38 @@
             </div>
         </div>
         <div class="row justify-content-center">
-            <div class="col-6 infoBox">
-                <div class="row">
-                    <div class="col-12">
-                        <div id="connections">
-                            <br/>
-                            <div style="font-weight: bold">Observers:</div>
-                            <div id="noObservers" style="font-style: italic">none</div>
-                            <div id="observers"></div>
-                        </div>
-                        <br/>
-                    </div>
-                    <div class="col-12">
-                        <div id="flipButton">
-                            <button id="flip" type="button">Flip Board Perspective</button>
-                            <br/>
-                            <br/>
-                        </div>
-                        <label style="font-weight: bold">Status:</label>
+            <div class="col-6">
+                <div class="infoBox">
+                    <div class="outlineBar text-center">
                         <div id="status"></div>
-                        <br/>
                     </div>
-                    <div class="col-6">
+                    <div class="row">
+                        <div class="col-5">
+                            <div id="connections">
+                                <br/>
+                                <div style="font-weight: bold">Observers:</div>
+                                <div id="noObservers" style="font-style: italic">none</div>
+                                <div id="observers" class="text-display"></div>
+                            </div>
+                            <br/>
+                        </div>
+                        <div class="col-7">
+                            <div class="pgnDiv">
+                                <br/>
+                                <label style="font-weight: bold">PGN:</label>
+                                <div id="pgn" class="textDisplay"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chatDiv col-12">
+                        <div id="chatBox">
+                            <div id="chatDiv"></div>
+                        </div>
+                        <div id="chatTypeBox" class="playerInput justify-content-center">
+                            <input id="inputMessage" placeholder="Type here..."/><button id="send" onClick=sendMessage()>Send</button>
+                        </div>
+                    </div>
+                    <div class="outlineBar text-center bottom">
                         <div id="promotionsChoice" class="playerInput">
                             <label style="font-weight: bold">Pawn promotions:</label>
                             <select id="promotions">
@@ -41,35 +51,21 @@
                                 <option value="n">Knight</option>
                                 <option value="b">Bishop</option>
                             </select>  
-                        </div>       
-                    </div>
-                    <div class="col-6">
-                        <div class="playerInput">
-                            <button id="resign" type="button">Resign</button>
-                        </div>
-                    </div>
-                    <div class="col-12">
-                        <br/>
-                        <label style="font-weight: bold">PGN:</label>
-                    <div id="pgn"></div>
-                    </div>
-                    <div id="chatBox" class="col-12">
-                        <div id="chatDiv"></div>
-                    </div>
-                    <div id="chatTypeBox" class="col-12 playerInput justify-content-center">
-                        <input id="inputMessage" placeholder="Type here..."/><button id="send" onClick=sendMessage()>Send</button>
+                        </div>     
                     </div>
                 </div>
             </div>
-            <div class="col-6 text-center infoBox chessBox">
-                <div id="topName" class="nameBox"></div>
-                <div id="myBoard"></div>
-                <div id="bottomName" class="nameBox"></div>
-            </div>
-            <div class="col-12">
-                <br />
-                <div class="row justify-content-center">
-                    
+            <div class="col-6 text-center">
+                <div class="infoBox chessBox">
+                    <div id="topName" class="nameBox"></div>
+                    <div id="myBoard"></div>
+                    <div id="bottomName" class="nameBox"></div>
+                    <div class="playerInput resignBtn">
+                        <button id="resign" type="button">Resign</button>
+                    </div>
+                    <div id="flipButton">
+                        <button id="flip" type="button">Flip Board</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -77,9 +73,8 @@
     <script type="text/javascript">
         let decodedJson = decodeURIComponent("{{{encodedJson}}}"), userData = JSON.parse(decodedJson), socket = io('/match'), 
         movesMade = [], promotionPiece = "q", nextPlayer = 'white', status, resignation = false, gameEnd = false, chatMessages = [], topPlayer = "black",
-        whiteName = `<div id="whiteName"><span class="chessPiece white"></span> ${userData.white_name} <span id="whiteStatus" style="font-style: italic">(offline)</span></div>`,
-        blackName = `<div id="blackName"><span class="chessPiece black"></span> ${userData.black_name} <span id="blackStatus" style="font-style: italic">(offline)</span></div>`;
-
+        whiteName = `<div id="whiteName"><span class="whiteArrow">&rarr;</span> <span class="chessPiece white"></span> ${userData.white_name} <span id="whiteStatus" style="font-style: italic">(offline)</span> <span class="whiteArrow">&larr;</span></div>`,
+        blackName = `<div id="blackName"><span class="blackArrow">&rarr;</span> <span class="chessPiece black"></span> ${userData.black_name} <span id="blackStatus" style="font-style: italic">(offline)</span> <span class="blackArrow">&larr;</span></div>`;
         userData.logo ? $('#logoBox').append(`<img src=${userData.logo}></img>`) : $("#logoBox").append(`<img src=/images/tcs-logo.png></img>`);
         userData.header ? $('#headerText').html(`${userData.header}`) : $('#headerText').html(`The Chess School`);
         userData.player_color == "observer" ? $('.playerInput').hide() : $('#flipButton').hide();
@@ -91,6 +86,8 @@
             $('#topName').html(blackName);
             $('#bottomName').html(whiteName);
         };   
+        $(".whiteArrow").hide();
+        $(".blackArrow").hide();
         $(document).ready(()=>{ $('#promotions').change(()=>{ promotionPiece = $("#promotions").val(); }); });
         $(document).ready(()=>{ $('#flip').click(flipBoard) });
         $(document).ready(()=>{ $('#resign').click(()=>{ resignGame(); }); });
@@ -178,9 +175,14 @@
         };
 
         updateGameInfo = ()=>{
-          $('#status').html(status);
-          $('#pgn').html(chess.pgn());
-          document.getElementById("pgn").scrollTop = document.getElementById("pgn").scrollHeight;
+            $('#status').html(status);
+            $('#pgn').html(chess.pgn());
+            document.getElementById("pgn").scrollTop = document.getElementById("pgn").scrollHeight;
+            $(".whiteArrow").hide();
+            $(".blackArrow").hide();
+            if (!gameEnd) {
+                nextPlayer == 'White' ? $(".whiteArrow").show() : $(".blackArrow").show();
+            }
         };
 
         flipBoard = ()=>{
@@ -193,8 +195,8 @@
         changeGameStatus = ()=>{
             nextPlayer = 'White';
             if (chess.turn() === 'b') { nextPlayer = 'Black'; };
-            if (chess.in_checkmate()) { gameEnd = true, status = `CHECKMATE! ${nextPlayer == 'White' ? "Black" : "White"} wins!`; } else 
-            if (chess.in_draw() || chess.in_threefold_repetition() || chess.in_stalemate()) { gameEnd = true, status = 'DRAW!'; } 
+            if (chess.in_checkmate()) { gameEnd = (nextPlayer == 'White') ? "black" : "white", status = `CHECKMATE! ${nextPlayer == 'White' ? "Black" : "White"} wins!`; } else 
+            if (chess.in_draw() || chess.in_threefold_repetition() || chess.in_stalemate()) { gameEnd = "draw", status = 'DRAW!'; } 
             else {
                 status = `${nextPlayer} to move.`;
                 if (chess.in_check()) { status = `CHECK! ${status}`; };
@@ -310,7 +312,7 @@
         resignGame = ()=>{
             let resign = confirm("Are you sure you want to resign?");
             if (resign && !resignation) {
-                gameEnd = true;
+                gameEnd = (userData.player_color == "white") ? "black" : "white";
                 let resignData = {
                     fen: chess.fen(),
                     game_end: gameEnd,

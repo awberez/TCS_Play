@@ -1,4 +1,5 @@
-const db = require("../models"), Sequelize = require('sequelize'), Op = Sequelize.Op, colors = require("colors"), Filter = require('bad-words'), filter = new Filter(), sanitizeHtml = require('sanitize-html');
+const db = require("../models"), Sequelize = require('sequelize'), Op = Sequelize.Op, colors = require("colors"), Filter = require('bad-words'), filter = new Filter(), 
+sanitizeHtml = require('sanitize-html'), axios = require('axios');
 
 module.exports = (app)=>{
 
@@ -118,11 +119,11 @@ module.exports = (app)=>{
 					    	if (dbUuid.user_id == dbGame.white_id) {
 					    		userData.player_name = dbWhite.user_name, userData.player_color = "white";
 					    		console.log(userData);
-					    		res.render("match", { player: "White", encodedJson : encodeURIComponent(JSON.stringify(userData)) });
+					    		res.render("match", { encodedJson : encodeURIComponent(JSON.stringify(userData)) });
 					    	} else 
 					    	if (dbUuid.user_id == dbGame.black_id) {
 					    		userData.player_name = dbBlack.user_name, userData.player_color = "black";
-					    		res.render("match", { player: "Black", encodedJson : encodeURIComponent(JSON.stringify(userData)) });
+					    		res.render("match", { encodedJson : encodeURIComponent(JSON.stringify(userData)) });
 					    	}
 					    	else {
 					    		db.NameList.findOne({
@@ -204,7 +205,7 @@ module.exports = (app)=>{
 	  		db.GameList.findOne({
 		        where: { match_id: client.match_id }
 		    }).then((dbGame)=>{
-		    	if (dbGame.in_progress) {
+		    	if (dbGame.game_status == "in progress") {
 			  		db.GameMove.findAll({
 			        	where: { match_id: client.match_id },
 			        	order: [ [ 'id', 'DESC' ]]
@@ -216,7 +217,10 @@ module.exports = (app)=>{
 						    	lastMove: client.color,
 						    	fen: data.fen,
 						    	resign_id: client.player_id
-						    }).then(() => { db.GameList.update( {in_progress: false}, {returning: true, where: {match_id: client.match_id}} ).then(()=>{ sendMatchContent(db.GameMove, 'moves'); }); }); 
+						    }).then(() => { db.GameList.update( {game_status: data.game_end}, {returning: true, where: {match_id: client.match_id}} ).then(()=>{ 
+						    	sendMatchContent(db.GameMove, 'moves'); }); 
+						    	axios.get(`https://thechessschool.net/matches/status/${client.match_id}/${data.game_end}`).then((res)=>{ console.log(res); }).catch((error)=>{ console.log(error); });
+							}); 
 			    		} else 
 			    		if ((gameMoves[1] && data.from && gameMoves[1].lastMove == client.color && gameMoves[1].from !== data.from && gameMoves[1].to !== data.to && data.move_id == gameMoves.length + 1) || 
 		    				(gameMoves[0] && data.from && gameMoves[0].lastMove !== client.color && data.move_id == gameMoves.length + 1) || 
@@ -230,7 +234,10 @@ module.exports = (app)=>{
 						    	promotion: data.promotion,
 						    	fen: data.fen
 						    }).then(() => { 
-						    	if (data.game_end) { db.GameList.update( {in_progress: false}, {returning: true, where: {match_id: client.match_id}} ).then(()=>{ sendMatchContent(db.GameMove, 'moves'); }); }
+						    	if (data.game_end) { db.GameList.update( {game_status: data.game_end}, {returning: true, where: {match_id: client.match_id}} ).then(()=>{ 
+						    		sendMatchContent(db.GameMove, 'moves'); }); 
+						    		axios.get(`https://thechessschool.net/matches/status/${client.match_id}/${data.game_end}`).then((res)=>{ console.log(res); }).catch((error)=>{ console.log(error); });
+						    	}
 						    	else { sendMatchContent(db.GameMove, 'moves'); };
 						    }); 
 				    	};
@@ -255,12 +262,7 @@ module.exports = (app)=>{
 	  		dbTable.findAll({
 	        	where: { match_id: client.match_id },
 	        	order: [ [ 'id', 'DESC' ]]
-	    	}).then((dbData)=>{ 
-	    		match.to(client.room).emit(channel, dbData); 
-	    		db.GameList.findOne({
-	    			where: { match_id: client.match_id }
-	    		}).then((dbMatch)=>{ if (dbMatch.in_progress == "resignation") { match.to(client.room).emit('resign', dbMatch.loser_id); }; });
-	    	});
+	    	}).then((dbData)=>{ match.to(client.room).emit(channel, dbData); });
 	  	};
 
 	});
