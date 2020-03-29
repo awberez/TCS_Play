@@ -1,33 +1,28 @@
 <main>
     <div class="container-fluid">
-        <div class="row>">
+        <div class="row">
             <div class="col-12">
-                <div id="logoDiv"></div>
                 <br/>
+                <a href="https://thechessschool.net/users/sign_in"><span id="logoBox"></span></a>
+            </div>
+            <hr/>
+            <div class="col-12 text-center">
+                <h1 id="headerText"></h1>
             </div>
         </div>
         <div class="row justify-content-center">
-            <div class="col-12 col-md-8 col-lg-6 text-center">
-                <div id="myBoard"></div>
-            </div>
-            <div class="col-12 col-md-2 order-md-first infoBox">
+            <div class="col-6 infoBox">
                 <div class="row">
-                    <div class="col-4 col-md-12">
+                    <div class="col-12">
                         <div id="connections">
-                            <div id="whiteName"></div>
-                            <div id="blackName"></div>
+                            <br/>
                             <div style="font-weight: bold">Observers:</div>
                             <div id="noObservers" style="font-style: italic">none</div>
                             <div id="observers"></div>
                         </div>
                         <br/>
                     </div>
-                    <div class="col-4 col-md-12">
-                        <div class="playerInput">
-                            <label style="font-weight: bold">Your color:</label>
-                            <div>{{player}}</div>
-                            <br/>
-                        </div>
+                    <div class="col-12">
                         <div id="flipButton">
                             <button id="flip" type="button">Flip Board Perspective</button>
                             <br/>
@@ -37,7 +32,7 @@
                         <div id="status"></div>
                         <br/>
                     </div>
-                    <div class="col-4 col-md-12">
+                    <div class="col-6">
                         <div id="promotionsChoice" class="playerInput">
                             <label style="font-weight: bold">Pawn promotions:</label>
                             <select id="promotions">
@@ -46,41 +41,58 @@
                                 <option value="n">Knight</option>
                                 <option value="b">Bishop</option>
                             </select>  
-                        </div>
+                        </div>       
+                    </div>
+                    <div class="col-6">
                         <div class="playerInput">
-                            <br/>
                             <button id="resign" type="button">Resign</button>
                         </div>
                     </div>
+                    <div class="col-12">
+                        <br/>
+                        <label style="font-weight: bold">PGN:</label>
+                    <div id="pgn"></div>
+                    </div>
+                    <div id="chatBox" class="col-12">
+                        <div id="chatDiv"></div>
+                    </div>
+                    <div id="chatTypeBox" class="col-12 playerInput justify-content-center">
+                        <input id="inputMessage" placeholder="Type here..."/><button id="send" onClick=sendMessage()>Send</button>
+                    </div>
                 </div>
             </div>
-            <div class="col-12 col-md-2 infoBox">
-                <label style="font-weight: bold">PGN:</label>
-                <div id="pgn"></div>
+            <div class="col-6 text-center infoBox chessBox">
+                <div id="topName" class="nameBox"></div>
+                <div id="myBoard"></div>
+                <div id="bottomName" class="nameBox"></div>
             </div>
             <div class="col-12">
                 <br />
                 <div class="row justify-content-center">
-                    <div id="chatBox" class="col-12 col-md-10 col-lg-8">
-                        <div id="chatDiv"></div>
-                    </div>
-                    <div id="chatTypeBox" class="col-12 col-md-10 col-lg-8 playerInput">
-                        <input id="inputMessage" placeholder="Type here..."/><button id="send" onClick=sendMessage()>Send</button>
-                    </div>
+                    
                 </div>
             </div>
         </div>
     </div>
     <script type="text/javascript">
         let decodedJson = decodeURIComponent("{{{encodedJson}}}"), userData = JSON.parse(decodedJson), socket = io('/match'), 
-        movesMade = [], promotionPiece = "q", nextPlayer = 'white', status, resignation = false, gameEnd = false, chatMessages = [];
+        movesMade = [], promotionPiece = "q", nextPlayer = 'white', status, resignation = false, gameEnd = false, chatMessages = [], topPlayer = "black",
+        whiteName = `<div id="whiteName"><span class="chessPiece white"></span> ${userData.white_name} <span id="whiteStatus" style="font-style: italic">(offline)</span></div>`,
+        blackName = `<div id="blackName"><span class="chessPiece black"></span> ${userData.black_name} <span id="blackStatus" style="font-style: italic">(offline)</span></div>`;
 
-        userData.logo ? $('#logoDiv').append(`<img src=${userData.logo}></img>`) : $("#logoDiv").append(`<img src=/images/tcs-logo.png></img>`);
+        userData.logo ? $('#logoBox').append(`<img src=${userData.logo}></img>`) : $("#logoBox").append(`<img src=/images/tcs-logo.png></img>`);
+        userData.header ? $('#headerText').html(`${userData.header}`) : $('#headerText').html(`The Chess School`);
         userData.player_color == "observer" ? $('.playerInput').hide() : $('#flipButton').hide();
-        $('#whiteName').html(`<span class="chessPiece white">&#9812;</span> ${userData.white_name} <span id="whiteStatus" style="font-style: italic">(offline)</span>`);
-        $('#blackName').html(`<span class="chessPiece black">&#9812;</span> ${userData.black_name} <span id="blackStatus" style="font-style: italic">(offline)</span>`);
+        if (userData.player_color == "black") {
+            $('#topName').html(whiteName);
+            $('#bottomName').html(blackName);
+        } 
+        else {
+            $('#topName').html(blackName);
+            $('#bottomName').html(whiteName);
+        };   
         $(document).ready(()=>{ $('#promotions').change(()=>{ promotionPiece = $("#promotions").val(); }); });
-        $(document).ready(()=>{ $('#flip').click(()=>{ board.setOrientation(ChessUtils.ORIENTATION.flip) }); });
+        $(document).ready(()=>{ $('#flip').click(flipBoard) });
         $(document).ready(()=>{ $('#resign').click(()=>{ resignGame(); }); });
         $(window).keydown((event)=>{ if (event.which === 13 && document.activeElement === document.getElementById('inputMessage')) { sendMessage(); }; });
 
@@ -134,8 +146,8 @@
             resetConnections();
             let coaches = [], observers = [];
             for (let user of res) {
-                if (user.color == "white") { $('#whiteStatus').html(`(online)`); } else 
-                if (user.color == "black") { $('#blackStatus').html(`(online)`); } else 
+                if (user.color == "white") { $('#whiteStatus').empty(); } else 
+                if (user.color == "black") { $('#blackStatus').empty(); } else 
                 if (user.is_coach) { coaches.push(user) }
                 else { observers.push(user); };
             };
@@ -161,13 +173,21 @@
             userData.player_color == "black" ? board.setOrientation(ChessUtils.ORIENTATION.black) : board.setOrientation(ChessUtils.ORIENTATION.white);
             chess.reset();
             board.enableUserInput(false);
-            status = 'Next move is white.';
+            status = 'White to move.';
             updateGameInfo();
         };
 
         updateGameInfo = ()=>{
           $('#status').html(status);
           $('#pgn').html(chess.pgn());
+          document.getElementById("pgn").scrollTop = document.getElementById("pgn").scrollHeight;
+        };
+
+        flipBoard = ()=>{
+            board.setOrientation(ChessUtils.ORIENTATION.flip);
+            topPlayer = (topPlayer == "white") ? "black" : "white";
+            $('#topName').html(topPlayer == "white" ? whiteName : blackName);
+            $('#bottomName').html(topPlayer == "white" ? blackName : whiteName);
         };
 
         changeGameStatus = ()=>{
@@ -176,7 +196,7 @@
             if (chess.in_checkmate()) { gameEnd = true, status = `CHECKMATE! ${nextPlayer == 'White' ? "Black" : "White"} wins!`; } else 
             if (chess.in_draw() || chess.in_threefold_repetition() || chess.in_stalemate()) { gameEnd = true, status = 'DRAW!'; } 
             else {
-                status = `Next move is ${nextPlayer}.`;
+                status = `${nextPlayer} to move.`;
                 if (chess.in_check()) { status = `CHECK! ${status}`; };
             };
             updateGameInfo(); 
@@ -279,7 +299,7 @@
                     });
                     $('#chatDiv').append(`
                         <div id="messageID${chatMessages.length}" class=${res[i].player_id == userData.white_id ? "whiteMessage" : "blackMessage"}>
-                            [<span class="timeDisplay">${localTime}</span>] ${res[i].player_id == userData.white_id ? `<span class="chessPiece white">&#9812;</span>` : `<span class="chessPiece black">&#9812;</span>`} ${res[i].player_message}
+                            [<span class="timeDisplay">${localTime}</span>] ${res[i].player_id == userData.white_id ? `<span class="chessPiece white"></span>` : `<span class="chessPiece black"></span>`} ${res[i].player_message}
                         </div>
                     `);
                     document.getElementById("chatBox").scrollTop = document.getElementById("chatBox").scrollHeight;

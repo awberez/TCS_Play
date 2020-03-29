@@ -27,6 +27,11 @@ button:disabled {
 	border-color: #82b1d9;
 }
 
+hr {
+	width: 100%;
+	border-top: 1px solid #e7e7e7;
+}
+
 .chessPiece {
 	font-size: 20px;
 	font-weight: bold;
@@ -34,12 +39,39 @@ button:disabled {
 	font-family: "LOC Chess Pieceset",Fallback,sans-serif;
 }
 
+.chessBox {
+	padding-left: 0px;
+	padding-right: 0px;
+}
+
+#logoBox img {
+	height: 40px;
+	width: 150px;
+}
+
+#headerText {
+	color: white;
+}
+
+.nameBox {
+	padding-top: 10px;
+	padding-bottom: 10px;
+}
+
 .white {
 	color: #285e8e;
 }
 
+.white:after {
+	content: '\2654';
+}
+
 .black {
 	color: #bd4932;
+}
+
+.black:after {
+	content: '\265A';
 }
 
 .headerTitle {
@@ -58,6 +90,12 @@ button:disabled {
 	background-color: white;
 	border: 1px solid #428bca;
 	border-radius: 3px;
+}
+
+#pgn {
+	overflow-y: scroll;
+	overflow-x:wrap; 
+	height: 100px; 
 }
 
 #chatBox {
