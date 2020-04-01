@@ -27,6 +27,10 @@ button:disabled {
 	border-color: #82b1d9;
 }
 
+button:disabled:hover {
+	background: white;
+}
+
 hr {
 	width: 100%;
 	border-top: 1px solid #e7e7e7;
@@ -38,12 +42,44 @@ hr {
 }
 
 #promotionsChoice {
-	padding-top: 12px;
+	position: absolute;
+	bottom: 6px;
+	left: 10px;
+}
+
+#proLabel {
+	color: #428bca;
+	position: absolute;
+	bottom: 22px;
+	left: 12px;
+}
+
+.proPiece {
+	font-family: "LOC Chess Pieceset",Fallback,sans-serif;
+	padding: 3px 3px 5px 3px;
+	border: 1px solid #428bca;
+	border-radius: 3px;
+	color: #428bca;
+}
+
+.proPiece:not(.selected):hover{
+	background: #c6cbd1;
+}
+
+.selected {
+	color: white;
+	background: #428bca;
 }
 
 .resignBtn {
 	position: absolute;
 	bottom: 10px;
+	right: 10px;
+}
+
+.drawBtn {
+	position: absolute;
+	top: 10px;
 	right: 10px;
 }
 
@@ -153,12 +189,12 @@ hr {
 }
 
 #chatTypeBox {
-	padding-bottom: 5px;
+	padding: 10px 0px 10px 10px;
 }
 
 .chatDiv {
 	position: absolute;
-	bottom: 50px;
+	bottom: 55px;
 	width: 100%;
 }
 
@@ -167,7 +203,11 @@ hr {
 }
 
 #inputMessage {
-	width:calc(100% - 54px)
+	width:calc(100% - 74px);
+	border-radius: 3px;
+	border-color: #428bca;
+	border-style: solid;
+	margin-right: 10px;
 }
 
 #myBoard {

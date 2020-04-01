@@ -29,7 +29,7 @@
                         <div class="col-7">
                             <div class="pgnDiv">
                                 <br/>
-                                <label style="font-weight: bold">PGN:</label>
+                                <label style="font-weight: bold">Moves:</label>
                                 <div id="pgn" class="textDisplay"></div>
                             </div>
                         </div>
@@ -38,28 +38,31 @@
                         <div id="chatBox">
                             <div id="chatDiv"></div>
                         </div>
-                        <div id="chatTypeBox" class="playerInput justify-content-center">
-                            <input id="inputMessage" placeholder="Type here..."/><button id="send" onClick=sendMessage()>Send</button>
-                        </div>
                     </div>
-                    <div class="outlineBar text-center bottom">
-                        <div id="promotionsChoice" class="playerInput">
-                            <label style="font-weight: bold">Pawn promotions:</label>
-                            <select id="promotions">
-                                <option value="q">Queen</option>
-                                <option value="r">Rook</option>
-                                <option value="n">Knight</option>
-                                <option value="b">Bishop</option>
-                            </select>  
-                        </div>     
+                    <div class="outlineBar bottom">
+                          <div id="chatTypeBox" class="playerInput justify-content-center">
+                            <input id="inputMessage" placeholder="Type here..."/><button id="send" onClick=sendMessage()>Send</button>
+                        </div>  
                     </div>
                 </div>
             </div>
             <div class="col-6 text-center">
                 <div class="infoBox chessBox">
+                    <div class="playerInput drawBtn">
+                        <button id="draw" type="button">Draw</button>
+                    </div>
                     <div id="topName" class="nameBox"></div>
                     <div id="myBoard"></div>
                     <div id="bottomName" class="nameBox"></div>
+                    <div id="promotionsChoice" class="playerInput">
+                        <div id="proLabel">Promotions:</div>
+                        <div class="text-center">
+                            <span onClick="setPromotions('q', 'proQ')" id="proQ" class="proPiece selected">&#9819;</span>
+                            <span onClick="setPromotions('r', 'proR')" id="proR" class="proPiece">&#9820;</span>
+                            <span onClick="setPromotions('b', 'proB')" id="proB" class="proPiece">&#9821;</span>
+                            <span onClick="setPromotions('n', 'proN')" id="proN" class="proPiece">&#9822;</span>
+                        </div>
+                    </div> 
                     <div class="playerInput resignBtn">
                         <button id="resign" type="button">Resign</button>
                     </div>
@@ -91,8 +94,8 @@
         };   
         $(".whiteArrow").hide();
         $(".blackArrow").hide();
-        $(document).ready(()=>{ $('#promotions').change(()=>{ promotionPiece = $("#promotions").val(); }); });
         $(document).ready(()=>{ $('#flip').click(flipBoard) });
+        $(document).ready(()=>{ $('#draw').click(()=>{ alert("This button does nothing yet. Feature coming soon!") }); });
         $(document).ready(()=>{ $('#resign').click(()=>{ resignGame(); }); });
         $(window).keydown((event)=>{ if (event.which === 13 && document.activeElement === document.getElementById('inputMessage')) { sendMessage(); }; });
 
@@ -138,6 +141,12 @@
             clearTimeout(chatTimeout);
             displayChat(data);
         });
+
+        setPromotions = (val, id)=>{
+            promotionPiece = val;
+            $('.proPiece').removeClass("selected");
+            $(`#${id}`).addClass("selected");
+        }
 
         resetConnections = ()=>{
             $('#whiteStatus').html(`(offline)`);
