@@ -71,10 +71,13 @@
         </div>
     </div>
     <script type="text/javascript">
-        let decodedJson = decodeURIComponent("{{{encodedJson}}}"), userData = JSON.parse(decodedJson), socket = io('/match'), moveTimeout, chatTimeout,
-        movesMade = [], promotionPiece = "q", nextPlayer = 'white', status, resignation = false, gameEnd = false, chatMessages = [], topPlayer = "black",
+
+        let decodedJson = decodeURIComponent("{{{encodedJson}}}"), userData = JSON.parse(decodedJson), socket = io('/match'), 
+        moveTimeout, chatTimeout, statusTimeout, movesMade = [], promotionPiece = "q", nextPlayer = 'white', status, conStatus, initialStatus = true;
+        resignation = false, gameEnd = false, chatMessages = [], topPlayer = "black",
         whiteName = `<div id="whiteName"><span class="whiteArrow">&rarr;</span> <span class="chessPiece white"></span> ${userData.white_name} <span id="whiteStatus" style="font-style: italic">(offline)</span> <span class="whiteArrow">&larr;</span></div>`,
         blackName = `<div id="blackName"><span class="blackArrow">&rarr;</span> <span class="chessPiece black"></span> ${userData.black_name} <span id="blackStatus" style="font-style: italic">(offline)</span> <span class="blackArrow">&larr;</span></div>`;
+        
         userData.logo ? $('#logoBox').append(`<img src=${userData.logo}></img>`) : $("#logoBox").append(`<img src=/images/tcs-logo.png></img>`);
         userData.header ? $('#headerText').html(`${userData.header}`) : $('#headerText').html(`The Chess School`);
         userData.player_color == "observer" ? $('.playerInput').hide() : $('#flipButton').hide();
@@ -101,7 +104,8 @@
             console.log("Disconnected from server");
             board.enableUserInput(false);
             $("#resign").attr("disabled", true); 
-            $("#send").attr("disabled", true); 
+            $("#send").attr("disabled", true);
+            initialStatus = true; 
             resetConnections();
         });
 
@@ -119,7 +123,7 @@
         });
 
         socket.on('status', (data)=>{
-            setConStatus(data);
+            beforeSetConStatus(data);
         });
 
         socket.on('moves', (data)=>{
@@ -141,10 +145,27 @@
             $('#observers').empty();
         };
 
-        setConStatus = (res)=>{
+        beforeSetConStatus = (res)=>{
+            conStatus = res;
+            clearTimeout(statusTimeout);
+            if (!conStatus.some(e => e.id == userData.player_id)) {
+                console.log("fail");
+                socket.close();
+                socket.open();
+            } else 
+            if (initialStatus) {
+                initialStatus = false;
+                setConStatus();
+            }
+            else {
+                statusTimeout = setTimeout(()=>{ setConStatus(); }, 5000);
+            };
+        };
+
+        setConStatus = ()=>{
             resetConnections();
             let coaches = [], observers = [];
-            for (let user of res) {
+            for (let user of conStatus) {
                 if (user.color == "white") { $('#whiteStatus').empty(); } else 
                 if (user.color == "black") { $('#blackStatus').empty(); } else 
                 if (user.is_coach) { coaches.push(user) }
@@ -159,11 +180,6 @@
                 $('#noObservers').hide();
                 observers.sort((a, b) => (a.name > b.name) ? 1 : -1);
                 for (observer of observers) {  $('#observers').append(`${observer.name}<br/>`); }
-            }
-            if (!res.some(e => e.id == userData.player_id)) {
-                console.log("fail");
-                socket.close();
-                socket.open();
             };
         };
 
