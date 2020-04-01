@@ -105,8 +105,9 @@
             board.enableUserInput(false);
             $("#resign").attr("disabled", true); 
             $("#send").attr("disabled", true);
-            initialStatus = true; 
-            resetConnections();
+            initialStatus = true;
+            clearTimeout(statusTimeout);
+            statusTimeout = setTimeout(()=>{ resetConnections(); }, 5000);
         });
 
         socket.on('reconnect', ()=>{ 
