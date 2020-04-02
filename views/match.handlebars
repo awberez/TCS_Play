@@ -12,29 +12,20 @@
         </div>
         <div class="row justify-content-center">
             <div class="col-6">
-                <div class="infoBox">
+                <div class="infoBox mainBox float-right">
                     <div class="outlineBar text-center">
                         <div id="status"></div>
                     </div>
-                    <div class="row">
-                        <div class="col-5">
-                            <div id="connections">
-                                <br/>
-                                <div style="font-weight: bold">Observers:</div>
-                                <div id="noObservers" style="font-style: italic">none</div>
-                                <div id="observers" class="text-display"></div>
-                            </div>
-                            <br/>
-                        </div>
-                        <div class="col-7">
-                            <div class="pgnDiv">
-                                <br/>
-                                <label style="font-weight: bold">Moves:</label>
-                                <div id="pgn" class="textDisplay"></div>
-                            </div>
-                        </div>
+                    <div id="connections">
+                        <div style="font-weight: bold">Observers:</div>
+                        <div id="observers" class="text-display"><i>none</i></div>
                     </div>
-                    <div class="chatDiv col-12">
+                    <div class="pgnDiv">
+                        <div style="font-weight: bold">Moves:</div>
+                        <div id="pgn" class="textDisplay"></div>
+                    </div>
+                    <div class="chatContainer">
+                        <div style="font-weight: bold">Chat:</div>
                         <div id="chatBox">
                             <div id="chatDiv"></div>
                         </div>
@@ -47,7 +38,7 @@
                 </div>
             </div>
             <div class="col-6 text-center">
-                <div class="infoBox chessBox">
+                <div class="infoBox chessBox mainBox">
                     <div class="playerInput drawBtn">
                         <button id="draw" type="button">Draw</button>
                     </div>
@@ -151,8 +142,7 @@
         resetConnections = ()=>{
             $('#whiteStatus').html(`(offline)`);
             $('#blackStatus').html(`(offline)`);
-            $('#noObservers').show();
-            $('#observers').empty();
+            $('#observers').html(`<i>none</i>`);
         };
 
         beforeSetConStatus = (res)=>{
@@ -181,15 +171,16 @@
                 if (user.is_coach) { coaches.push(user) }
                 else { observers.push(user); };
             };
-            if (coaches.length !== 0) {
-                $('#noObservers').hide();
-                coaches.sort((a, b) => (a.name > b.name) ? 1 : -1);
-                for (coach of coaches) {  $('#observers').append(`${coach.name}&#9734;<br/>`); }
-            }
-            if (observers.length !== 0) {
-                $('#noObservers').hide();
-                observers.sort((a, b) => (a.name > b.name) ? 1 : -1);
-                for (observer of observers) {  $('#observers').append(`${observer.name}<br/>`); }
+            if (coaches.length !== 0 || observers.length !== 0) {
+                $('#observers').empty();
+                if (coaches.length !== 0) {
+                    coaches.sort((a, b) => (a.name > b.name) ? 1 : -1);
+                    for (coach of coaches) {  $('#observers').append(`${coach.name}&#9734;<br/>`); }
+                }
+                if (observers.length !== 0) {
+                    observers.sort((a, b) => (a.name > b.name) ? 1 : -1);
+                    for (observer of observers) {  $('#observers').append(`${observer.name}<br/>`); }
+                };
             };
         };
 
