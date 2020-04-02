@@ -9,6 +9,7 @@
 
 body {
 	background-image: url(../images/chess-bg.gif);
+	font-family: 'Open Sans', sans-serif;
 }
 
 button {
@@ -36,6 +37,10 @@ hr {
 	border-top: 1px solid #e7e7e7;
 }
 
+#headerText, .boxLabel {
+	font-family: 'Roboto', sans-serif;
+}
+
 #status {
 	padding-top: 13px;
 	padding-bottom: 13px;
@@ -51,7 +56,7 @@ hr {
 	color: #428bca;
 	position: absolute;
 	bottom: 22px;
-	left: 12px;
+	left: 8px;
 }
 
 .proPiece {
@@ -162,10 +167,14 @@ hr {
 
 .whiteMessage {
 	background-color: rgb(40, 94, 142, 0.15);
+	padding-left: 3px;
+	padding-right: 3px;
 }
 
 .blackMessage {
 	background-color: rgb(189, 73, 50, 0.15);
+	padding-left: 3px;
+	padding-right: 3px;
 }
 
 .infoBox {
@@ -173,7 +182,7 @@ hr {
 	border: 1px solid #428bca;
 	border-radius: 3px;
 	flex: 1;
-	height:100%;
+	height: 100%;
 	position: relative;
 }
 
@@ -182,19 +191,24 @@ hr {
 	overflow-x: wrap; 
 	height: 100%;
 	width: 100%;
+	border: 1px solid #428bca;
+	border-radius: 3px;
+	background: white;
+	padding-left: 3px;
+	padding-right: 3px;
 }
 
 .pgnDiv {
 	position: absolute;
 	top: 60px;
 	right: 11px;
-	height: calc(100% - 152px);
-	width: 110px;
+	height: calc(100% - 144px);
+	width: 120px;
 }
 
 #connections {
 	height: 120px;
-	width: calc(100% - 147px);
+	width: calc(100% - 157px);
 	position: absolute;
 	top: 60px;
 	left: 11px;
@@ -203,19 +217,26 @@ hr {
 #observers {
 	overflow-y: scroll;
 	overflow-x: wrap; 
+	overflow-wrap: break-word;
 	height: 100%;
 	width: 100%;
+	border: 1px solid #428bca;
+	border-radius: 3px;
+	background: white;
+	padding-left: 3px;
+	padding-right: 3px;
 }
 
 #chatBox {
 	overflow-y: scroll; 
 	overflow-x:wrap; 
+	overflow-wrap: break-word;
 	border: 1px solid #428bca;
 	border-radius: 3px;
 	background: white;
 	height: 100%;
 	margin-bottom: 5px;
-	width: calc(100% - 146px);
+	width: 100%;
 }
 
 #chatTypeBox {
@@ -227,7 +248,7 @@ hr {
 	position: absolute;
 	left: 11px;
 	bottom: 84px;
-	width: 100%;
+	width: calc(100% - 156px);
 }
 
 .timeDisplay {
