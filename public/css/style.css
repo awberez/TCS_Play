@@ -56,7 +56,13 @@ hr {
 	color: #428bca;
 	position: absolute;
 	bottom: 22px;
-	left: 8px;
+	left: 0px;
+}
+
+.proPawn {
+	font-family: "LOC Chess Pieceset",Fallback,sans-serif;
+	vertical-align: 15%;
+	font-size: 15px;
 }
 
 .proPiece {
@@ -203,12 +209,12 @@ hr {
 	top: 60px;
 	right: 11px;
 	height: calc(100% - 144px);
-	width: 120px;
+	width: 135px;
 }
 
 #connections {
 	height: 120px;
-	width: calc(100% - 157px);
+	width: calc(100% - 171px);
 	position: absolute;
 	top: 60px;
 	left: 11px;
@@ -248,7 +254,7 @@ hr {
 	position: absolute;
 	left: 11px;
 	bottom: 84px;
-	width: calc(100% - 156px);
+	width: calc(100% - 171px);
 }
 
 .timeDisplay {
