@@ -210,13 +210,25 @@ module.exports = (app)=>{
 			        	where: { match_id: client.match_id },
 			        	order: [ [ 'id', 'DESC' ]]
 			    	}).then((gameMoves)=>{
-			    		if (data.resign && data.move_id == gameMoves.length) {
+			    		if (data.resign && data.move_id == gameMoves.length && data.game_end != "draw") {
 			    			colorConsole(`${client.color} player has resigned`);
 			    			db.GameMove.create({ 
 						    	match_id: client.match_id,
 						    	lastMove: client.color,
 						    	fen: data.fen,
 						    	resign_id: client.player_id
+						    }).then(() => { db.GameList.update( {game_status: data.game_end}, {returning: true, where: {match_id: client.match_id}} ).then(()=>{ 
+						    	sendMatchContent(db.GameMove, 'moves'); }); 
+						    	axios.get(`https://thechessschool.net/matches/status/${client.match_id}/${data.game_end}`).then((res)=>{ console.log(res); }).catch((error)=>{ console.log(error); });
+							}); 
+			    		} else 
+			    		if (data.resign && data.move_id == gameMoves.length && data.game_end == "draw") {
+			    			console.log(colors.white(`match ${client.match_id} is a draw`));
+			    			db.GameMove.create({ 
+						    	match_id: client.match_id,
+						    	lastMove: client.color,
+						    	fen: data.fen,
+						    	resign_id: "draw"
 						    }).then(() => { db.GameList.update( {game_status: data.game_end}, {returning: true, where: {match_id: client.match_id}} ).then(()=>{ 
 						    	sendMatchContent(db.GameMove, 'moves'); }); 
 						    	axios.get(`https://thechessschool.net/matches/status/${client.match_id}/${data.game_end}`).then((res)=>{ console.log(res); }).catch((error)=>{ console.log(error); });
@@ -256,6 +268,16 @@ module.exports = (app)=>{
 	  			}),
 	  			fen: message.fen
 	  		}).then(()=>{ sendMatchContent(db.GameChat, 'chat'); })
+	  	});
+
+	  	client.on('draw', (data)=>{
+	  		console.log(colors.white(`draw offered in match ${client.match_id}`));
+	  		match.to(client.room).emit('draw', data);
+	  	});
+
+	  	client.on('decline', (data)=>{
+	  		console.log(colors.white(`draw offer in match ${client.match_id} has been declined`));
+	  		match.to(client.room).emit('decline', data);
 	  	});
 
 	  	sendMatchContent = (dbTable, channel)=>{

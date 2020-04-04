@@ -125,6 +125,15 @@ hr {
 	max-width: calc(100vh - 300px);
 }
 
+.infoBox {
+	background-color: white;
+	border: 1px solid #428bca;
+	border-radius: 3px;
+	flex: 1;
+	height: 100%;
+	position: relative;
+}
+
 #logoBox img {
 	height: 40px;
 	width: 150px;
@@ -137,6 +146,15 @@ hr {
 .nameBox {
 	padding-top: 9px;
 	padding-bottom: 11px;
+}
+
+#statusPreview {
+	position: absolute;
+	padding-top: 13px;
+	padding-bottom: 13px;
+	left: 18px;
+	color: #bd2c2a;
+	font-weight: bold;
 }
 
 .white {
@@ -181,15 +199,6 @@ hr {
 	background-color: rgb(189, 73, 50, 0.15);
 	padding-left: 3px;
 	padding-right: 3px;
-}
-
-.infoBox {
-	background-color: white;
-	border: 1px solid #428bca;
-	border-radius: 3px;
-	flex: 1;
-	height: 100%;
-	position: relative;
 }
 
 .textDisplay {
@@ -272,5 +281,17 @@ hr {
 #myBoard {
 	width: 100%; 
 	max-width: calc(100vh - 300px);
-	border: 25px solid #6598ad;	
+	border: 25px solid #6598ad;
+}
+
+.testDiv {
+	width: 100%; 
+	max-width: calc(100vh - 300px);
+	border: 25px solid #6598ad;
+}
+
+.testDiv:after {
+  content: "";
+  display: block;
+  padding-bottom: 100%;
 }
