@@ -8,7 +8,8 @@ module.exports = (app)=>{
   /*example newgame req json:
   	{ 	match_id: '492241',
 	  	logo: 'logo png string',
-		header: 'header string,
+		header: 'header string',
+		callback_url: 'url string',
   		white_player: { id: '123', username: 'WhitePlayerName', uuid: '4244-4114-6867-5666' },
   		black_player: { id: '321', username: 'BlackPlayerName', uuid: '6533-4566-8453-1568' },
   		coaches: [ 
@@ -35,7 +36,8 @@ module.exports = (app)=>{
 						white_id: req.body.white_player.id,
 				    	black_id: req.body.black_player.id,
 				    	logo: req.body.logo,
-				    	header: req.body.header
+				    	header: req.body.header,
+				    	callback_url: req.body.callback_url
 				    }).then(() => {
 				    	let uuids = [], names = [];
 				    	uuids.push(
@@ -67,6 +69,39 @@ module.exports = (app)=>{
 		    	}    
 		    });
 		    
+	    });
+  	});
+
+  	/*example updategame req json:
+  	{ 	match_id: '492241',
+  		game_status: 'white/black/draw/incomplete'  (optional)
+	  	logo: 'logo png string',   					(optional)
+		header: 'header string',   					(optional)
+		callback_url: 'url string' 					(optional)
+    }*/
+
+  	app.post("/updategame", (req, res)=>{
+  		console.log(colors.white(req.body));
+		db.GameList.findOne({
+	        where: { match_id: req.body.match_id }
+	    }).then((dbGame)=>{
+	    	if (!dbGame) { res.send("failure"); }
+	    	else {
+	    		let updateData = {};
+	    		if (req.body.game_status) { updateData.game_status = req.body.game_status; };
+	    		if (req.body.logo) { updateData.logo = req.body.logo; };
+	    		if (req.body.header) { updateData.header = req.body.header; };
+	    		if (req.body.callback_url) { updateData.callback_url = req.body.callback_url; };
+	    		if (updateData.logo || updateData.header || updateData.callback_url) {
+		    		db.GameList.update(
+		    			updateData,
+		    			{returning: true, plain: true, where: {match_id: client.match_id}
+		    		}).then(()=>{
+		    			res.send("success");
+		    		});
+		    	}
+		    	else { res.send("failure"); };
+	    	};
 	    });
   	});
 
@@ -218,8 +253,8 @@ module.exports = (app)=>{
 						    	fen: data.fen,
 						    	resign_id: client.player_id
 						    }).then(() => { db.GameList.update( {game_status: data.game_end}, {returning: true, where: {match_id: client.match_id}} ).then(()=>{ 
-						    	sendMatchContent(db.GameMove, 'moves'); }); 
-						    	axios.get(`https://thechessschool.net/matches/status/${client.match_id}/${data.game_end}`).then((res)=>{ console.log(res); }).catch((error)=>{ console.log(error); });
+						    	sendMatchContent(db.GameMove, 'moves'); });
+						    	if (dbGame.callback_url) { axios.get(`${dbGame.callback_url}${client.match_id}/${data.game_end}`).then((res)=>{ console.log(res); }).catch((error)=>{ console.log(error); }); };
 							}); 
 			    		} else 
 			    		if (data.resign && data.move_id == gameMoves.length && data.game_end == "draw") {
@@ -231,7 +266,7 @@ module.exports = (app)=>{
 						    	resign_id: "draw"
 						    }).then(() => { db.GameList.update( {game_status: data.game_end}, {returning: true, where: {match_id: client.match_id}} ).then(()=>{ 
 						    	sendMatchContent(db.GameMove, 'moves'); }); 
-						    	axios.get(`https://thechessschool.net/matches/status/${client.match_id}/${data.game_end}`).then((res)=>{ console.log(res); }).catch((error)=>{ console.log(error); });
+						    	if (dbGame.callback_url) { axios.get(`${dbGame.callback_url}${client.match_id}/${data.game_end}`).then((res)=>{ console.log(res); }).catch((error)=>{ console.log(error); }); };
 							}); 
 			    		} else 
 			    		if ((gameMoves[1] && data.from && gameMoves[1].lastMove == client.color && gameMoves[1].from !== data.from && gameMoves[1].to !== data.to && data.move_id == gameMoves.length + 1) || 
@@ -254,7 +289,7 @@ module.exports = (app)=>{
 						    }); 
 				    	};
 					});
-				}
+				};
 			});
 	    });
 

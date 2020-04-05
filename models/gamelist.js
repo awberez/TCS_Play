@@ -25,6 +25,9 @@ module.exports = function(sequelize, DataTypes) {
     header: {type: DataTypes.STRING,
         allowNull: true
     }, 
+    callback_url: {type: DataTypes.STRING,
+        allowNull: true
+    },
     createdAt: DataTypes.DATE,
     updatedAt: DataTypes.DATE,
     

@@ -203,9 +203,7 @@
                 initialStatus = false;
                 setConStatus();
             }
-            else {
-                statusTimeout = setTimeout(()=>{ setConStatus(); }, 5000);
-            };
+            else { statusTimeout = setTimeout(()=>{ setConStatus(); }, 3000); };
         };
 
         setConStatus = ()=>{
