@@ -92,10 +92,10 @@ module.exports = (app)=>{
 	    		if (req.body.logo) { updateData.logo = req.body.logo; };
 	    		if (req.body.header) { updateData.header = req.body.header; };
 	    		if (req.body.callback_url) { updateData.callback_url = req.body.callback_url; };
-	    		if (updateData.logo || updateData.header || updateData.callback_url) {
+	    		if (updateData.game_status || updateData.logo || updateData.header || updateData.callback_url) {
 		    		db.GameList.update(
 		    			updateData,
-		    			{returning: true, plain: true, where: {match_id: client.match_id}
+		    			{returning: true, plain: true, where: {match_id: req.body.match_id}
 		    		}).then(()=>{
 		    			res.send("success");
 		    		});
@@ -148,7 +148,9 @@ module.exports = (app)=>{
 					    		white_id: dbGame.white_id,
 					    		white_name: dbWhite.user_name,
 					    		black_id: dbGame.black_id,
-					    		black_name: dbBlack.user_name
+					    		black_name: dbBlack.user_name,
+					    		logo: dbGame.logo,
+					    		header: dbGame.header
 					    	};
 					    	if (dbGame.logo) { userData.logo = dbGame.logo; };
 					    	if (dbUuid.user_id == dbGame.white_id) {
@@ -254,7 +256,7 @@ module.exports = (app)=>{
 						    	resign_id: client.player_id
 						    }).then(() => { db.GameList.update( {game_status: data.game_end}, {returning: true, where: {match_id: client.match_id}} ).then(()=>{ 
 						    	sendMatchContent(db.GameMove, 'moves'); });
-						    	if (dbGame.callback_url) { axios.get(`${dbGame.callback_url}${client.match_id}/${data.game_end}`).then((res)=>{ console.log(res); }).catch((error)=>{ console.log(error); }); };
+						    	if (dbGame.callback_url) { axios.get(`${dbGame.callback_url}${data.game_end}`).then((res)=>{ console.log(res); }).catch((error)=>{ console.log(error); }); };
 							}); 
 			    		} else 
 			    		if (data.resign && data.move_id == gameMoves.length && data.game_end == "draw") {
@@ -266,7 +268,7 @@ module.exports = (app)=>{
 						    	resign_id: "draw"
 						    }).then(() => { db.GameList.update( {game_status: data.game_end}, {returning: true, where: {match_id: client.match_id}} ).then(()=>{ 
 						    	sendMatchContent(db.GameMove, 'moves'); }); 
-						    	if (dbGame.callback_url) { axios.get(`${dbGame.callback_url}${client.match_id}/${data.game_end}`).then((res)=>{ console.log(res); }).catch((error)=>{ console.log(error); }); };
+						    	if (dbGame.callback_url) { axios.get(`${dbGame.callback_url}${data.game_end}`).then((res)=>{ console.log(res); }).catch((error)=>{ console.log(error); }); };
 							}); 
 			    		} else 
 			    		if ((gameMoves[1] && data.from && gameMoves[1].lastMove == client.color && gameMoves[1].from !== data.from && gameMoves[1].to !== data.to && data.move_id == gameMoves.length + 1) || 
@@ -283,7 +285,7 @@ module.exports = (app)=>{
 						    }).then(() => { 
 						    	if (data.game_end) { db.GameList.update( {game_status: data.game_end}, {returning: true, where: {match_id: client.match_id}} ).then(()=>{ 
 						    		sendMatchContent(db.GameMove, 'moves'); }); 
-						    		axios.get(`https://thechessschool.net/matches/status/${client.match_id}/${data.game_end}`).then((res)=>{ console.log(res); }).catch((error)=>{ console.log(error); });
+						    		if (dbGame.callback_url) { axios.get(`${dbGame.callback_url}${data.game_end}`).then((res)=>{ console.log(res); }).catch((error)=>{ console.log(error); }); };
 						    	}
 						    	else { sendMatchContent(db.GameMove, 'moves'); };
 						    }); 
