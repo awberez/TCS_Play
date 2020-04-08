@@ -16,7 +16,7 @@ $(function(){
 			}
 			$.post(`/newgame`, data, (res)=>{ 
 				if (res == "success") {
-					let matchUrl = `${window.location.href}match/`, observeUrl = `${window.location.href}observe/${match}/`;
+					let matchUrl = `${window.location.href.slice(0, -9)}match/`, observeUrl = `${window.location.href}observe/${match}/`;
 					$("#gameLinks").empty().append(`
 						<a id="whiteLink" href=${matchUrl}${data.white_player.uuid} target="blank">White Player Link</a><p>Copyable URL: ${matchUrl}${data.white_player.uuid}</p>
 						<a id="blackLink" href=${matchUrl}${data.black_player.uuid} target="blank">Black Player Link</a><p>Copyable URL: ${matchUrl}${data.black_player.uuid}</p>
