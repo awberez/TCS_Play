@@ -244,13 +244,13 @@
         updateGameInfo = ()=>{
             $('#status').html(status);
             $('#statusPreview').empty();
-            if (chess.in_check()) { $('#statusPreview').html(`Check!`) } else
             if (chess.in_draw() || chess.in_threefold_repetition() || chess.in_stalemate()) { $('#statusPreview').html(`Draw!`) } else
             if (chess.in_checkmate()) { 
                 $("#resign").attr("disabled", true);
                 $("#draw").attr("disabled", true);
                 $('#statusPreview').html(`Checkmate!`) 
             } else
+            if (chess.in_check()) { $('#statusPreview').html(`Check!`) } else
             if (resignation) { 
                 $("#resign").attr("disabled", true);
                 $("#draw").attr("disabled", true);

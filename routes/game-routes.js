@@ -4,7 +4,7 @@ sanitizeHtml = require('sanitize-html'), axios = require('axios');
 module.exports = (app)=>{
 
 	let io = app.get('socketio'), match = io.of('/match'), matchConnections = {};
-
+	
   /*example newgame req json:
   	{ 	match_id: '492241',
 	  	logo: 'logo png string',
