@@ -266,6 +266,35 @@ hr {
 	width: calc(100% - 171px);
 }
 
+.chatContainerReview {
+	height: 200px !important;
+	top: 60px !important;
+}
+
+#noteBox {
+	overflow-y: scroll; 
+	overflow-x:wrap; 
+	overflow-wrap: break-word;
+	border: 1px solid #428bca;
+	border-radius: 3px;
+	background: white;
+	height: 100%;
+	margin-bottom: 5px;
+	width: 100%;
+}
+
+#noteTypeBox {
+	padding: 10px 0px 10px 10px;
+}
+
+.noteContainer {
+	height: calc(100% - 370px);
+	position: absolute;
+	left: 11px;
+	bottom: 84px;
+	width: calc(100% - 171px);
+}
+
 .timeDisplay {
 	font-size: 12px;
 }

@@ -1,0 +1,244 @@
+<main>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <br/>
+                <a href="https://thechessschool.net/home"><span id="logoBox"></span></a>
+            </div>
+            <hr/>
+            <div class="col-12 text-center">
+                <h1 id="headerText"></h1>
+            </div>
+        </div>
+        <div class="row justify-content-center">
+            <div class="col-6">
+                <div class="infoBox mainBox float-right">
+                    <div class="outlineBar text-center">
+                        <div id="status"></div>
+                    </div>
+                    <div class="chatContainer chatContainerReview">
+                        <div class="boxLabel"  style="font-weight: bold">Chat:</div>
+                        <div id="chatBox">
+                            <div id="chatDiv"></div>
+                        </div>
+                    </div>
+                    <div class="noteContainer">
+                        <div class="boxLabel"  style="font-weight: bold">Notes:</div>
+                        <div id="noteBox">
+                            <div id="noteDiv"></div>
+                        </div>
+                    </div>
+                    <div class="pgnDiv">
+                        <div class="boxLabel"  style="font-weight: bold">Moves:</div>
+                        <div id="pgn" class="textDisplay"></div>
+                    </div>
+                    <div class="outlineBar bottom">
+                          <div id="noteTypeBox" class="playerInput justify-content-center">
+                            <input id="inputMessage" placeholder="Type here..."/><button id="send" onClick=sendMessage()>Send</button>
+                        </div>  
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 text-center">
+                <div class="infoBox chessBox mainBox">
+                    <div id="statusPreview"></div>
+                    <div id="topName" class="nameBox"></div> 
+                    <div id="myBoard"></div>
+                    <div id="bottomName" class="nameBox"></div>
+                    <div id="flipButton">
+                        <button id="flip" type="button">Flip Board</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript">
+
+        let decodedJson = decodeURIComponent("{{{encodedJson}}}"), userData = JSON.parse(decodedJson), socket = io('/review'), gameEnd = false, chatTime, noteTime,
+        noteTimeout, movesMade = [], nextPlayer = 'white', chatMessages = [], noteMessages = [], topPlayer = "black", resignation = false, drawAccepted = false,
+        whiteName = `<div id="whiteName"><span class="whiteArrow">&rarr;</span> <span class="chessPiece white"></span> ${userData.white_name} <span id="whiteStatus" style="font-style: italic">(offline)</span> <span class="whiteArrow">&larr;</span></div>`,
+        blackName = `<div id="blackName"><span class="blackArrow">&rarr;</span> <span class="chessPiece black"></span> ${userData.black_name} <span id="blackStatus" style="font-style: italic">(offline)</span> <span class="blackArrow">&larr;</span></div>`;
+        
+        userData.logo ? $('#logoBox').append(`<img src=${userData.logo}></img>`) : $("#logoBox").append(`<img src=/images/tcs-logo.png></img>`);
+        userData.header ? $('#headerText').html(`${userData.header}`) : $('#headerText').html(`The Chess School`);
+        $('#topName').html(blackName);
+        $('#bottomName').html(whiteName);  
+        $(".whiteArrow").hide();
+        $(".blackArrow").hide();
+        $(document).ready(()=>{ $('#flip').click(flipBoard) });
+        $(window).keydown((event)=>{ if (event.which === 13 && document.activeElement === document.getElementById('inputMessage')) { sendMessage(); }; });
+
+        socket.on('connect', (data)=>{
+            socket.emit('join', userData);
+        });
+
+        socket.on('disconnect', (data)=>{
+            $("#send").attr("disabled", true);
+        });
+
+        socket.on('reconnect', ()=>{ 
+            $("#send").attr("disabled", false); 
+        });
+
+        socket.on('messages', (data)=>{
+            console.log(data);
+        });
+
+        socket.on('alert', (data)=>{
+            alert(data);
+        });
+
+        socket.on('moves', (data)=>{
+            console.log(`${movesMade.length < data.length - 1 ? "moves" : "move"} received`);
+            displayMove(data);
+        });
+
+        socket.on('chat', (data)=>{
+            console.log(`${chatMessages.length < data.length - 1 ? "messages" : "message"} received`);
+            //clearTimeout(chatTimeout);
+            displayChat(data);
+        });
+
+        socket.on('notes', (data)=>{
+            console.log(`${noteMessages.length < data.length - 1 ? "messages" : "message"} received`);
+            //clearTimeout(chatTimeout);
+            displayNotes(data);
+        });
+
+        resetGame = ()=>{
+            board.setPosition(ChessUtils.FEN.startId);
+            userData.player_color == "black" ? board.setOrientation(ChessUtils.ORIENTATION.black) : board.setOrientation(ChessUtils.ORIENTATION.white);
+            chess.reset();
+            board.enableUserInput(false);
+            status = 'White to move.';
+            nextPlayer = 'White';
+            updateGameInfo();
+        };
+
+        updateGameInfo = ()=>{
+            $('#status').html(status);
+            $('#statusPreview').empty();
+            if (chess.in_draw() || chess.in_threefold_repetition() || chess.in_stalemate()) { $('#statusPreview').html(`Draw!`) } else
+            if (chess.in_checkmate()) { $('#statusPreview').html(`Checkmate!`) } else
+            if (chess.in_check()) { $('#statusPreview').html(`Check!`) } else
+            if (resignation) { $('#statusPreview').html(`Resigned!`) } else
+            if (drawAccepted) { $('#statusPreview').html(`Draw!`) };
+            $('#pgn').html(chess.pgn().replace(/ (?=\d+\.)/g, '<br/>'));
+            document.getElementById("pgn").scrollTop = document.getElementById("pgn").scrollHeight;
+            $(".whiteArrow").hide();
+            $(".blackArrow").hide();
+            if (!gameEnd) { nextPlayer == 'White' ? $(".whiteArrow").show() : $(".blackArrow").show(); };
+        };
+
+        flipBoard = ()=>{
+            board.setOrientation(ChessUtils.ORIENTATION.flip);
+            topPlayer = (topPlayer == "white") ? "black" : "white";
+            $('#topName').html(topPlayer == "white" ? whiteName : blackName);
+            $('#bottomName').html(topPlayer == "white" ? blackName : whiteName);
+        };
+
+        changeGameStatus = ()=>{
+            nextPlayer = 'White';
+            if (chess.turn() === 'b') { nextPlayer = 'Black'; };
+            if (chess.in_checkmate()) { gameEnd = (nextPlayer == 'White') ? "black" : "white", status = `CHECKMATE! ${nextPlayer == 'White' ? "Black" : "White"} wins!`; } else 
+            if (chess.in_draw() || chess.in_threefold_repetition() || chess.in_stalemate()) { gameEnd = "draw", status = 'DRAW!'; } 
+            else {
+                status = `${nextPlayer} to move.`;
+                if (chess.in_check()) { status = `CHECK! ${status}`; };
+            };
+            updateGameInfo(); 
+        };
+
+        displayMove = (res)=>{
+            console.log(`moves recorded: ${movesMade.length}`);
+            console.log(`total moves: ${res.length}`);
+            if (movesMade.length < res.length) {
+                console.log("displaying new moves");
+                let n = res.length - movesMade.length;
+                for (i = n-1; 0 <= i; i--) {
+                    if (!res[i].resign_id) {
+                        let chessMove = chess.move({
+                          from: res[i].from,
+                          to: res[i].to,
+                          promotion: res[i].promotion
+                        });
+                        movesMade.push(chessMove);
+                        board.setPosition(res[i].fen);
+                        changeGameStatus();
+                    }
+                    else {
+                        if (res[i].resign_id != "draw") {
+                            resignation = true;
+                            status = `RESIGNATION! ${res[i].resign_id == userData.white_id ? "White" : "Black"} has resigned!`;
+                        }
+                        else {
+                            drawAccepted = true;
+                            status = `DRAW! A draw has been accepted!`;
+                        };
+                        updateGameInfo();
+                    };
+                };
+            };
+        };
+
+        sendMessage = () => {
+            let message = $('#inputMessage').val();
+            if (message && socket.connected) {
+                $('#inputMessage').val('')
+                let noteData = {
+                    text: message,
+                    fen: chess.fen(),
+                }
+                console.log("message sent");
+                socket.emit('note', noteData);
+                noteTimeout = setTimeout(()=>{
+                    socket.close();
+                    socket.open();
+                }, 500);
+            };
+        };
+
+        displayChat = (res)=>{
+            console.log(`messages recorded: ${chatMessages.length}`);
+            console.log(`total messages: ${res.length}`);
+            if (chatMessages.length < res.length) {
+                console.log("displaying new messages");
+                let n = res.length - chatMessages.length;
+                for (i = n-1; 0 <= i; i--) {
+                    chatMessages.push(res)
+                    let newChatTime = new Date(res[i].createdAt);
+                    localTime = newChatTime.toLocaleDateString(undefined, {
+                        day:'2-digit',
+                        month: '2-digit',
+                        year: '2-digit',
+                        minute: 'numeric',
+                        hour: 'numeric'
+                    });
+                    if (chatMessages.length == 1) { 
+                        chatTime = newChatTime;
+                    } else
+                    if (newChatTime.getDate() == chatTime.getDate() &&
+                        newChatTime.getUTCMonth() == chatTime.getUTCMonth() &&
+                        newChatTime.getFullYear() == chatTime.getFullYear()) {
+                        localTime = localTime.substring(9);
+                    }
+                    else { chatTime = newChatTime; }
+                    $('#chatDiv').append(`
+                        <div id="messageID${chatMessages.length}" class=${res[i].player_id == userData.white_id ? "whiteMessage" : "blackMessage"}>
+                            [<span class="timeDisplay">${localTime}</span>] ${res[i].player_id == userData.white_id ? `<span class="chessPiece white"></span>` : `<span class="chessPiece black"></span>`}: ${res[i].player_message}
+                        </div>
+                    `);
+                    document.getElementById("chatBox").scrollTop = document.getElementById("chatBox").scrollHeight;
+                };
+            };
+        };
+
+        let chess = new Chess(),
+        board = new Chessboard('myBoard', {
+            position: ChessUtils.FEN.startId,
+        });
+
+        resetGame();
+
+    </script>
+</main>

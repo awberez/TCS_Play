@@ -67,7 +67,7 @@
     </div>
     <script type="text/javascript">
 
-        let decodedJson = decodeURIComponent("{{{encodedJson}}}"), userData = JSON.parse(decodedJson), socket = io('/match'), 
+        let decodedJson = decodeURIComponent("{{{encodedJson}}}"), userData = JSON.parse(decodedJson), socket = io('/match'), chatTime,
         moveTimeout, chatTimeout, statusTimeout, movesMade = [], promotionPiece = "q", nextPlayer = 'white', status, conStatus, initialStatus = true;
         resignation = false, gameEnd = false, chatMessages = [], topPlayer = "black", drawOffer = false, drawAccepted = false, oppCon = false;
         whiteName = `<div id="whiteName"><span class="whiteArrow">&rarr;</span> <span class="chessPiece white"></span> ${userData.white_name} <span id="whiteStatus" style="font-style: italic">(offline)</span> <span class="whiteArrow">&larr;</span></div>`,
@@ -265,9 +265,7 @@
             document.getElementById("pgn").scrollTop = document.getElementById("pgn").scrollHeight;
             $(".whiteArrow").hide();
             $(".blackArrow").hide();
-            if (!gameEnd) {
-                nextPlayer == 'White' ? $(".whiteArrow").show() : $(".blackArrow").show();
-            }
+            if (!gameEnd) { nextPlayer == 'White' ? $(".whiteArrow").show() : $(".blackArrow").show(); };
         };
 
         flipBoard = ()=>{
@@ -402,16 +400,26 @@
                 let n = res.length - chatMessages.length;
                 for (i = n-1; 0 <= i; i--) {
                     chatMessages.push(res)
-                    let localTime = new Date(res[i].createdAt).toLocaleDateString(undefined, {
-                        day:'numeric',
-                        month: 'numeric',
+                    let newChatTime = new Date(res[i].createdAt);
+                    localTime = newChatTime.toLocaleDateString(undefined, {
+                        day:'2-digit',
+                        month: '2-digit',
                         year: '2-digit',
                         minute: 'numeric',
                         hour: 'numeric'
                     });
+                    if (chatMessages.length == 1) { 
+                        chatTime = newChatTime;
+                    } else
+                    if (newChatTime.getDate() == chatTime.getDate() &&
+                        newChatTime.getUTCMonth() == chatTime.getUTCMonth() &&
+                        newChatTime.getFullYear() == chatTime.getFullYear()) {
+                        localTime = localTime.substring(9);
+                    }
+                    else { chatTime = newChatTime; }
                     $('#chatDiv').append(`
                         <div id="messageID${chatMessages.length}" class=${res[i].player_id == userData.white_id ? "whiteMessage" : "blackMessage"}>
-                            [<span class="timeDisplay">${localTime}</span>] ${res[i].player_id == userData.white_id ? `<span class="chessPiece white"></span>` : `<span class="chessPiece black"></span>`} ${res[i].player_message}
+                            [<span class="timeDisplay">${localTime}</span>] ${res[i].player_id == userData.white_id ? `<span class="chessPiece white"></span>` : `<span class="chessPiece black"></span>`}: ${res[i].player_message}
                         </div>
                     `);
                     document.getElementById("chatBox").scrollTop = document.getElementById("chatBox").scrollHeight;

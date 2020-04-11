@@ -1,5 +1,5 @@
 module.exports = function(sequelize, DataTypes) {
-  let GameChat = sequelize.define("GameChat", {
+  let ReviewNote = sequelize.define("ReviewNote", {
     id: {type: DataTypes.INTEGER,
         allowNull: false,
         autoIncrement: true,
@@ -8,17 +8,17 @@ module.exports = function(sequelize, DataTypes) {
     match_id: {type: DataTypes.STRING,
         allowNull: false,
     },
-    player_id: {type: DataTypes.STRING,
+    user_name: {type: DataTypes.STRING,
         allowNull: false,
     },
-    player_message: {type: DataTypes.STRING,
+    user_message: {type: DataTypes.STRING,
         allowNull: false,
     },
     fen: {type: DataTypes.STRING,
         allowNull: false
     },
     createdAt: DataTypes.DATE,
-    updatedAt: DataTypes.DATE, 
+    updatedAt: DataTypes.DATE,
   });
-  return GameChat;
+  return ReviewNote;
 };
