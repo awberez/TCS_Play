@@ -60,7 +60,7 @@ module.exports = (app)=>{
 			    		where: { user_id: dbGame.black_id }
 			    	}).then((dbBlack)=>{
 				    	let userData = {
-				    		match_id: dbUuid.match_id,
+				    		match_id: dbGame.match_id,
 				    		white_id: dbGame.white_id,
 				    		white_name: dbWhite.user_name,
 				    		black_id: dbGame.black_id,
