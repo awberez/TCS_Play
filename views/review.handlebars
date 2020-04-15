@@ -46,7 +46,7 @@
                     <div id="myBoard"></div>
                     <div id="bottomName" class="nameBox"></div>
                     <div id="flipButton">
-                        <button id="flip" type="button">Flip Board</button>
+                        <button id="flip" type="button">Rotate</button>
                     </div>
                 </div>
             </div>
@@ -59,6 +59,7 @@
         whiteName = `<div id="whiteName"><span class="whiteArrow">&rarr;</span> <span class="chessPiece white"></span> ${userData.white_name} <span id="whiteStatus" style="font-style: italic">(offline)</span> <span class="whiteArrow">&larr;</span></div>`,
         blackName = `<div id="blackName"><span class="blackArrow">&rarr;</span> <span class="chessPiece black"></span> ${userData.black_name} <span id="blackStatus" style="font-style: italic">(offline)</span> <span class="blackArrow">&larr;</span></div>`;
         
+        if (!userData.user_name) { $('#noteTypeBox').hide(); };
         userData.logo ? $('#logoBox').append(`<img src=${userData.logo}></img>`) : $("#logoBox").append(`<img src=/images/tcs-logo.png></img>`);
         userData.header ? $('#headerText').html(`${userData.header}`) : $('#headerText').html(`The Chess School`);
         $('#topName').html(blackName);
