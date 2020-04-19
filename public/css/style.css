@@ -17,6 +17,7 @@ button {
 	color: #428bca;
 	background: white;
 	border: 2px solid #428bca;
+	outline: none !important;
 }
 
 button:hover {

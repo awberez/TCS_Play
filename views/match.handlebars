@@ -273,6 +273,9 @@
             topPlayer = (topPlayer == "white") ? "black" : "white";
             $('#topName').html(topPlayer == "white" ? whiteName : blackName);
             $('#bottomName').html(topPlayer == "white" ? blackName : whiteName);
+            $(".whiteArrow").hide();
+            $(".blackArrow").hide();
+            if (!gameEnd) { nextPlayer == 'White' ? $(".whiteArrow").show() : $(".blackArrow").show(); };
         };
 
         changeGameStatus = ()=>{
@@ -355,6 +358,7 @@
                     else {
                         if (res[i].resign_id != "draw") {
                             resignation = true;
+                            gameEnd = (res.lastMove == "white") ? "black" : "white";
                             status = `RESIGNATION! ${res[i].resign_id == userData.white_id ? "White" : "Black"} has resigned!`;
                         }
                         else {
