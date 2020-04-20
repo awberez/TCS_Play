@@ -105,7 +105,7 @@
 
         socket.on('moves', (data)=>{
             console.log(`${movesMade.length < data.length - 1 ? "moves" : "move"} received`);
-            movesMade = data, moveDisplay = movesMade.length - 1;
+            movesMade = data, moveDisplay = movesMade.length;
             displayMove();
         });
 
@@ -172,7 +172,7 @@
             console.log(`displaying ${moveDisplay} moves`);
             board.setPosition(ChessUtils.FEN.startId);
             chess.reset();
-            status = 'White to move.', nextPlayer = 'White';
+            status = 'White to move.', nextPlayer = 'White', resignation = false, drawAccepted = false;
             for (i = 0; i < moveDisplay; i++) {
                 console.log(movesMade[i].fen);
                 if (!movesMade[i].resign_id) {
@@ -200,10 +200,11 @@
         };
 
         switchMove = (where)=>{
-            if (where == "first") { moveDisplay = 1 } else
-            if (where == "back" && moveDisplay > 1) { moveDisplay-- } else
-            if (where == "forward" && moveDisplay < movesMade.length - 1) { moveDisplay++ } else 
-            if (where == "last") { moveDisplay = movesMade.length - 1; };
+            if (where == "first" && moveDisplay != 1) { moveDisplay = 1; } else
+            if (where == "back" && moveDisplay > 1) { moveDisplay--; } else
+            if (where == "forward" && moveDisplay < movesMade.length) { moveDisplay++; } else 
+            if (where == "last" && moveDisplay != movesMade.length) { moveDisplay = movesMade.length; }
+            else { return; };
             displayMove(); 
         };
 
