@@ -45,6 +45,20 @@
                     <div id="topName" class="nameBox"></div> 
                     <div id="myBoard"></div>
                     <div id="bottomName" class="nameBox"></div>
+                    <div id="reviewButtons">
+                        <div class="moveButtonDiv">
+                            <button id="firstB" class="moveButton" type="button" onClick=switchMove("first")>&#x23EE</button>
+                        </div>
+                        <div class="moveButtonDiv">
+                            <button id="backB" class="moveButton" type="button" onClick=switchMove("back")>&#x23EA</button>
+                        </div>
+                        <div class="moveButtonDiv">
+                            <button id="forB" class="moveButton" type="button" onClick=switchMove("forward")>&#x23E9</button>
+                        </div>
+                        <div class="moveButtonDiv">
+                            <button id="lastB" class="moveButton" type="button" onClick=switchMove("last")>&#x23ED</button>
+                        </div>
+                    </div>
                     <div id="flipButton">
                         <button id="flip" type="button">Rotate</button>
                     </div>
@@ -55,7 +69,7 @@
     <script type="text/javascript">
 
         let decodedJson = decodeURIComponent("{{{encodedJson}}}"), userData = JSON.parse(decodedJson), socket = io('/review'), gameEnd = false, chatTime, noteTime,
-        noteTimeout, movesMade = [], nextPlayer = 'white', chatMessages = [], noteMessages = [], topPlayer = "black", resignation = false, drawAccepted = false,
+        noteTimeout, movesMade = [], moveDisplay = 0, nextPlayer = 'white', chatMessages = [], noteMessages = [], topPlayer = "black", resignation = false, drawAccepted = false,
         whiteName = `<div id="whiteName"><span class="whiteArrow">&rarr;</span> <span class="chessPiece white"></span> ${userData.white_name} <span id="whiteStatus" style="font-style: italic">(offline)</span> <span class="whiteArrow">&larr;</span></div>`,
         blackName = `<div id="blackName"><span class="blackArrow">&rarr;</span> <span class="chessPiece black"></span> ${userData.black_name} <span id="blackStatus" style="font-style: italic">(offline)</span> <span class="blackArrow">&larr;</span></div>`;
         
@@ -91,7 +105,8 @@
 
         socket.on('moves', (data)=>{
             console.log(`${movesMade.length < data.length - 1 ? "moves" : "move"} received`);
-            displayMove(data);
+            movesMade = data, moveDisplay = movesMade.length - 1;
+            displayMove();
         });
 
         socket.on('chat', (data)=>{
@@ -103,7 +118,7 @@
         socket.on('notes', (data)=>{
             console.log(`${noteMessages.length < data.length - 1 ? "messages" : "message"} received`);
             //clearTimeout(chatTimeout);
-            displayNotes(data);
+            //displayNotes(data);
         });
 
         resetGame = ()=>{
@@ -153,37 +168,43 @@
             updateGameInfo(); 
         };
 
-        displayMove = (res)=>{
-            console.log(`moves recorded: ${movesMade.length}`);
-            console.log(`total moves: ${res.length}`);
-            if (movesMade.length < res.length) {
-                console.log("displaying new moves");
-                let n = res.length - movesMade.length;
-                for (i = n-1; 0 <= i; i--) {
-                    if (!res[i].resign_id) {
-                        let chessMove = chess.move({
-                          from: res[i].from,
-                          to: res[i].to,
-                          promotion: res[i].promotion
-                        });
-                        movesMade.push(chessMove);
-                        board.setPosition(res[i].fen);
-                        changeGameStatus();
+        displayMove = ()=>{
+            console.log(`displaying ${moveDisplay} moves`);
+            board.setPosition(ChessUtils.FEN.startId);
+            chess.reset();
+            status = 'White to move.', nextPlayer = 'White';
+            for (i = 0; i < moveDisplay; i++) {
+                console.log(movesMade[i].fen);
+                if (!movesMade[i].resign_id) {
+                    chess.move({
+                        from: movesMade[i].from,
+                        to: movesMade[i].to,
+                        promotion: movesMade[i].promotion
+                    });
+                    board.setPosition(movesMade[i].fen);
+                    changeGameStatus();
+                }
+                else {
+                    if (movesMade[i].resign_id != "draw") {
+                        resignation = true;
+                        gameEnd = (movesMade.lastMove == "white") ? "black" : "white";
+                        status = `RESIGNATION! ${movesMade[i].resign_id == userData.white_id ? "White" : "Black"} has resigned!`;
                     }
                     else {
-                        if (res[i].resign_id != "draw") {
-                            resignation = true;
-                            gameEnd = (res.lastMove == "white") ? "black" : "white";
-                            status = `RESIGNATION! ${res[i].resign_id == userData.white_id ? "White" : "Black"} has resigned!`;
-                        }
-                        else {
-                            drawAccepted = true;
-                            status = `DRAW! A draw has been accepted!`;
-                        };
-                        updateGameInfo();
+                        drawAccepted = true;
+                        status = `DRAW! A draw has been accepted!`;
                     };
+                    updateGameInfo();
                 };
             };
+        };
+
+        switchMove = (where)=>{
+            if (where == "first") { moveDisplay = 1 } else
+            if (where == "back" && moveDisplay > 1) { moveDisplay-- } else
+            if (where == "forward" && moveDisplay < movesMade.length - 1) { moveDisplay++ } else 
+            if (where == "last") { moveDisplay = movesMade.length - 1; };
+            displayMove(); 
         };
 
         sendMessage = () => {

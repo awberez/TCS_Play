@@ -103,7 +103,7 @@ module.exports = (app)=>{
 	    sendMatchContent = (dbTable, channel)=>{
 	  		dbTable.findAll({
 	        	where: { match_id: client.match_id },
-	        	order: [ [ 'id', 'DESC' ]]
+	        	order: [ [ 'id', 'ASC' ]]
 	    	}).then((dbData)=>{ review.to(client.room).emit(channel, dbData); });
 	  	};
 		

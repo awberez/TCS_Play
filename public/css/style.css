@@ -33,6 +33,21 @@ button:disabled:hover {
 	background: white;
 }
 
+#reviewButtons {
+	position: absolute;
+	bottom: 10px;
+	left: 10px;
+}
+
+.moveButtonDiv {
+	float: left;
+	
+}
+
+.moveButton {
+	padding: 0px 0px 0px 5px;
+}
+
 hr {
 	width: 100%;
 	border-top: 1px solid #e7e7e7;
