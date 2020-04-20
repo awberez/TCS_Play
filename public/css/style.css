@@ -39,6 +39,10 @@ button:disabled:hover {
 	left: 10px;
 }
 
+#moveSpan {
+	float:right;
+}
+
 .moveButtonDiv {
 	float: left;
 	

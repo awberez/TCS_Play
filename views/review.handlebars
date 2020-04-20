@@ -29,7 +29,7 @@
                         </div>
                     </div>
                     <div class="pgnDiv">
-                        <div class="boxLabel"  style="font-weight: bold">Moves:</div>
+                        <div id="moveLabel" class="boxLabel"  style="font-weight: bold">Moves:</div>
                         <div id="pgn" class="textDisplay"></div>
                     </div>
                     <div class="outlineBar bottom">
@@ -173,6 +173,7 @@
             board.setPosition(ChessUtils.FEN.startId);
             chess.reset();
             status = 'White to move.', nextPlayer = 'White', resignation = false, drawAccepted = false;
+            $("#moveLabel").html(`Moves: <span id="moveSpan">(${moveDisplay}/${movesMade.length})</span>`)
             for (i = 0; i < moveDisplay; i++) {
                 console.log(movesMade[i].fen);
                 if (!movesMade[i].resign_id) {
