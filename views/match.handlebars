@@ -305,10 +305,12 @@
                     promotion: promotionPiece,
                     fen: chess.fen(),
                     game_end: gameEnd,
-                    move_id: movesMade.length
+                    move_id: movesMade.length,
+                    pgn: chess.pgn()
                 };
                 board.enableUserInput(false);
                 console.log("move sent");
+                console.log(chess.pgn());
                 if (socket.connected) { 
                     socket.emit('moveMade', moveData); 
                     moveTimeout = setTimeout(()=>{
@@ -347,9 +349,9 @@
                 for (i = n-1; 0 <= i; i--) {
                     if (!res[i].resign_id) {
                         let chessMove = chess.move({
-                          from: res[i].from,
-                          to: res[i].to,
-                          promotion: res[i].promotion
+                            from: res[i].from,
+                            to: res[i].to,
+                            promotion: res[i].promotion
                         });
                         movesMade.push(chessMove);
                         board.setPosition(res[i].fen);

@@ -122,7 +122,7 @@
         });
 
         resetGame = ()=>{
-            board.setPosition(ChessUtils.FEN.startId);
+            board.setPosition(ChessUtils.FEN.startId, false);
             userData.player_color == "black" ? board.setOrientation(ChessUtils.ORIENTATION.black) : board.setOrientation(ChessUtils.ORIENTATION.white);
             chess.reset();
             board.enableUserInput(false);
@@ -170,7 +170,7 @@
 
         displayMove = ()=>{
             console.log(`displaying ${moveDisplay} moves`);
-            board.setPosition(ChessUtils.FEN.startId);
+            board.setPosition(ChessUtils.FEN.startId, false);
             chess.reset();
             status = 'White to move.', nextPlayer = 'White', resignation = false, drawAccepted = false;
             $("#moveLabel").html(`Moves: <span id="moveSpan">(${moveDisplay}/${movesMade.length})</span>`)
@@ -182,7 +182,7 @@
                         to: movesMade[i].to,
                         promotion: movesMade[i].promotion
                     });
-                    board.setPosition(movesMade[i].fen);
+                    board.setPosition(movesMade[i].fen, false);
                     changeGameStatus();
                 }
                 else {

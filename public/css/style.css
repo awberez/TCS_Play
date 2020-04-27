@@ -35,7 +35,7 @@ button:disabled:hover {
 
 #reviewButtons {
 	position: absolute;
-	bottom: 10px;
+	bottom: 12px;
 	left: 10px;
 }
 
@@ -45,11 +45,15 @@ button:disabled:hover {
 
 .moveButtonDiv {
 	float: left;
-	
 }
 
 .moveButton {
-	padding: 0px 0px 0px 5px;
+	padding: 0px;
+	border: none !important;
+}
+
+.moveButton:hover {
+	background: white;
 }
 
 hr {

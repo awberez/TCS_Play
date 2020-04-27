@@ -4,7 +4,7 @@ sanitizeHtml = require('sanitize-html'), axios = require('axios');
 module.exports = (app)=>{
 
 	let io = app.get('socketio'), match = io.of('/match'), matchConnections = {};
-	
+
   /*example newgame req json:
   	{ 	match_id: '492241',
 	  	logo: 'logo png string',
@@ -225,7 +225,6 @@ module.exports = (app)=>{
 		    match.to(client.room).emit('status', matchConnections[`${client.match_id}`]);
 	        sendMatchContent(db.GameMove, 'moves');
 	    	sendMatchContent(db.GameChat, 'chat');
-
 	    });
 
   		client.on('disconnect', ()=>{
@@ -233,7 +232,7 @@ module.exports = (app)=>{
   			if (matchConnections[`${client.match_id}`]) {
   				matchConnections[`${client.match_id}`] = matchConnections[`${client.match_id}`].filter(e => e.color !== client.color);
   				matchConnections[`${client.match_id}`].length === 0 ? delete matchConnections[`${client.match_id}`] : match.to(client.room).emit('status', matchConnections[`${client.match_id}`]);
-  			}
+  			};
   		});
 
 	  	client.on('moveMade', (data)=>{
@@ -256,7 +255,7 @@ module.exports = (app)=>{
 						    	resign_id: client.player_id
 						    }).then(() => { db.GameList.update( {game_status: data.game_end}, {returning: true, where: {match_id: client.match_id}} ).then(()=>{ 
 						    	sendMatchContent(db.GameMove, 'moves'); });
-						    	if (dbGame.callback_url) { axios.get(`${dbGame.callback_url}${data.game_end}`).then((res)=>{ console.log(res); }).catch((error)=>{ console.log(error); }); };
+						    	if (dbGame.callback_url) { axios.post(`${dbGame.callback_url}`, {gameEnd: data.game_end, pgn: data.pgn}).then((res)=>{ console.log(res); }).catch((error)=>{ console.log(error); }); };
 							}); 
 			    		} else 
 			    		if (data.resign && data.move_id == gameMoves.length && data.game_end == "draw") {
@@ -268,7 +267,7 @@ module.exports = (app)=>{
 						    	resign_id: "draw"
 						    }).then(() => { db.GameList.update( {game_status: data.game_end}, {returning: true, where: {match_id: client.match_id}} ).then(()=>{ 
 						    	sendMatchContent(db.GameMove, 'moves'); }); 
-						    	if (dbGame.callback_url) { axios.get(`${dbGame.callback_url}${data.game_end}`).then((res)=>{ console.log(res); }).catch((error)=>{ console.log(error); }); };
+						    	if (dbGame.callback_url) { axios.post(`${dbGame.callback_url}`, {gameEnd: data.game_end, pgn: data.pgn}).then((res)=>{ console.log(res); }).catch((error)=>{ console.log(error); }); };
 							}); 
 			    		} else 
 			    		if ((gameMoves[1] && data.from && gameMoves[1].lastMove == client.color && gameMoves[1].from !== data.from && gameMoves[1].to !== data.to && data.move_id == gameMoves.length + 1) || 
@@ -285,7 +284,7 @@ module.exports = (app)=>{
 						    }).then(() => { 
 						    	if (data.game_end) { db.GameList.update( {game_status: data.game_end}, {returning: true, where: {match_id: client.match_id}} ).then(()=>{ 
 						    		sendMatchContent(db.GameMove, 'moves'); }); 
-						    		if (dbGame.callback_url) { axios.get(`${dbGame.callback_url}${data.game_end}`).then((res)=>{ console.log(res); }).catch((error)=>{ console.log(error); }); };
+						    		if (dbGame.callback_url) { axios.post(`${dbGame.callback_url}`, {gameEnd: data.game_end, pgn: data.pgn}).then((res)=>{ console.log(res); }).catch((error)=>{ console.log(error); }); };
 						    	}
 						    	else { sendMatchContent(db.GameMove, 'moves'); };
 						    }); 
@@ -304,7 +303,7 @@ module.exports = (app)=>{
 					allowedAttributes: {},
 	  			}),
 	  			fen: message.fen
-	  		}).then(()=>{ sendMatchContent(db.GameChat, 'chat'); })
+	  		}).then(()=>{ sendMatchContent(db.GameChat, 'chat'); });
 	  	});
 
 	  	client.on('draw', (data)=>{
