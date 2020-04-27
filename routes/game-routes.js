@@ -246,6 +246,10 @@ module.exports = (app)=>{
 			        	where: { match_id: client.match_id },
 			        	order: [ [ 'id', 'DESC' ]]
 			    	}).then((gameMoves)=>{
+			    		gameEndCallback = ()=>{ 
+			    			sendMatchContent(db.GameMove, 'moves');
+			    			if (dbGame.callback_url) { axios.post(`${dbGame.callback_url}`, {gameEnd: data.game_end, pgn: data.pgn}).then((res)=>{ console.log(res); }).catch((error)=>{ console.log(error); }); }; 
+			    		};
 			    		if (data.resign && data.move_id == gameMoves.length && data.game_end != "draw") {
 			    			colorConsole(`${client.color} player has resigned`);
 			    			db.GameMove.create({ 
@@ -253,10 +257,7 @@ module.exports = (app)=>{
 						    	lastMove: client.color,
 						    	fen: data.fen,
 						    	resign_id: client.player_id
-						    }).then(() => { db.GameList.update( {game_status: data.game_end}, {returning: true, where: {match_id: client.match_id}} ).then(()=>{ 
-						    	sendMatchContent(db.GameMove, 'moves'); });
-						    	if (dbGame.callback_url) { axios.post(`${dbGame.callback_url}`, {gameEnd: data.game_end, pgn: data.pgn}).then((res)=>{ console.log(res); }).catch((error)=>{ console.log(error); }); };
-							}); 
+						    }).then(() => { db.GameList.update( {game_status: data.game_end}, {returning: true, where: {match_id: client.match_id}} ).then(()=>{ gameEndCallback(); }); });
 			    		} else 
 			    		if (data.resign && data.move_id == gameMoves.length && data.game_end == "draw") {
 			    			console.log(colors.white(`match ${client.match_id} is a draw`));
@@ -265,10 +266,7 @@ module.exports = (app)=>{
 						    	lastMove: client.color,
 						    	fen: data.fen,
 						    	resign_id: "draw"
-						    }).then(() => { db.GameList.update( {game_status: data.game_end}, {returning: true, where: {match_id: client.match_id}} ).then(()=>{ 
-						    	sendMatchContent(db.GameMove, 'moves'); }); 
-						    	if (dbGame.callback_url) { axios.post(`${dbGame.callback_url}`, {gameEnd: data.game_end, pgn: data.pgn}).then((res)=>{ console.log(res); }).catch((error)=>{ console.log(error); }); };
-							}); 
+						    }).then(() => { db.GameList.update( {game_status: data.game_end}, {returning: true, where: {match_id: client.match_id}} ).then(()=>{ gameEndCallback(); }); });
 			    		} else 
 			    		if ((gameMoves[1] && data.from && gameMoves[1].lastMove == client.color && gameMoves[1].from !== data.from && gameMoves[1].to !== data.to && data.move_id == gameMoves.length + 1) || 
 		    				(gameMoves[0] && data.from && gameMoves[0].lastMove !== client.color && data.move_id == gameMoves.length + 1) || 
@@ -282,10 +280,7 @@ module.exports = (app)=>{
 						    	promotion: data.promotion,
 						    	fen: data.fen
 						    }).then(() => { 
-						    	if (data.game_end) { db.GameList.update( {game_status: data.game_end}, {returning: true, where: {match_id: client.match_id}} ).then(()=>{ 
-						    		sendMatchContent(db.GameMove, 'moves'); }); 
-						    		if (dbGame.callback_url) { axios.post(`${dbGame.callback_url}`, {gameEnd: data.game_end, pgn: data.pgn}).then((res)=>{ console.log(res); }).catch((error)=>{ console.log(error); }); };
-						    	}
+						    	if (data.game_end) { db.GameList.update( {game_status: data.game_end}, {returning: true, where: {match_id: client.match_id}} ).then(()=>{ gameEndCallback(); }); }
 						    	else { sendMatchContent(db.GameMove, 'moves'); };
 						    }); 
 				    	};
