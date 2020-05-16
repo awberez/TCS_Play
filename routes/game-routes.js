@@ -248,7 +248,7 @@ module.exports = (app)=>{
 			    	}).then((gameMoves)=>{
 			    		gameEndCallback = ()=>{ 
 			    			sendMatchContent(db.GameMove, 'moves');
-			    			if (dbGame.callback_url) { axios.post(`${dbGame.callback_url}`, {gameEnd: data.game_end, pgn: data.pgn}).then((res)=>{ console.log(res); }).catch((error)=>{ console.log(error); }); }; 
+			    			if (dbGame.callback_url) { axios.post(`${dbGame.callback_url}`, {game_end: data.game_end, pgn: data.pgn}).then((res)=>{ console.log(res); }).catch((error)=>{ console.log(error); }); }; 
 			    		};
 			    		if (data.resign && data.move_id == gameMoves.length && data.game_end != "draw") {
 			    			colorConsole(`${client.color} player has resigned`);

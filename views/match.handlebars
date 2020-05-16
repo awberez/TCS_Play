@@ -183,7 +183,7 @@
             promotionPiece = val;
             $('.proPiece').removeClass("selected");
             $(`#${id}`).addClass("selected");
-        }
+        };
 
         resetConnections = ()=>{
             $('#whiteStatus').html(`(offline)`);
@@ -436,6 +436,9 @@
         resignGame = ()=>{
             let resign = confirm("Are you sure you want to resign?");
             if (resign && !resignation) {
+                board.enableUserInput(false);
+                $("#resign").attr("disabled", true); 
+                $("#draw").attr("disabled", true);
                 gameEnd = (userData.player_color == "white") ? "black" : "white";
                 let resignData = {
                     fen: chess.fen(),
@@ -471,8 +474,8 @@
                 console.log("draw offered");
                 if (socket.connected) { socket.emit('draw', userData.player_id); }
                 else { socket.on('reconnect', ()=>{ socket.emit('draw', userData.player_id); }); };
-            }
-        }
+            };
+        };
 
         let chess = new Chess(),
         board = new Chessboard('myBoard', {
