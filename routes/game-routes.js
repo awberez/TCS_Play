@@ -174,6 +174,92 @@ module.exports = (app)=>{
       	});
   	});
 
+  		/*example updategame req json:
+  	{ 	match_id: '492241',
+  		game_status: 'white/black/draw/incomplete'  (optional)
+  		status_message: 'ended by coach'  			(optional, but must also have game_status)
+	  	logo: 'logo png string',   					(optional)
+		header: 'header string',   					(optional)
+		callback_url: 'url string' 					(optional)
+    }*/
+
+  	app.post("/updategame", (req, res)=>{
+  		console.log(colors.white(req.body));
+		db.GameList.findOne({
+	        where: { match_id: req.body.match_id }
+	    }).then((dbGame)=>{
+	    	if (!dbGame) { res.send("failure"); }
+	    	else {
+	    		let updateData = {};
+	    		if (req.body.game_status) { updateData.game_status = req.body.game_status; };
+	    		if (req.body.logo) { updateData.logo = req.body.logo; };
+	    		if (req.body.header) { updateData.header = req.body.header; };
+	    		if (req.body.callback_url) { updateData.callback_url = req.body.callback_url; };
+	    		if (updateData.game_status || updateData.logo || updateData.header || updateData.callback_url) {
+		    		db.GameList.update(
+		    			updateData,
+		    			{returning: true, plain: true, where: {match_id: req.body.match_id}
+		    		}).then(()=>{
+		    			if (req.body.game_status) {
+		    				db.GameMove.create({ 
+						    	match_id: req.body.match_id,
+						    	lastMove: "admin",
+						    	resign_id: req.body.game_status,
+						    	status_message: req.body.status_message
+						    }).then(() => {
+						    	db.GameMove.findAll({
+						        	where: { match_id: req.body.match_id },
+						        	order: [ [ 'id', 'DESC' ]]
+						    	}).then((dbData)=>{ 
+						    		match.to(`match/${req.body.match_id}`).emit('moves', dbData); 
+						    		let chess = new Chess(), n = dbData.length;
+						    		for (i = n-1; 0 <= i; i--) {
+					                    if (!dbData[i].resign_id) {
+					                        let chessMove = chess.move({
+					                            from: dbData[i].from,
+					                            to: dbData[i].to,
+					                            promotion: dbData[i].promotion
+					                        });
+					                    };
+					                };
+									res.send( {game_end: req.body.game_status, pgn: chess.pgn()} );
+						    	});	
+						    }); 
+		    			}
+		    			else { res.send("success"); };
+		    		});
+		    	}
+		    	else { res.send("failure"); };
+	    	};
+	    });
+  	});
+
+  	app.get("/status/:id", (req, res)=>{
+  		db.GameList.findOne({
+	        where: { match_id: { [Op.eq]: req.params.id } }
+	    }).then((dbGame)=>{
+	    	if(dbGame) {
+	    		db.GameMove.findAll({
+		        	where: { match_id: { [Op.eq]: req.params.id } },
+		        	order: [ [ 'id', 'DESC' ]]
+		    	}).then((dbData)=>{
+		    		let chess = new Chess(), n = dbData.length;
+		    		for (i = n-1; 0 <= i; i--) {
+	                    if (!dbData[i].resign_id) {
+	                        let chessMove = chess.move({
+	                            from: dbData[i].from,
+	                            to: dbData[i].to,
+	                            promotion: dbData[i].promotion
+	                        });
+	                    };
+	                };
+					res.send( {game_end: dbGame.game_status, pgn: chess.pgn()} );
+		    	});
+	    	}
+	    	else { res.send("failure"); };
+	    });
+  	});
+
   	match.on('connection', (client)=>{
 
 		client.on('join', (data)=>{
@@ -284,67 +370,6 @@ module.exports = (app)=>{
 	        	order: [ [ 'id', 'DESC' ]]
 	    	}).then((dbData)=>{ match.to(client.room).emit(channel, dbData); });
 	  	};
-
-
-  		/*example updategame req json:
-  	{ 	match_id: '492241',
-  		game_status: 'white/black/draw/incomplete'  (optional)
-  		status_message: 'ended by coach'  			(optional, but must also have game_status)
-	  	logo: 'logo png string',   					(optional)
-		header: 'header string',   					(optional)
-		callback_url: 'url string' 					(optional)
-    }*/
-
-	  	app.post("/updategame", (req, res)=>{
-	  		console.log(colors.white(req.body));
-			db.GameList.findOne({
-		        where: { match_id: req.body.match_id }
-		    }).then((dbGame)=>{
-		    	if (!dbGame) { res.send("failure"); }
-		    	else {
-		    		let updateData = {};
-		    		if (req.body.game_status) { updateData.game_status = req.body.game_status; };
-		    		if (req.body.logo) { updateData.logo = req.body.logo; };
-		    		if (req.body.header) { updateData.header = req.body.header; };
-		    		if (req.body.callback_url) { updateData.callback_url = req.body.callback_url; };
-		    		if (updateData.game_status || updateData.logo || updateData.header || updateData.callback_url) {
-			    		db.GameList.update(
-			    			updateData,
-			    			{returning: true, plain: true, where: {match_id: req.body.match_id}
-			    		}).then(()=>{
-			    			if (req.body.game_status) {
-			    				db.GameMove.create({ 
-							    	match_id: req.body.match_id,
-							    	lastMove: "admin",
-							    	resign_id: req.body.game_status,
-							    	status_message: req.body.status_message
-							    }).then(() => {
-							    	db.GameMove.findAll({
-							        	where: { match_id: req.body.match_id },
-							        	order: [ [ 'id', 'DESC' ]]
-							    	}).then((dbData)=>{ 
-							    		match.to(`match/${req.body.match_id}`).emit('moves', dbData); 
-							    		let chess = new Chess(), n = dbData.length;
-							    		for (i = n-1; 0 <= i; i--) {
-						                    if (!dbData[i].resign_id) {
-						                        let chessMove = chess.move({
-						                            from: dbData[i].from,
-						                            to: dbData[i].to,
-						                            promotion: dbData[i].promotion
-						                        });
-						                    };
-						                };
-										res.send( {pgn: chess.pgn()} );
-							    	});	
-							    }); 
-			    			}
-			    			else { res.send("success"); };
-			    		});
-			    	}
-			    	else { res.send("failure"); };
-		    	};
-		    });
-	  	});
 
 	});
 

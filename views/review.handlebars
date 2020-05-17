@@ -196,7 +196,7 @@
                         updateGameInfo();
                     }
                     else {
-                        gameEnd = movesMade[i].resign_id, status = movesMade[i].status_message;
+                        gameEnd = movesMade[i].resign_id, status = movesMade[i].status_message ? movesMade[i].status_message : movesMade[i].resign_id;
                         updateGameInfo();
                         $('#statusPreview').html(movesMade[i].resign_id);
                     };
