@@ -378,7 +378,7 @@
                 !chess.in_draw() &&
                 !chess.in_threefold_repetition() &&
                 !chess.in_stalemate() &&
-                !resignation) { board.enableUserInput(); }
+                !gameEnd) { board.enableUserInput(); }
             else { board.enableUserInput(false); };
         };
 

@@ -318,7 +318,7 @@ module.exports = (app)=>{
 							    	resign_id: req.body.game_status
 							    }).then(() => {
 							    	db.GameMove.findAll({
-							        	where: { match_id: client.match_id },
+							        	where: { match_id: req.body.match_id },
 							        	order: [ [ 'id', 'DESC' ]]
 							    	}).then((dbData)=>{ 
 							    		match.to(`match/${req.body.match_id}`).emit('moves', dbData); 
@@ -336,9 +336,7 @@ module.exports = (app)=>{
 							    	});	
 							    }); 
 			    			}
-			    			else {
-			    				res.send("success");
-			    			};
+			    			else { res.send("success"); };
 			    		});
 			    	}
 			    	else { res.send("failure"); };
