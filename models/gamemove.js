@@ -18,7 +18,7 @@ module.exports = function(sequelize, DataTypes) {
         allowNull: true
     },
     fen: {type: DataTypes.STRING,
-        allowNull: false
+        allowNull: true
     },
     lastMove: {type: DataTypes.STRING,
         allowNull: false

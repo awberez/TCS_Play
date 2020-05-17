@@ -108,7 +108,7 @@
 
         socket.on('reconnect', ()=>{ 
             $("#resign").attr("disabled", false);
-            $("#draw").attr("disabled", true);
+            $("#draw").attr("disabled", false);
             $("#send").attr("disabled", false); 
         });
 
@@ -146,7 +146,8 @@
                         fen: chess.fen(),
                         game_end: gameEnd,
                         resign: true,
-                        move_id: movesMade.length
+                        move_id: movesMade.length,
+                        pgn: chess.pgn()
                     };
                     console.log("draw accepted");
                     if (socket.connected) { 
@@ -163,7 +164,7 @@
                                 socket.close();
                                 socket.open();
                             }, 500);
-                        }) 
+                        });
                     };
                 }
                 else {
@@ -245,22 +246,18 @@
             $('#status').html(status);
             $('#statusPreview').empty();
             if (chess.in_draw() || chess.in_threefold_repetition() || chess.in_stalemate()) { $('#statusPreview').html(`Draw!`) } else
-            if (chess.in_checkmate()) { 
+            if (chess.in_checkmate()) { $('#statusPreview').html(`Checkmate!`); } else
+            if (chess.in_check()) { $('#statusPreview').html(`Check!`); } else
+            if (resignation) { $('#statusPreview').html(`Resigned!`); } else
+            if (drawAccepted) { $('#statusPreview').html(`Draw!`); };
+            if (chess.in_draw() || 
+                chess.in_threefold_repetition() || 
+                chess.in_stalemate() || 
+                chess.in_checkmate() || 
+                gameEnd) {
                 $("#resign").attr("disabled", true);
                 $("#draw").attr("disabled", true);
-                $('#statusPreview').html(`Checkmate!`) 
-            } else
-            if (chess.in_check()) { $('#statusPreview').html(`Check!`) } else
-            if (resignation) { 
-                $("#resign").attr("disabled", true);
-                $("#draw").attr("disabled", true);
-                $('#statusPreview').html(`Resigned!`)  
-            } else
-            if (drawAccepted) { 
-                $("#resign").attr("disabled", true);
-                $("#draw").attr("disabled", true);
-                $('#statusPreview').html(`Draw!`)  
-            };
+            }
             $('#pgn').html(chess.pgn().replace(/ (?=\d+\.)/g, '<br/>'));
             document.getElementById("pgn").scrollTop = document.getElementById("pgn").scrollHeight;
             $(".whiteArrow").hide();
@@ -358,16 +355,20 @@
                         changeGameStatus();
                     }
                     else {
-                        if (res[i].resign_id != "draw") {
-                            resignation = true;
-                            gameEnd = (res.lastMove == "white") ? "black" : "white";
+                        if (res[i].resign_id == userData.white_id || res[i].resign_id == userData.black_id) {
+                            resignation = true, gameEnd = (res.lastMove == "white") ? "black" : "white",
                             status = `RESIGNATION! ${res[i].resign_id == userData.white_id ? "White" : "Black"} has resigned!`;
-                        }
-                        else {
-                            drawAccepted = true;
-                            status = `DRAW! A draw has been accepted!`;
+                            updateGameInfo();
+                        } else 
+                        if (res[i].resign_id == "draw") {
+                            drawAccepted = true, gameEnd = "draw", status = `DRAW! A draw has been accepted!`;
+                            updateGameInfo();
+                        } 
+                        else { 
+                            gameEnd = res[i].resign_id, status = res[i].resign_id;
+                            updateGameInfo();
+                            $('#statusPreview').html(res[i].resign_id);
                         };
-                        updateGameInfo();
                     };
                 };
             };
@@ -388,7 +389,7 @@
                 let chatData = {
                     text: message,
                     fen: chess.fen(),
-                }
+                };
                 console.log("message sent");
                 socket.emit('chat', chatData);
                 chatTimeout = setTimeout(()=>{
@@ -444,7 +445,8 @@
                     fen: chess.fen(),
                     game_end: gameEnd,
                     resign: true,
-                    move_id: movesMade.length
+                    move_id: movesMade.length,
+                    pgn: chess.pgn()
                 };
                 console.log("resignation sent");
                 if (socket.connected) { 
