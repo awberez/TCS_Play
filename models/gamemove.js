@@ -26,6 +26,9 @@ module.exports = function(sequelize, DataTypes) {
     resign_id: {type: DataTypes.STRING,
         allowNull: true
     },
+    status_message: {type: DataTypes.STRING,
+        allowNull: true
+    },
     coach_comment: {type: DataTypes.STRING,
         allowNull: true
     },

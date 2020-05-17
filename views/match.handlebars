@@ -365,7 +365,7 @@
                             updateGameInfo();
                         } 
                         else { 
-                            gameEnd = res[i].resign_id, status = res[i].resign_id;
+                            gameEnd = res[i].resign_id, status = res[i].status_message;
                             updateGameInfo();
                             $('#statusPreview').html(res[i].resign_id);
                         };

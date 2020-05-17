@@ -289,6 +289,7 @@ module.exports = (app)=>{
   		/*example updategame req json:
   	{ 	match_id: '492241',
   		game_status: 'white/black/draw/incomplete'  (optional)
+  		status_message: 'ended by coach'  			(optional, but must also have game_status)
 	  	logo: 'logo png string',   					(optional)
 		header: 'header string',   					(optional)
 		callback_url: 'url string' 					(optional)
@@ -315,7 +316,8 @@ module.exports = (app)=>{
 			    				db.GameMove.create({ 
 							    	match_id: req.body.match_id,
 							    	lastMove: "admin",
-							    	resign_id: req.body.game_status
+							    	resign_id: req.body.game_status,
+							    	status_message: req.body.status_message
 							    }).then(() => {
 							    	db.GameMove.findAll({
 							        	where: { match_id: req.body.match_id },

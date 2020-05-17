@@ -186,16 +186,20 @@
                     changeGameStatus();
                 }
                 else {
-                    if (movesMade[i].resign_id != "draw") {
-                        resignation = true;
-                        gameEnd = (movesMade.lastMove == "white") ? "black" : "white";
+                    if (movesMade[i].resign_id == userData.white_id || movesMade[i].resign_id == userData.black_id) {
+                        resignation = true, gameEnd = (movesMade.lastMove == "white") ? "black" : "white",
                         status = `RESIGNATION! ${movesMade[i].resign_id == userData.white_id ? "White" : "Black"} has resigned!`;
+                        updateGameInfo();
+                    } else 
+                    if (movesMade[i].resign_id == "draw") {
+                        drawAccepted = true, status = `DRAW! A draw has been accepted!`;
+                        updateGameInfo();
                     }
                     else {
-                        drawAccepted = true;
-                        status = `DRAW! A draw has been accepted!`;
+                        gameEnd = movesMade[i].resign_id, status = movesMade[i].status_message;
+                        updateGameInfo();
+                        $('#statusPreview').html(movesMade[i].resign_id);
                     };
-                    updateGameInfo();
                 };
             };
         };
