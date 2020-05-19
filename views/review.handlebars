@@ -110,15 +110,14 @@
         });
 
         socket.on('chat', (data)=>{
-            console.log(`${chatMessages.length < data.length - 1 ? "messages" : "message"} received`);
-            //clearTimeout(chatTimeout);
+            console.log(`chat ${chatMessages.length < data.length - 1 ? "messages" : "message"} received`);
             displayChat(data);
         });
 
         socket.on('notes', (data)=>{
-            console.log(`${noteMessages.length < data.length - 1 ? "messages" : "message"} received`);
-            //clearTimeout(chatTimeout);
-            //displayNotes(data);
+            console.log(`note ${noteMessages.length < data.length - 1 ? "messages" : "message"} received`);
+            clearTimeout(noteTimeout);
+            displayNotes(data);
         });
 
         resetGame = ()=>{
@@ -175,7 +174,6 @@
             status = 'White to move.', nextPlayer = 'White', resignation = false, drawAccepted = false;
             $("#moveLabel").html(`Moves: <span id="moveSpan">(${moveDisplay}/${movesMade.length})</span>`)
             for (i = 0; i < moveDisplay; i++) {
-                console.log(movesMade[i].fen);
                 if (!movesMade[i].resign_id) {
                     chess.move({
                         from: movesMade[i].from,
@@ -202,6 +200,8 @@
                     };
                 };
             };
+            $(".notePgn").removeClass("highlight");
+            $(`.noteId${movesMade[moveDisplay-1].id}`).addClass("highlight");
         };
 
         switchMove = (where)=>{
@@ -217,9 +217,14 @@
             let message = $('#inputMessage').val();
             if (message && socket.connected) {
                 $('#inputMessage').val('')
+                let movePgn = chess.pgn().match(/\d{1,3}\. [a-z0-9\- ]+$/i)[0];
+                console.log(movePgn);
+                console.log(chess.pgn());
+                console.log(movesMade[moveDisplay-1].id);
                 let noteData = {
                     text: message,
-                    fen: chess.fen(),
+                    move_id: movesMade[moveDisplay-1].id,
+                    move_name: movePgn
                 }
                 console.log("message sent");
                 socket.emit('note', noteData);
@@ -262,6 +267,29 @@
                     `);
                     document.getElementById("chatBox").scrollTop = document.getElementById("chatBox").scrollHeight;
                 };
+            };
+        };
+
+        displayNotes = (res)=>{
+            $("#noteDiv").empty();
+            let notesArr = quickSort(res), even = true;
+            for (i = 0; i < notesArr.length; i++) {
+                even = even ? false : true;
+                $('#noteDiv').append(`
+                    <div class="noteMessage ${even ? "even" : "odd"}"}>
+                        <span class="notePgn noteId${notesArr[i].move_id} ${notesArr[i].move_id == movesMade[moveDisplay-1].id ? "highlight" : ""}">[${notesArr[i].move_name}]</span>: ${notesArr[i].message}
+                    </div>
+                `);
+                document.getElementById("noteBox").scrollTop = document.getElementById("noteBox").scrollHeight;
+            };
+        };
+
+        quickSort = (origArr)=>{
+            if (origArr.length <= 1) { return origArr; } 
+            else {
+                let left = [], right = [], newArr = [], pivot = origArr.pop(), length = origArr.length;
+                for (let i = 0; i < length; i++) { origArr[i].move_id <= pivot.move_id ? left.push(origArr[i]) : right.push(origArr[i]); }
+                return newArr.concat(quickSort(left), pivot, quickSort(right));
             };
         };
 

@@ -177,7 +177,7 @@ hr {
 	padding-top: 13px;
 	padding-bottom: 13px;
 	left: 18px;
-	color: #bd2c2a;
+	color: black;
 	font-weight: bold;
 }
 
@@ -347,4 +347,17 @@ hr {
   content: "";
   display: block;
   padding-bottom: 100%;
+}
+
+.noteMessage {
+	padding-left: 3px;
+	padding-right: 3px;
+}
+
+.odd { 
+	background-color: rgb(0, 0, 0, 0.05);
+} 
+
+.highlight {
+	background-color: rgb(255, 238, 0, 0.75) !important;
 }

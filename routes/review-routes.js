@@ -91,12 +91,12 @@ module.exports = (app)=>{
 	    client.on('note', (message)=>{
 	  		db.ReviewNote.create({
 	  			match_id: client.match_id,
-	  			user_name: client.user_name,
-	  			player_message: sanitizeHtml(filter.clean(message.text), {
+	  			move_id: message.move_id,
+	  			move_name: message.move_name,
+	  			message: sanitizeHtml(filter.clean(message.text), {
 	  				allowedTags: [],
 					allowedAttributes: {},
-	  			}),
-	  			fen: message.fen
+	  			})
 	  		}).then(()=>{ sendMatchContent(db.ReviewNote, 'notes'); });
 	  	});
 
