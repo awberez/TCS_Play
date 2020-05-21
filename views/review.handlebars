@@ -68,7 +68,7 @@
     </div>
     <script type="text/javascript">
 
-        let decodedJson = decodeURIComponent("{{{encodedJson}}}"), userData = JSON.parse(decodedJson), socket = io('/review'), gameEnd = false, chatTime, noteTime,
+        let decodedJson = decodeURIComponent("{{{encodedJson}}}"), userData = JSON.parse(decodedJson), socket = io('/review'), gameEnd = false, chatTime, noteTime, finalPgn,
         noteTimeout, movesMade = [], moveDisplay = 0, nextPlayer = 'white', chatMessages = [], noteMessages = [], topPlayer = "black", resignation = false, drawAccepted = false,
         whiteName = `<div id="whiteName"><span class="whiteArrow">&rarr;</span> <span class="chessPiece white"></span> ${userData.white_name} <span id="whiteStatus" style="font-style: italic">(offline)</span> <span class="whiteArrow">&larr;</span></div>`,
         blackName = `<div id="blackName"><span class="blackArrow">&rarr;</span> <span class="chessPiece black"></span> ${userData.black_name} <span id="blackStatus" style="font-style: italic">(offline)</span> <span class="blackArrow">&larr;</span></div>`;
@@ -138,7 +138,6 @@
             if (chess.in_check()) { $('#statusPreview').html(`Check!`) } else
             if (resignation) { $('#statusPreview').html(`Resigned!`) } else
             if (drawAccepted) { $('#statusPreview').html(`Draw!`) };
-            $('#pgn').html(chess.pgn().replace(/ (?=\d+\.)/g, '<br/>'));
             document.getElementById("pgn").scrollTop = document.getElementById("pgn").scrollHeight;
             $(".whiteArrow").hide();
             $(".blackArrow").hide();
@@ -200,6 +199,11 @@
                     };
                 };
             };
+            if (!finalPgn) { finalPgn = chess.pgn().toString(); };
+            $('#pgn').html(`
+                <span style="color:gray;">
+                    ${finalPgn.replace(chess.pgn(), `<span style="color:black !important;">${chess.pgn()}</span>`).replace(/ (?=\d+\.)/g, '<br/>')}
+                </span>`);
             $(".notePgn").removeClass("highlight");
             $(`.noteId${movesMade[moveDisplay-1].id}`).addClass("highlight");
             let items = document.getElementById("noteBox").getElementsByClassName('highlight');
