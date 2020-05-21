@@ -203,7 +203,8 @@
             $('#pgn').html(`
                 <span style="color:gray;">
                     ${finalPgn.replace(chess.pgn(), `<span style="color:black !important;">${chess.pgn()}</span>`).replace(/ (?=\d+\.)/g, '<br/>')}
-                </span>`);
+                </span>
+            `);
             $(".notePgn").removeClass("highlight");
             $(`.noteId${movesMade[moveDisplay-1].id}`).addClass("highlight");
             let items = document.getElementById("noteBox").getElementsByClassName('highlight');
@@ -216,10 +217,10 @@
         };
 
         switchMove = (where)=>{
-            if (where == "first" && moveDisplay != 1) { moveDisplay = 1; } else
-            if (where == "back" && moveDisplay > 1) { moveDisplay--; } else
-            if (where == "forward" && moveDisplay < movesMade.length) { moveDisplay++; } else 
-            if (where == "last" && moveDisplay != movesMade.length) { moveDisplay = movesMade.length; }
+            if (where == "first" && moveDisplay != 1)                   { moveDisplay = 1; } else
+            if (where == "back" && moveDisplay > 1)                     { moveDisplay--; } else
+            if (where == "forward" && moveDisplay < movesMade.length)   { moveDisplay++; } else 
+            if (where == "last" && moveDisplay != movesMade.length)     { moveDisplay = movesMade.length; }
             else { return; };
             displayMove(); 
         };
