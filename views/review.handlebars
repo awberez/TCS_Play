@@ -199,12 +199,10 @@
                     };
                 };
             };
-            if (!finalPgn) { finalPgn = chess.pgn().toString(); };
-            $('#pgn').html(`
-                <span style="color:gray;">
-                    ${finalPgn.replace(chess.pgn(), `<span style="color:black !important;">${chess.pgn()}</span>`).replace(/ (?=\d+\.)/g, '<br/>')}
-                </span>
-            `);
+            let lineBreakPgn = chess.pgn().replace(/ (?=\d+\.)/g, '<br/>');
+            if (!finalPgn) { finalPgn = lineBreakPgn };
+            let currentPgn = lineBreakPgn.replace(/\d{1,3}\. [a-z0-9\-+ ]+$/i, `<span class="highlight">${chess.pgn().match(/\d{1,3}\. [a-z0-9\-+ ]+$/i)}</span>`);
+            $('#pgn').html(`<span style="color:gray;">${finalPgn.replace(lineBreakPgn, `<span style="color:black !important;">${currentPgn}</span>`)}</span>`);
             $(".notePgn").removeClass("highlight");
             $(`.noteId${movesMade[moveDisplay-1].id}`).addClass("highlight");
             let items = document.getElementById("noteBox").getElementsByClassName('highlight');
