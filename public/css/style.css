@@ -35,8 +35,8 @@ button:disabled:hover {
 
 #reviewButtons {
 	position: absolute;
-	bottom: 12px;
-	left: 10px;
+	bottom: 2px;
+	left: 9px;
 }
 
 #moveSpan {
@@ -48,7 +48,8 @@ button:disabled:hover {
 }
 
 .moveButton {
-	padding: 0px;
+	font-size: 30px;
+	padding: 1px;
 	border: none !important;
 }
 
