@@ -205,7 +205,7 @@
             $(".notePgn").removeClass("highlight");
             $(`.noteId${movesMade[moveDisplay-1].id}`).addClass("highlight");
             let items = document.getElementById("noteBox").getElementsByClassName('highlight');
-            if (items.length > 0) {
+            if (items.length != 0 && !$("#noteBox .highlight").first().isVisible($('#noteBox'))) {
                 document.getElementById("noteBox").scrollTo({
                     top: items[0].offsetTop - items[0].offsetHeight,
                     behavior: 'smooth'
@@ -283,12 +283,9 @@
                     </div>
                 `);
             };
-            let items = document.getElementById("noteBox").getElementsByClassName('highlight');
-            if (items.length > 0) {
-                document.getElementById("noteBox").scrollTo({
-                    top: items[0].offsetTop - items[0].offsetHeight,
-                    behavior: 'smooth'
-                });
+            let firstHighlightNote = document.getElementById("noteBox").getElementsByClassName('highlight')[0]
+            if (firstHighlightNote && !$(firstHighlightNote).isVisible($('#noteBox'))) { 
+                document.getElementById("noteBox").getElementsByClassName('highlight')[0].scrollIntoView(); 
             }
             else { document.getElementById("noteBox").scrollTop = document.getElementById("noteBox").scrollHeight; };
         };
