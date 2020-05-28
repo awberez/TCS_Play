@@ -68,8 +68,8 @@
     </div>
     <script type="text/javascript">
 
-        let decodedJson = decodeURIComponent("{{{encodedJson}}}"), userData = JSON.parse(decodedJson), socket = io('/review'), gameEnd = false, chatTime, noteTime, finalPgn,
-        noteTimeout, movesMade = [], moveDisplay = 0, nextPlayer = 'white', chatMessages = [], noteMessages = [], topPlayer = "black", resignation = false, drawAccepted = false,
+        let decodedJson = decodeURIComponent("{{{encodedJson}}}"), userData = JSON.parse(decodedJson), socket = io('/review'), 
+        gameEnd = false, chatTime, noteTime, finalPgn, noteData, noteTimeout, movesMade = [], moveDisplay = 0, nextPlayer = 'white', chatMessages = [], noteMessages = [], topPlayer = "black", resignation = false, drawAccepted = false,
         whiteName = `<div id="whiteName"><span class="whiteArrow">&rarr;</span> <span class="chessPiece white"></span> ${userData.white_name} <span id="whiteStatus" style="font-style: italic">(offline)</span> <span class="whiteArrow">&larr;</span></div>`,
         blackName = `<div id="blackName"><span class="blackArrow">&rarr;</span> <span class="chessPiece black"></span> ${userData.black_name} <span id="blackStatus" style="font-style: italic">(offline)</span> <span class="blackArrow">&larr;</span></div>`;
         
@@ -106,7 +106,10 @@
         socket.on('moves', (data)=>{
             console.log(`${movesMade.length < data.length - 1 ? "moves" : "move"} received`);
             movesMade = data, moveDisplay = movesMade.length;
-            displayMove();
+            if (noteData) {
+                displayNotes(noteData);
+                displayMove();
+            };
         });
 
         socket.on('chat', (data)=>{
@@ -116,7 +119,11 @@
 
         socket.on('notes', (data)=>{
             console.log(`note ${noteMessages.length < data.length - 1 ? "messages" : "message"} received`);
-            displayNotes(data);
+            noteData = data;
+            if (movesMade) {
+                displayNotes(noteData);
+                displayMove();
+            };
         });
 
         resetGame = ()=>{
@@ -199,7 +206,7 @@
             };
             let lineBreakPgn = chess.pgn().replace(/ (?=\d+\.)/g, '<br/>');
             if (!finalPgn) { finalPgn = lineBreakPgn };
-            let currentPgn = lineBreakPgn.replace(/\d{1,3}\. [a-z0-9\-+ ]+$/i, `<span class="highlight">${chess.pgn().match(/\d{1,3}\. [a-z0-9\-+ ]+$/i)}</span>`);
+            let currentPgn = lineBreakPgn.replace(/\d{1,3}\. [a-z0-9\-+# ]+$/i, `<span class="highlight">${chess.pgn().match(/\d{1,3}\. [a-z0-9\-+# ]+$/i)}</span>`);
             $('#pgn').html(`<span style="color:gray;">${finalPgn.replace(lineBreakPgn, `<span style="color:black !important;">${currentPgn}</span>`)}</span>`);
             if (!$('#pgn .highlight').isVisible($('#pgn'))) { document.getElementById("pgn").getElementsByClassName('highlight')[0].scrollIntoView(); };
             $(".notePgn").removeClass("highlight");
@@ -226,7 +233,7 @@
             let message = $('#inputMessage').val();
             if (message && socket.connected) {
                 $('#inputMessage').val('')
-                let movePgn = chess.pgn().match(/\d{1,3}\. [a-z0-9\-+ ]+$/i)[0],
+                let movePgn = chess.pgn().match(/\d{1,3}\. [a-z0-9\-+# ]+$/i)[0],
                 noteData = {
                     text: message,
                     move_id: movesMade[moveDisplay-1].id,
