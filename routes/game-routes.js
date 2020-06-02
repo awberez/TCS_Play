@@ -4,6 +4,7 @@ const db = require("../models"), Sequelize = require('sequelize'), Op = Sequeliz
 module.exports = (app)=>{
 
 	let io = app.get('socketio'), match = io.of('/match'), matchConnections = {};
+	filter.removeWords('pawn');
 
   /*example newgame req json:
   	{ 	match_id: '492241',

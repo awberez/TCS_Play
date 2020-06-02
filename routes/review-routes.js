@@ -4,6 +4,7 @@ sanitizeHtml = require('sanitize-html');
 module.exports = (app)=>{
 
 	let io = app.get('socketio'), review = io.of('/review');
+	filter.removeWords('pawn');
 
 	app.get("/review/coach/:uuid", (req, res)=>{
 	    db.UuidList.findOne({
