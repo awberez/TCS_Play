@@ -103,7 +103,18 @@
             alert(data);
         });
 
-        socket.on('moves', (data)=>{
+        socket.on('init', (data)=>{
+            console.log("initializing");
+            if (data.moves.length != 0) { console.log(`${movesMade.length < data.moves.length - 1 ? "moves" : "move"} received`); };
+            if (data.chat.length != 0) { console.log(`chat ${chatMessages.length < data.chat.length - 1 ? "messages" : "message"} received`); };
+            if (data.notes.length != 0) { console.log(`note ${noteMessages.length < data.notes.length - 1 ? "messages" : "message"} received`); };
+            movesMade = data.moves, noteData = data.notes, moveDisplay = movesMade.length;
+            displayChat(data.chat);
+            displayNotes(noteData);
+            displayMove();
+        });
+
+        /*socket.on('moves', (data)=>{
             console.log(`${movesMade.length < data.length - 1 ? "moves" : "move"} received`);
             movesMade = data, moveDisplay = movesMade.length;
             if (noteData) {
@@ -115,15 +126,12 @@
         socket.on('chat', (data)=>{
             console.log(`chat ${chatMessages.length < data.length - 1 ? "messages" : "message"} received`);
             displayChat(data);
-        });
+        });*/
 
         socket.on('notes', (data)=>{
             console.log(`note ${noteMessages.length < data.length - 1 ? "messages" : "message"} received`);
             noteData = data;
-            if (movesMade) {
-                displayNotes(noteData);
-                displayMove();
-            };
+            displayNotes(noteData);
         });
 
         resetGame = ()=>{
@@ -172,7 +180,6 @@
         };
 
         displayMove = ()=>{
-            console.log(`displaying ${moveDisplay} moves`);
             board.setPosition(ChessUtils.FEN.startId, false);
             chess.reset();
             status = 'White to move.', nextPlayer = 'White', resignation = false, drawAccepted = false;
@@ -245,10 +252,7 @@
         };
 
         displayChat = (res)=>{
-            console.log(`messages recorded: ${chatMessages.length}`);
-            console.log(`total messages: ${res.length}`);
             if (chatMessages.length < res.length) {
-                console.log("displaying new messages");
                 let n = res.length - chatMessages.length;
                 for (i = n-1; 0 <= i; i--) {
                     chatMessages.push(res)

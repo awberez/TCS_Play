@@ -84,9 +84,26 @@ module.exports = (app)=>{
 	  		if (data.user_name) { client.user_name = data.user_name; };
 	  		client.join(client.room);
 	        client.emit('messages', 'Connected to server');
-	        sendMatchContent(db.GameMove, 'moves');
-	    	sendMatchContent(db.GameChat, 'chat');
-	    	sendMatchContent(db.ReviewNote, 'notes');
+	        //sendMatchContent(db.GameMove, 'moves');
+	    	//sendMatchContent(db.GameChat, 'chat');
+	    	//sendMatchContent(db.ReviewNote, 'notes');
+	    	db.GameMove.findAll({
+	        	where: { match_id: client.match_id },
+	        	order: [ [ 'id', 'ASC' ]]
+	    	}).then((dbGameData)=>{ 
+	    		db.GameChat.findAll({
+	        		where: { match_id: client.match_id },
+	        		order: [ [ 'id', 'ASC' ]]
+		    	}).then((dbChatData)=>{ 
+		    		db.ReviewNote.findAll({
+			        	where: { match_id: client.match_id },
+			        	order: [ [ 'id', 'ASC' ]]
+			    	}).then((dbNoteData)=>{ 
+			    		let dbData = {moves: dbGameData, chat: dbChatData, notes: dbNoteData};
+			    		review.to(client.room).emit('init', dbData); 
+			    	});
+		    	});
+	    	});
 	    });
 
 	    client.on('note', (message)=>{
