@@ -66,19 +66,15 @@
     </div>
     <script type="text/javascript">
 
-        let decodedJson = decodeURIComponent("{{{encodedJson}}}"), userData = JSON.parse(decodedJson), socket = io('/review'), 
-        gameEnd = false, chatTime, noteTime, finalPgn, noteData, noteTimeout, movesMade = [], moveDisplay = 0, nextPlayer = 'white', chatMessages = [], noteMessages = [], topPlayer = "black", resignation = false, drawAccepted = false,
+        let decodedJson = decodeURIComponent("{{{encodedJson}}}"), userData = JSON.parse(decodedJson), socket = io('/review'),
+        gameEnd = false, chatTime, finalPgn, noteData, noteTimeout, movesMade = [], moveDisplay = 0, nextPlayer = 'white', chatMessages = [], noteMessages = [], topPlayer = "black", resignation = false, drawAccepted = false,
         whiteName = `<div id="whiteName"><span class="whiteArrow">&rarr;</span> <span class="chessPiece white"></span> ${userData.white_name} <span id="whiteStatus" style="font-style: italic">(offline)</span> <span class="whiteArrow">&larr;</span></div>`,
         blackName = `<div id="blackName"><span class="blackArrow">&rarr;</span> <span class="chessPiece black"></span> ${userData.black_name} <span id="blackStatus" style="font-style: italic">(offline)</span> <span class="blackArrow">&larr;</span></div>`;
         
         if (!userData.user_name) { $('#noteTypeBox').hide(); };
         userData.logo ? $('#logoBox').append(`<img src=${userData.logo}></img>`) : $("#logoBox").append(`<img src=/images/tcs-logo.png></img>`);
-        let title = 'The Chess School',
-            header = userData.header;
-        if (header && header.includes(': ')) {
-            title = header.split(': ')[0];
-            header = header.split(': ')[1]
-        }
+        let title = 'The Chess School', header = userData.header;
+        if (header && header.includes(': ')) { title = header.split(': ')[0], header = header.split(': ')[1]; };
         $('#titleText').html(title);
         if (header) $('#headerText').html(header);
         $('#topName').html(blackName);
@@ -119,22 +115,9 @@
             displayMove();
         });
 
-        /*socket.on('moves', (data)=>{
-            console.log(`${movesMade.length < data.length - 1 ? "moves" : "move"} received`);
-            movesMade = data, moveDisplay = movesMade.length;
-            if (noteData) {
-                displayNotes(noteData);
-                displayMove();
-            };
-        });
-
-        socket.on('chat', (data)=>{
-            console.log(`chat ${chatMessages.length < data.length - 1 ? "messages" : "message"} received`);
-            displayChat(data);
-        });*/
-
         socket.on('notes', (data)=>{
             console.log(`note ${noteMessages.length < data.length - 1 ? "messages" : "message"} received`);
+            clearTimeout(noteTimeout);
             noteData = data;
             displayNotes(noteData);
         });
@@ -253,6 +236,10 @@
                 }
                 console.log("message sent");
                 socket.emit('note', noteData);
+                noteTimeout = setTimeout(()=>{
+                    socket.close();
+                    socket.open();
+                }, 500);
             };
         };
 
