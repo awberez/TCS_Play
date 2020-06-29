@@ -20,24 +20,24 @@ Further info https://github.com/caustique/chessboard-js
 */
 
 function Chessboard(containerId, config) {
-	
+
 	'use strict';
-	
+
 	/*
 	----------------------------------------------------------------------------
 	----------------------------------------------------------------------------
-  
+
 	CONSTANTS
-	
+
 	----------------------------------------------------------------------------
 	----------------------------------------------------------------------------
 	*/
-		
+
 	Chessboard.ANIMATION = {
 		fadeInTime: 1000,
 		fadeOutTime: 1000
 	};
-	
+
 	Chessboard.CSS_PREFIX = 'chess_';
 	Chessboard.CSS = {
 		pathSeparator: '_',
@@ -45,12 +45,22 @@ function Chessboard(containerId, config) {
 			id: Chessboard.CSS_PREFIX +  'board',
 			className: Chessboard.CSS_PREFIX +  'board'
 		},
+        frame: {
+            className: Chessboard.CSS_PREFIX + 'frame',
+            rightClassName: Chessboard.CSS_PREFIX + 'frame_right',
+            rowClassName: Chessboard.CSS_PREFIX + 'frame_row',
+            topClassName: Chessboard.CSS_PREFIX + 'frame_top',
+            bottomClassName: Chessboard.CSS_PREFIX + 'frame_bottom',
+            columnClassName: Chessboard.CSS_PREFIX + 'frame_column',
+            cornerClassName: Chessboard.CSS_PREFIX + 'frame_corner'
+        },
 		square: {
 			className: Chessboard.CSS_PREFIX + 'square',
 			lastColumn: { className: Chessboard.CSS_PREFIX + 'square_last_column'},
 			idPrefix: Chessboard.CSS_PREFIX + 'square',
 			dark: { className: Chessboard.CSS_PREFIX + 'square_dark' },
 			light: { className: Chessboard.CSS_PREFIX + 'square_light' },
+            lastSquare: Chessboard.CSS_PREFIX + 'last_square',
 			createClassName: function (index) {
 				return ' ' + (((index + ChessUtils.convertIndexToRow(index)) % 2 === 0) ?
 									Chessboard.CSS.square.dark.className : Chessboard.CSS.square.light.className);
@@ -92,20 +102,20 @@ function Chessboard(containerId, config) {
 		style: {
 			id: Chessboard.CSS_PREFIX + 'style'
 		}
-		
+
 	};
-	
+
 	/*
 	----------------------------------------------------------------------------
 	----------------------------------------------------------------------------
-  
+
 	VARIABLE AND METHOD DECLARATIONS
-	
+
 	----------------------------------------------------------------------------
 	----------------------------------------------------------------------------
 	*/
 	// PRIVATE METHODS
-	var init,
+	let init,
 		initConfig,
 		initDOM,
 		// Event handlers
@@ -134,7 +144,7 @@ function Chessboard(containerId, config) {
 		cssGetStyleUniqueId,
 		// PRIVATE VARIABLES
 		// All private variables are prefixed with _
-		_that = this,											// For event handlers 
+		_that = this,											// For event handlers
 		_containerSelector,								// Element selector that is given by the client to create chessboard in
 		_userInputEnabled = false,				// Shows if user input is enabled like clicks
 		_position = ChessUtils.convertFenToPosition(ChessUtils.FEN.positions.empty),
@@ -161,22 +171,22 @@ function Chessboard(containerId, config) {
 		},																// Function references to event handlers
 		_preventPositionChange = false,		// If true position change is not allowed
 		_preventCallingEvents = true;			// If true the system is not calling events. Used during running of constructor function.
-	
-	
+
+
 	/*
 	----------------------------------------------------------------------------
 	----------------------------------------------------------------------------
-  
+
 	PUBLIC METHODS
-	
+
 	----------------------------------------------------------------------------
 	----------------------------------------------------------------------------
 	*/
-	
+
 	/**
-	Clears the chessboard of all pieces. 
+	Clears the chessboard of all pieces.
 	Change chessboard orientation to white.
-	
+
 	@method clear
 	@public
 	*/
@@ -187,7 +197,7 @@ function Chessboard(containerId, config) {
 	};
 	/**
 	Destroys the DOM structure that was created
-	
+
 	@method destroy
 	@public
 	*/
@@ -201,7 +211,7 @@ function Chessboard(containerId, config) {
 	The method doesn't change the chessboard orientation, so it has to be manually if needed.
 	Deprecated method for compatibility reasons, use setPosition and getPosition instead.
 	(No parameter checking!)
-	
+
 	@method position
 	@public
 	@deprecated
@@ -210,8 +220,8 @@ function Chessboard(containerId, config) {
 	@return {Object} The current position of the chessboard in different format.
 	*/
 	this.position = function (position, useAnimation) {
-		var format;
-		
+		let format;
+
 		if (((arguments.length === 0) || typeof position === 'undefined') ||
 				(typeof position === 'string' && position.toLowerCase() === ChessUtils.FEN.id) ||
 				(typeof position === 'string' && position.toLowerCase() === ChessUtils.NOTATION.id)) {
@@ -224,22 +234,22 @@ function Chessboard(containerId, config) {
 	Sets the chessboard position.
 	The method doesn't change the chessboard orientation, so it has to be manually if needed.
 	(No parameter checking!)
-	
+
 	@method setPosition
 	@public
 	@param {Object} [position]  It can be a position string, fen string or notation object to set the current position.
 	@param {Boolean} [useAnimation=true]  Whether to use animation for the process.
 	*/
 	this.setPosition = function (position, useAnimation) {
-		var prevUserInputEnabled = _userInputEnabled;
-		
+		let prevUserInputEnabled = _userInputEnabled;
+
 		if (_preventPositionChange) { return; }
-		
+
 		clearSelection();
-		
+
 		useAnimation = (arguments.length === 1 || typeof useAnimation === 'undefined') ? _config.useAnimation : useAnimation;
-		
-		// start position		
+
+		// start position
 		if (typeof position === 'string' && (position.toLowerCase() === ChessUtils.FEN.startId)) {
 			position = ChessUtils.convertFenToPosition(ChessUtils.FEN.positions.start);
 		} else if (typeof position === 'string' && (position.toLowerCase() === ChessUtils.FEN.emptyId)) {
@@ -251,10 +261,10 @@ function Chessboard(containerId, config) {
 		} else if (typeof position === 'object') {
 			position = ChessUtils.convertNotationToPosition(position);
 		}
-		
-		
+
+
 		if (_position === position) { return; }
-		
+
 		// run the onChange function
 		if (_eventHandlers.hasOwnProperty('onChange') === true &&
 				typeof _eventHandlers.onChange === 'function' &&
@@ -263,7 +273,7 @@ function Chessboard(containerId, config) {
 			if (!_eventHandlers.onChange(_position, position)) { return; }
 			_preventPositionChange = false;
 		}
-		
+
 		_userInputEnabled = false;
 		if (useAnimation === true) {
 			drawAnimations(position);
@@ -272,7 +282,7 @@ function Chessboard(containerId, config) {
 			_position = position;
 			drawPosition();
 		}
-		
+
 		// run the onChanged function
 		if (_eventHandlers.hasOwnProperty('onChanged') === true &&
 				typeof _eventHandlers.onChanged === 'function' &&
@@ -281,13 +291,13 @@ function Chessboard(containerId, config) {
 			_eventHandlers.onChanged(_position);
 			_preventPositionChange = false;
 		}
-		
+
 		_userInputEnabled = prevUserInputEnabled;
 	};
 	/**
 	Gets the chessboard position.
 	(No strict parameter checking!)
-	
+
 	@method getPosition
 	@public
 	@param {String} [format]  If omitted returns the internal position string. If ChessUtils.FEN.id (which is 'fen' for compatibility reasons) which returns a fen string (see http://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation). If Chessboard.NOTATION.id then returns a notation object.
@@ -307,26 +317,26 @@ function Chessboard(containerId, config) {
 			return ChessUtils.convertPositionToNotation(_position);
 		}
 	};
-	
+
 	this.move = function (firstMove) {
-		var movesFrom = [],
-			movesTo = [],
-			position = _position,
+		let movesFrom    = [],
+			movesTo      = [],
+			position     = _position,
 			i,
 			useAnimation = _config.useAnimation,
 			count;
-		
+
 		if (_preventPositionChange) { return; }
-		
+
 		// TODO: parameter checking
-		
+
 		if (typeof arguments[arguments.length - 1] === 'boolean') {
 			useAnimation = arguments[arguments.length - 1];
 			count = arguments.length - 1;
 		} else {
 			count = arguments.length;
 		}
-		
+
 		if (typeof firstMove === 'string') {
 			if (firstMove.search('-') !== -1) {
 				for (i = 0; i < count; i++) {
@@ -345,23 +355,23 @@ function Chessboard(containerId, config) {
 				movesTo.push(arguments[i + 1]);
 			}
 		}
-			
+
 		for (i = 0; i < movesFrom.length; i++) {
 			if (_position[movesFrom[i]] !== ChessUtils.POSITION.empty) {
 				position = ChessUtils.replaceStringAt(position, movesFrom[i], ChessUtils.POSITION.empty);
 				position = ChessUtils.replaceStringAt(position, movesTo[i], _position[movesFrom[i]]);
 			}
 		}
-		
+
 		this.setPosition(position, useAnimation);
-		
+
 	};
 	/**
 	Public method to set or get the chessboard position with a fen string (see http://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation).
 	A shortcut to the position method. Use setPosition and getPosition instead.
 	The method doesn't change the chessboard orientation, so it has to be manually if needed.
 	(No parameter checking!)
-	
+
 	@method fen
 	@public
 	@deprecated
@@ -379,17 +389,17 @@ function Chessboard(containerId, config) {
 			this.setOrientation(orientation);
 		}
 	};
-	
+
 	this.setOrientation = function (orientation) {
-		var position;
-		
+		let position;
+
 		if (orientation === ChessUtils.ORIENTATION.flip || _orientation !== orientation) {
-			
+
 			clearSelection();
-			
+
 			_orientation = (_orientation === ChessUtils.ORIENTATION.white) ?
 					ChessUtils.ORIENTATION.black : ChessUtils.ORIENTATION.white;
-				
+
 			if (_orientation === ChessUtils.ORIENTATION.white) {
 				$('.' + Chessboard.CSS.label.row.className).removeClass(Chessboard.CSS.label.hidden.className);
 				$('.' + Chessboard.CSS.label.column.className).removeClass(Chessboard.CSS.label.hidden.className);
@@ -401,7 +411,7 @@ function Chessboard(containerId, config) {
 				$('.' + Chessboard.CSS.label.row.reversed.className).removeClass(Chessboard.CSS.label.hidden.className);
 				$('.' + Chessboard.CSS.label.column.reversed.className).removeClass(Chessboard.CSS.label.hidden.className);
 			}
-			
+
 			drawPosition();
 		}
 	};
@@ -410,7 +420,7 @@ function Chessboard(containerId, config) {
 	};
 	/**
 	Sets the chessboard size to match the container element size.
-	
+
 	@method resize
 	@public
 	@deprecated
@@ -421,24 +431,24 @@ function Chessboard(containerId, config) {
 	/**
 	Sets the chessboard position to the classical start position.
 	The method sets the chessboard orientation to Chessboard.ORIENTATION.white.
-	
+
 	@method start
 	@public
 	@param {Boolean} [useAnimation=true]  Whether to use animation for the process.
 	*/
 	this.start = function (useAnimation) {
-		
+
 		if (_preventPositionChange) { return; }
-		
+
 		useAnimation = (arguments.length === 0) ? _config.useAnimation : useAnimation;
 		this.position(ChessUtils.FEN.positions.start, useAnimation);
 		_orientation = ChessUtils.ORIENTATION.white;
 	};
-	
+
 	/**
-	Sets wether the board reacts to user clicks and other inputs. After initialization it is set to true. 
+	Sets wether the board reacts to user clicks and other inputs. After initialization it is set to true.
 	The game controller logic should take care of setting it according to who plays.
-	
+
 	@method enableUserInput
 	@public
 	@param {Boolean} [enabled=true]  Whether to enable user interaction.
@@ -452,7 +462,7 @@ function Chessboard(containerId, config) {
 	};
 	/**
 	Gets wether the board reacts to user clicks and other inputs.
-	
+
 	@method isUserInputEnabled
 	@public
 	@return {Boolean} Returns whether to enable user interaction.
@@ -460,15 +470,15 @@ function Chessboard(containerId, config) {
 	this.isUserInputEnabled = function () {
 		return _userInputEnabled;
 	};
-	
-	
-	
+
+
+
 	/*
 	----------------------------------------------------------------------------
 	----------------------------------------------------------------------------
-  
+
 	PRIVATE METHODS
-	
+
 	----------------------------------------------------------------------------
 	----------------------------------------------------------------------------
 	*/
@@ -479,33 +489,33 @@ function Chessboard(containerId, config) {
 	*/
 	/**
 	Initializes the chessboard.
-	
+
 	@method init
 	@private
 	@param {String} containerId The html id of the container div where the chessboard will be created.
 	@param {Object} config Configuration object which is either a position string or an object.
 	*/
 	init = function (containerId, config) {
-		var position;
-		
+		let position;
+
 		position = initConfig(config);
 		initDOM(containerId);
 		bindEvents();
-		
+
 		_userInputEnabled = true;
-		
+
 		return position;
 	};
 	/**
 	Processes the config object given at init.
-	
+
 	@method initConfig
 	@private
 	@param {Object} config Configuration object which is either a position string or an object with the following attributes: position, useAnimation, orientation, showBoardLabels.
 	*/
 	initConfig = function (config) {
-		var position;
-		
+		let position;
+
 		if (typeof config === 'undefined') {
 			position = ChessUtils.convertFenToPosition(ChessUtils.FEN.positions.start);
 			return position;
@@ -529,11 +539,11 @@ function Chessboard(containerId, config) {
 		}
 		_orientation = config.orientation === ChessUtils.ORIENTATION.black ?
 				ChessUtils.ORIENTATION.black : ChessUtils.ORIENTATION.white;
-		
+
 		_config.useAnimation = config.useAnimation === false ? false : true;
 		_config.showBoardLabels = (config.showNotation === false) || (config.showBoardLabels === false) ? false : true;
 		_config.showNextMove = config.showNextMove === false ? false : true;
-		
+
 		if (config.eventHandlers) {
 
 			if (config.eventHandlers.onChange &&
@@ -552,54 +562,88 @@ function Chessboard(containerId, config) {
 					typeof config.eventHandlers.onMove === 'function') {
 				_eventHandlers.onMove = config.eventHandlers.onMove;
 			}
-	
+
 		}
-		
+
 		return position;
 		// TODO:  Deprecated compatibility settings
 	};
 	/**
 	Initialises the DOM tree for the chessboard.
-	
+
 	@method initDOM
 	@private
 	@param {String} containerId The html id of the container div where the chessboard will be created.
 	*/
 	initDOM = function (containerId) {
-		var i,
+		let i,
 			html = '',
 			id,
-			className;
-		
+			className,
+			row,
+			col;
+
 		_containerSelector = '#' + containerId;
-		
+
 		if (!$(_containerSelector)) { throw new Error("ContainerId provided doesn't point to a DOM element."); }
-		
+
 		// Adding dynamic style for resize events
 		html += '<style id="' + cssGetStyleUniqueId() + '"></style>';
-		
-		
+
+
 		// Board div
 		html += '<div id="' + cssGetBoardUniqueId() + '" class="' +
 			Chessboard.CSS.board.className + '">';
-		
+
+        // Top frame row
+        html += '<div class="' +
+            Chessboard.CSS.frame.className + ' ' +
+            Chessboard.CSS.frame.cornerClassName + '"></div>';
+        for (i = 0; i < 8; i++) {
+            html += '<div class="' +
+                Chessboard.CSS.frame.className + ' ' +
+                Chessboard.CSS.frame.topClassName + ' ' +
+                Chessboard.CSS.frame.rowClassName + '"><div class="' +
+                Chessboard.CSS.label.className + ' ' +
+                Chessboard.CSS.label.hidden.className + ' ' +
+                Chessboard.CSS.label.column.reversed.className + '">' +
+                ChessUtils.NOTATION.columnConverter[ChessUtils.convertIndexToColumn(7 - i)] + '</div></div>';
+        }
+        html += '<div class="' +
+            Chessboard.CSS.frame.className + ' ' +
+            Chessboard.CSS.frame.cornerClassName + ' ' +
+            Chessboard.CSS.frame.rightClassName + '"></div>';
+
 		for (i = 0; i < 64; i++) {
+            col = i % 8;
+            row = (i - col) / 8;
+
 			// Square div
 			id = cssGetSquareUniqueId(i);
 			className = Chessboard.CSS.square.className;
 			className += ' ' + Chessboard.CSS.square.createClassName(i);
-			if (i % 8 === 7) {
-				className += ' ' + Chessboard.CSS.square.lastColumn.className;
-			}
-			html += '<div id="' + id + '" class="' + className + '">';
-						
-			// Column indicators
-			if (ChessUtils.convertIndexToRow(i) === 0) {
+
+            // Left frame
+            if (col === 0) {
+                html += '<div class="' + Chessboard.CSS.frame.className + ' ' + Chessboard.CSS.frame.columnClassName + '">';
+
+                // Left row indicators
+                if (ChessUtils.convertIndexToColumn(i) === 0) {
 				html += '<div class="' + Chessboard.CSS.label.className + ' ' +
-					Chessboard.CSS.label.column.className + '">' +
-					ChessUtils.NOTATION.columnConverter[ChessUtils.convertIndexToColumn(i)] + '</div>';
+                        Chessboard.CSS.label.row.className + '">' +
+                        ChessUtils.NOTATION.rowConverter[ChessUtils.convertIndexToRow(i)] + '</div>';
+                }
+
+                html += '</div>';
 			}
-			if (ChessUtils.convertIndexToRow(i) === 7) {
+
+            html += '<div id="' + id + '" class="' + className;
+            if (col === 7) {
+                html += ' ' + Chessboard.CSS.square.lastSquare
+            }
+            html += '">';
+
+            /*			if (ChessUtils.convertIndexToRow(i) === 7) {
 				html += '<div class="' + Chessboard.CSS.label.className + ' ' +
 					Chessboard.CSS.label.hidden.className + ' ' +
 					Chessboard.CSS.label.column.reversed.className + '">' +
@@ -617,21 +661,56 @@ function Chessboard(containerId, config) {
 					Chessboard.CSS.label.row.reversed.className + '">' +
 					ChessUtils.NOTATION.rowConverter[7 - ChessUtils.convertIndexToRow(i)] + '</div>';
 			}
-			
+			*/
+
 			// Piece placeholders
 			className = Chessboard.CSS.piece.className;
 			className += ' ' + Chessboard.CSS.piece.none.className;
 			html += '<div id="' + cssGetPieceUniqueId(i) + '" class="' + className + '"></div>';
-						
+
 			html += '</div>';
+
+            // Right frame
+            if (col === 7) {
+                html += '<div class="' + Chessboard.CSS.frame.className + ' ' + Chessboard.CSS.frame.columnClassName + ' ' + Chessboard.CSS.frame.rightClassName + '">';
+
+                // Right row indicators
+                if (ChessUtils.convertIndexToColumn(i) === 7) {
+                    html += '<div class="' + Chessboard.CSS.label.className + ' ' +
+                        Chessboard.CSS.label.hidden.className + ' ' +
+                        Chessboard.CSS.label.row.reversed.className + '">' +
+                        ChessUtils.NOTATION.rowConverter[7 - ChessUtils.convertIndexToRow(i)] + '</div>';
 		}
-		
+
+                html += '</div>';
+            }
+
+        }
+
+        // Bottom frame row
+        html += '<div class="' +
+            Chessboard.CSS.frame.className + ' ' +
+            Chessboard.CSS.frame.cornerClassName + '"></div>';
+        for (i = 0; i < 8; i++) {
+            html += '<div class="' +
+                Chessboard.CSS.frame.className + ' ' +
+                Chessboard.CSS.frame.bottomClassName + ' ' +
+                Chessboard.CSS.frame.rowClassName + '"><div class="' +
+                Chessboard.CSS.label.className + ' ' +
+                Chessboard.CSS.label.column.className + '">' +
+                ChessUtils.NOTATION.columnConverter[ChessUtils.convertIndexToColumn(i)] + '</div></div>';
+        }
+        html += '<div class="' +
+            Chessboard.CSS.frame.className + ' ' +
+            Chessboard.CSS.frame.cornerClassName + ' ' +
+            Chessboard.CSS.frame.rightClassName + '"></div>';
+
 		html += '</div>';
-		
+
 		$(_containerSelector).html(html);
 		$(_containerSelector).css('display', 'inline-block');
 	};
-	
+
 	/*
 	----------------------------------------------------------------------------
 	Event handling related methods
@@ -639,18 +718,18 @@ function Chessboard(containerId, config) {
 	*/
 	/**
 	Binds chessboard events to elements.
-	
+
 	@method bindEvents
 	@private
 	*/
 	bindEvents = function () {
 		$(window).on('resize.chessEvents', onSizeChanged);
-		
+
 		$('div' + _containerSelector + ' div.' + Chessboard.CSS.square.className).on('click', onSquareClicked);
 	};
 	/**
 	Unbinds chessboard events to elements in case the board is detroyed.
-	
+
 	@method unbindEvents
 	@private
 	*/
@@ -660,21 +739,30 @@ function Chessboard(containerId, config) {
 	};
 	/**
 	Resizes elements in case the window is resized.
-	
+
 	@method onSizeChanged
 	@private
 	*/
 	onSizeChanged = function () {
-		var	newSquareWidth,
+		let newSquareWidth,
 			newPieceFontSize,
 			newLabelFontSize,
 			html;
-		
-		newSquareWidth = Math.floor($(_containerSelector).width() / 8);
+
+		newSquareWidth = Math.floor($(_containerSelector).width() / 9);
 		newPieceFontSize = newSquareWidth * 0.85;
-		newLabelFontSize = Math.min(Math.max(newSquareWidth * 0.5, 8), 20);
+        newLabelFontSize = Math.min(Math.max(newSquareWidth * 0.25, 8), 20);
 
 		html = '\
+			div' + _containerSelector + ' div.' + Chessboard.CSS.frame.columnClassName + ' {\
+				height: ' + newSquareWidth + 'px;\
+			}\
+			div' + _containerSelector + ' div.' + Chessboard.CSS.frame.rowClassName + ' {\
+				height: ' + newSquareWidth / 2 + 'px;\
+			}\
+			div' + _containerSelector + ' div.' + Chessboard.CSS.frame.cornerClassName + ' {\
+				height: ' + newSquareWidth / 2 + 'px;\
+			}\
 			div' + _containerSelector + ' div.' + Chessboard.CSS.piece.className + ' {\
 				font-size: ' + newPieceFontSize + 'px;\
 				height: ' + newSquareWidth + 'px;\
@@ -687,17 +775,17 @@ function Chessboard(containerId, config) {
 	};
 	/**
 	Handles onClick event on squares.
-	
+
 	@method onSquareClicked
 	@private
 	*/
 	onSquareClicked = function () {
-		var index = getSquareIndexFromId($(this).context.id),
-			i,
+		const index = getSquareIndexFromId($(this).context.id);
+		let i,
 			nextPosition;
-		
+
 		if (!_userInputEnabled) { return; }
-		
+
 		if (_selectedSquareIndex !== null && _validMoves.indexOf(index) > -1) {
 			if (_eventHandlers.onMove) {
 				nextPosition = _eventHandlers.onMove({from: ChessUtils.convertIndexToNotationSquare(_selectedSquareIndex),
@@ -708,14 +796,14 @@ function Chessboard(containerId, config) {
 				}
 			}
 		} else {
-		
+
 			if (_selectedSquareIndex !== index) {
 				if (_eventHandlers.onPieceSelected) {
 					_validMoves = _eventHandlers.onPieceSelected(ChessUtils.convertIndexToNotationSquare(index));
-					
+
 					if (_validMoves && _validMoves.length !== 0) {
 						setSelectedSquareElement(index);
-						
+
 						if (!isSquareEmpty(index)) {
 							for (i = 0; i < _validMoves.length; i++) {
 								getSquareElement(_validMoves[i]).addClass(Chessboard.CSS.square.validMove.className);
@@ -727,11 +815,11 @@ function Chessboard(containerId, config) {
 				}
 			}
 		}
-	
+
 	};
 	/**
 	Clears the current selection.
-	
+
 	@method clearSelection
 	@private
 	*/
@@ -745,7 +833,7 @@ function Chessboard(containerId, config) {
 	};
 	/**
 	Sets the index-th square to selected if there is a piece on it. It deletes the previous selection.
-	
+
 	@method setSelectedSquareElement
 	@private
 	@param {Integer} index The index of the quare to be selected.
@@ -757,7 +845,7 @@ function Chessboard(containerId, config) {
 			getSquareElement(_selectedSquareIndex).addClass(Chessboard.CSS.square.selected.className);
 		}
 	};
-	
+
 	/*
 	----------------------------------------------------------------------------
 	Managing board
@@ -765,7 +853,7 @@ function Chessboard(containerId, config) {
 	*/
 	/**
 	Returns the a JQuery object of the square div selected by the index.
-	
+
 	@method getSquareElement
 	@private
 	@param {Integer} index Index of a square (0-63)
@@ -776,23 +864,23 @@ function Chessboard(containerId, config) {
 	};
 	/**
 	Returns the index of a square div based on the html id attribute.
-	
+
 	@method getSquareIndexFromId
 	@private
 	@param {String} htmlId The html id attribute of the square (The last piece contains the id part)
 	@return {Integer} The index of the square (0-63)
 	*/
 	getSquareIndexFromId = function (htmlId) {
-		var classParts,
+		let classParts,
 			originalIndex;
-		
+
 		classParts = htmlId.split(Chessboard.CSS.pathSeparator);
 		originalIndex = parseInt(classParts[classParts.length - 1], 10);
 		return _orientation === ChessUtils.ORIENTATION.white ? originalIndex : 63 - originalIndex;
 	};
 	/**
 	Returns the a JQuery object of the piece div selected by the index.
-	
+
 	@method getPieceElement
 	@private
 	@param {Integer} index Index of a square (0-63)
@@ -803,7 +891,7 @@ function Chessboard(containerId, config) {
 	};
 	/**
 	Returns if a selected index is empty.
-	
+
 	@method isSquareEmpty
 	@private
 	@param {Integer} index Index of a square (0-63)
@@ -815,7 +903,7 @@ function Chessboard(containerId, config) {
 	};
 	/**
 	Draws a piece at the selected position.
-	
+
 	@method drawPiece
 	@private
 	@param {Integer} index Index of a square (0-63)
@@ -823,12 +911,12 @@ function Chessboard(containerId, config) {
 	@param {Boolean} isHidden Whether the piece should be placed there as a hidden piece for aimation purposes.
 	*/
 	drawPiece = function (index, positionPiece, isHidden) {
-		var className = '',
-			player = ChessUtils.getPlayerNameFromPiece(positionPiece),
-			piece = ChessUtils.PIECE.codeToPieceName[positionPiece.toLowerCase()];
-		
+		let className = '';
+		const player = ChessUtils.getPlayerNameFromPiece(positionPiece),
+			  piece  = ChessUtils.PIECE.codeToPieceName[positionPiece.toLowerCase()];
+
 		if (isHidden !== true) { isHidden = false; }
-		
+
 		className = Chessboard.CSS.piece.className;
 		if (positionPiece !== ChessUtils.POSITION.empty) {
 			className += ' ' + Chessboard.CSS.piece.createClassName(piece);
@@ -843,33 +931,33 @@ function Chessboard(containerId, config) {
 	};
 	/**
 	Draws the entire board from the position string using the drawPiece method.
-	
+
 	@method drawPosition
 	@private
 	*/
 	drawPosition = function () {
-		var i;
-		
+		let i;
+
 		for (i = 0; i < 64; i++) {
 			drawPiece(i, _position[i]);
 		}
 	};
 	/**
 	Draws animated the entire board from the position string.
-	
+
 	@method drawAnimations
 	@private
 	@param {String} position A position string to animate to from the actual position.
 	*/
 	drawAnimations = function (position) {
-		var i;
-		
+		let i;
+
 		for (i = 0; i < 64; i++) {
 			if (_position[i] !== position[i]) {
 				if ((_position[i] !== '0') && (position[i] !== '0')) {
 					drawPiece(i, position[i], true);
 					$(getPieceElement(i)).animate({'opacity': '1'}, Chessboard.ANIMATION.fadeInTime);
-					
+
 					// Replacing characters
 				} else if (_position[i] === '0') {
 					// New piece on square
@@ -882,18 +970,18 @@ function Chessboard(containerId, config) {
 			}
 		}
 	};
-	
-	
-	
+
+
+
 	/*
 	----------------------------------------------------------------------------
 	CSS helper methods
 	----------------------------------------------------------------------------
 	*/
 	/**
-	Creates a unique prefix for css classnames based on enclosing div id 
+	Creates a unique prefix for css classnames based on enclosing div id
 	in order to be able to handle multiple boards on one page.
-	
+
 	@method cssGetUniquePrefix
 	@private
 	@return {String}
@@ -903,7 +991,7 @@ function Chessboard(containerId, config) {
 	};
 	/**
 	Returns unique css classname for the board div.
-	
+
 	@method cssGetBoardUniqueId
 	@private
 	@return {String}
@@ -913,7 +1001,7 @@ function Chessboard(containerId, config) {
 	};
 	/**
 	Returns unique css id for a square div.
-	
+
 	@method cssGetSquareUniqueId
 	@private
 	@return {String}
@@ -924,7 +1012,7 @@ function Chessboard(containerId, config) {
 	};
 	/**
 	Returns unique css id for a piece div.
-	
+
 	@method cssGetPieceUniqueId
 	@private
 	@return {String}
@@ -935,7 +1023,7 @@ function Chessboard(containerId, config) {
 	};
 	/**
 	Returns unique css id for the style div.
-	
+
 	@method cssGetStyleUniqueId
 	@private
 	@return {String}
@@ -943,29 +1031,29 @@ function Chessboard(containerId, config) {
 	cssGetStyleUniqueId = function () {
 		return cssGetUniquePrefix() + Chessboard.CSS.style.id;
 	};
-	
-	
+
+
 	/*
 	----------------------------------------------------------------------------
 	----------------------------------------------------------------------------
-  
+
 	CONSTRUCTOR CODE
-	
+
 	----------------------------------------------------------------------------
 	----------------------------------------------------------------------------
 	*/
-	
+
 	this.setPosition(init(containerId, config));
 	onSizeChanged();
-	
+
 	// It is a bit of a hack.
 	if (_orientation === ChessUtils.ORIENTATION.black) {
 		this.setOrientation(ChessUtils.ORIENTATION.flip);
 		_orientation = ChessUtils.ORIENTATION.black;
 	}
-	
+
 	_preventCallingEvents = false;
-	
+
 }
 
 
@@ -1003,18 +1091,18 @@ ChessUtils class to contain static utility functions.
 
 (function () {
 	'use strict';
-	
+
 	/*
 	----------------------------------------------------------------------------
 	----------------------------------------------------------------------------
-	
+
 	CONSTANTS
-	
+
 	----------------------------------------------------------------------------
 	----------------------------------------------------------------------------
 	*/
-	
-	var ChessUtils = {};
+
+	const ChessUtils = {};
 
 	ChessUtils.PLAYER = {
 		black: {
@@ -1028,13 +1116,13 @@ ChessUtils class to contain static utility functions.
 			className: 'white'
 		}
 	};
-	
+
 	ChessUtils.ORIENTATION = {
 		white: 'w',
 		black: 'b',
 		flip: 'flip'
 	};
-	
+
 	ChessUtils.PIECE = {
 		none: '0',
 		pawn: 'p',
@@ -1052,7 +1140,7 @@ ChessUtils class to contain static utility functions.
 			k: 'king'
 		}
 	};
-	
+
 	ChessUtils.POSITION = {
 		empty: '0',
 		piece: {
@@ -1066,7 +1154,7 @@ ChessUtils class to contain static utility functions.
 		validator: /^[kqrbnpKQRNBP0]+$/,
 	};
 
-	
+
 	ChessUtils.NOTATION = {
 		id: 'notation',
 		positionValidator: /^[a-h][1-8]$/,
@@ -1076,7 +1164,7 @@ ChessUtils class to contain static utility functions.
 		columnConverter: 'abcdefgh',
 		rowConverter: '12345678'
 	};
-	
+
 	ChessUtils.FEN = {
 		// Commands
 		id: 'fen',
@@ -1094,18 +1182,18 @@ ChessUtils class to contain static utility functions.
 			ruyLopez: 'r1bqkbnr/pppp1ppp/2n5/1B2p3/4P3/5N2/PPPP1PPP/RNBQK2R'
 		}
 	};
-	
-	
+
+
 	/*
 	----------------------------------------------------------------------------
 	----------------------------------------------------------------------------
-  
+
 	PUBLIC STATIC METHODS
-	
+
 	----------------------------------------------------------------------------
 	----------------------------------------------------------------------------
 	*/
-	
+
 	/*
 	----------------------------------------------------------------------------
 	Piece, player etc.
@@ -1113,7 +1201,7 @@ ChessUtils class to contain static utility functions.
 	*/
 	/**
 	Checks wether a piece code represents a white player.
-	
+
 	@method isPieceWhite
 	@public
 	@static
@@ -1125,7 +1213,7 @@ ChessUtils class to contain static utility functions.
 	};
 	/**
 	Checks wether a piece code represents a black player.
-	
+
 	@method isPieceBlack
 	@public
 	@static
@@ -1137,7 +1225,7 @@ ChessUtils class to contain static utility functions.
 	};
 	/**
 	Puts to piece into the valid format according to player information.
-	
+
 	@method getPieceForPlayer
 	@public
 	@static
@@ -1150,7 +1238,7 @@ ChessUtils class to contain static utility functions.
 	};
 	/**
 	Gets the player of the piece.
-	
+
 	@method convertPieceToPlayerName
 	@public
 	@static
@@ -1163,7 +1251,7 @@ ChessUtils class to contain static utility functions.
 	};
 	/**
 	Gets the player of the piece.
-	
+
 	@method getPlayerCodeFromPiece
 	@public
 	@static
@@ -1174,7 +1262,7 @@ ChessUtils class to contain static utility functions.
 		if (ChessUtils.isPieceWhite(piece)) { return ChessUtils.PLAYER.white.code; }
 		if (ChessUtils.isPieceBlack(piece)) { return ChessUtils.PLAYER.black.code; }
 	};
-	
+
 	/*
 	----------------------------------------------------------------------------
 	Validating methods
@@ -1182,7 +1270,7 @@ ChessUtils class to contain static utility functions.
 	*/
 	/**
 	Checks wether a position string is valid.
-	
+
 	@method isValidPosition
 	@public
 	@static
@@ -1198,7 +1286,7 @@ ChessUtils class to contain static utility functions.
 	};
 	/**
 	Checks wether a fen string is valid.
-	
+
 	@method isValidFen
 	@public
 	@static
@@ -1206,16 +1294,16 @@ ChessUtils class to contain static utility functions.
 	@return {Boolean}
 	*/
 	ChessUtils.isValidFen = function (fen) {
-		var fenRows,
+		let fenRows,
 			i;
-		
+
 		if (typeof fen !== 'string') { return false; }
-	
+
 		fen = fen.split(' ')[0];
-	
+
 		fenRows = fen.split('/');
 		if (fenRows.length !== 8) { return false; }
-	
+
 		// check the piece sections
 		for (i = 0; i < 8; i++) {
 			if (fenRows[i] === '' ||
@@ -1224,14 +1312,14 @@ ChessUtils class to contain static utility functions.
 				return false;
 			}
 		}
-	
+
 		return true;
 	};
-	
+
 	/**
 	Checks wether a notation position string is valid.
 	Notation position string example: 'a1' which represents the first column and row
-	
+
 	@method isValidNotationPosition
 	@public
 	@static
@@ -1245,7 +1333,7 @@ ChessUtils class to contain static utility functions.
 	/**
 	Checks wether a notation piece string is valid.
 	Notation piece string example: 'bK' which represents black king
-	
+
 	@method isValidNotationPiece
 	@public
 	@static
@@ -1259,7 +1347,7 @@ ChessUtils class to contain static utility functions.
 	/**
 	Checks wether a notation object is valid.
 	Notation object example: {a4: 'bK',c4: 'wK',a7: 'wR'}
-	
+
 	@method isValidNotation
 	@public
 	@static
@@ -1267,12 +1355,12 @@ ChessUtils class to contain static utility functions.
 	@return {Boolean}
 	*/
 	ChessUtils.isValidNotation = function (notation) {
-		var i;
-		
+		let i;
+
 		if (typeof notation !== 'object') {
 			return false;
 		}
-		
+
 		for (i in notation) {
 			if (notation.hasOwnProperty(i)) {
 				if (!ChessUtils.isValidNotationPosition(i) || !ChessUtils.isValidNotationPiece(notation[i])) {
@@ -1280,10 +1368,10 @@ ChessUtils class to contain static utility functions.
 				}
 			}
 		}
-		
+
 		return true;
 	};
-	
+
 	/*
 	----------------------------------------------------------------------------
 	Conversion of chessboard notation methods
@@ -1291,7 +1379,7 @@ ChessUtils class to contain static utility functions.
 	*/
 	/**
 	Creates a position string from a fen string. (see http://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation)
-	
+
 	@method convertFenToPosition
 	@public
 	@static
@@ -1299,26 +1387,26 @@ ChessUtils class to contain static utility functions.
 	@return {String} The position string representation of the fen string.
 	*/
 	ChessUtils.convertFenToPosition = function (fen) {
-		var i,
+		let i,
 			position;
-			
+
 		if (ChessUtils.isValidFen(fen)) {
 			throw new Error('Invalid fen string "' + fen + '".');
 		}
-		
+
 		// Keeping the first part of fen
 		position = fen.split(' ')[0];
-		
+
 		for (i = 1; i <= 8; i++) {
 			position = position.replace(new RegExp(i, 'g'), ChessUtils.repeatString('0', i));
 		}
 		position = position.replace(new RegExp(ChessUtils.FEN.rowSeparator, 'g'), '');
-				
+
 		return position;
 	};
 	/**
 	Creates a fen string from a position string. (see http://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation)
-	
+
 	@method convertPositionToFen
 	@public
 	@static
@@ -1326,13 +1414,13 @@ ChessUtils class to contain static utility functions.
 	@return {String} The fen string representation of the position string.
 	*/
 	ChessUtils.convertPositionToFen = function (position) {
-		var i,
+		let i,
 			fen = '';
-		
+
 		if (ChessUtils.isValidPosition(position)) {
 			throw new Error('Invalid position string "' + position + '".');
 		}
-				
+
 		fen = position.substr(0, 8);
 		for (i = 1; i < 8; i++) {
 			fen += ChessUtils.FEN.rowSeparator + position.substr(i * 8, 8);
@@ -1340,14 +1428,14 @@ ChessUtils class to contain static utility functions.
 		for (i = 8; i > 0; i--) {
 			fen = fen.replace(new RegExp(ChessUtils.repeatString('0', i), 'g'), i);
 		}
-		
+
 		return fen;
 	};
-	
-	
+
+
 	/**
 	Returns the notation piece string from a piece code string that is used in fen and position strings (K -> wK or k -> bK).
-	
+
 	@method convertPieceToNotationPiece
 	@public
 	@static
@@ -1361,7 +1449,7 @@ ChessUtils class to contain static utility functions.
 	};
 	/**
 	Returns the piece code string that is used in fen and position strings from a notation piece string (wK -> K or bK -> k).
-	
+
 	@method convertNotationPieceToPiece
 	@public
 	@static
@@ -1375,7 +1463,7 @@ ChessUtils class to contain static utility functions.
 	};
 	/**
 	Returns the notation square from an index (0-63) (0 -> a8 or 63 -> h1).
-	
+
 	@method convertIndexToNotationSquare
 	@public
 	@static
@@ -1385,11 +1473,11 @@ ChessUtils class to contain static utility functions.
 	ChessUtils.convertIndexToNotationSquare = function (index) {
 		return ChessUtils.NOTATION.columns[ChessUtils.convertIndexToColumn(index)] +
 						ChessUtils.NOTATION.rows[ChessUtils.convertIndexToRow(index)];
-				
+
 	};
 	/**
 	Returns the index (0-63) from a notation square (a8 -> 0 or h1 -> 63).
-	
+
 	@method convertNotationSquareToIndex
 	@public
 	@static
@@ -1397,17 +1485,17 @@ ChessUtils class to contain static utility functions.
 	@return {Integer} The index of the square
 	*/
 	ChessUtils.convertNotationSquareToIndex = function (notationSquare) {
-		var index,
+		let index,
 			i,
 			row,
 			column;
-		
+
 		if (notationSquare[notationSquare.length - 1] === '+') {
 			notationSquare = notationSquare.substring(0, notationSquare.length - 1);
 		}
 		column = notationSquare.split('')[notationSquare.length - 2];
 		row = notationSquare.split('')[notationSquare.length - 1];
-		
+
 		return ChessUtils.convertRowColumnToIndex(
 			ChessUtils.NOTATION.rowConverter.search(row),
 			ChessUtils.NOTATION.columnConverter.search(column)
@@ -1415,7 +1503,7 @@ ChessUtils class to contain static utility functions.
 	};
 		/**
 	Creates a position string from a notation object.
-	
+
 	@method convertNotationToPosition
 	@public
 	@static
@@ -1423,13 +1511,13 @@ ChessUtils class to contain static utility functions.
 	@return {String} The position string representation of the notation object.
 	*/
 	ChessUtils.convertNotationToPosition = function (notation) {
-		var position = ChessUtils.convertFenToPosition(ChessUtils.FEN.positions.empty),
+		let position = ChessUtils.convertFenToPosition(ChessUtils.FEN.positions.empty),
 			square;
-	
+
 		if (ChessUtils.isValidNotation(position)) {
 			throw new Error('Invalid notation object "' + notation.toString() + '".');
 		}
-		
+
 		for (square in notation) {
 			if (notation.hasOwnProperty(square)) {
 				position =
@@ -1438,13 +1526,13 @@ ChessUtils class to contain static utility functions.
 																		 ChessUtils.convertNotationPieceToPiece(notation[square]));
 			}
 		}
-		
+
 		return position;
-				
+
 	};
 	/**
 	Creates a notation object from a position string.
-	
+
 	@method convertPositionToNotation
 	@public
 	@static
@@ -1452,22 +1540,22 @@ ChessUtils class to contain static utility functions.
 	@return {Object} The notation object representation of the position string.
 	*/
 	ChessUtils.convertPositionToNotation = function (position) {
-		var notation = {},
-			i;
-		
+		const notation = {};
+		let i;
+
 		if (ChessUtils.isValidPosition(position)) {
 			throw new Error('Invalid position string "' + position + '".');
 		}
-		
+
 		for (i = 0; i < 64; i++) {
 			if (position[i] !== ChessUtils.POSITION.empty) {
 				notation[ChessUtils.convertIndexToNotationSquare(i)] = ChessUtils.convertPieceToNotationPiece(position[i]);
 			}
 		}
-		
+
 		return notation;
 	};
-	
+
 	/*
 	----------------------------------------------------------------------------
 	Conversion of coordinates and connected methods
@@ -1475,7 +1563,7 @@ ChessUtils class to contain static utility functions.
 	*/
 	/**
 	Checks wether a row index (0-7) and a column index (0-7) is valid.
-	
+
 	@method isOutOfBoard
 	@public
 	@static
@@ -1488,7 +1576,7 @@ ChessUtils class to contain static utility functions.
 	};
 	/**
 	Converts an index (0-63) to a column index (0-7). No parameter checking.
-	
+
 	@method convertIndexToColumn
 	@public
 	@static
@@ -1500,7 +1588,7 @@ ChessUtils class to contain static utility functions.
 	};
 	/**
 	Converts an index (0-63) to a row index (0-7). No parameter checking.
-	
+
 	@method convertIndexToRow
 	@public
 	@static
@@ -1512,7 +1600,7 @@ ChessUtils class to contain static utility functions.
 	};
 	/**
 	Converts a row index (0-7) and a column index (0-7) to an index (0-63). No parameter checking.
-	
+
 	@method convertRowColumnToIndex
 	@public
 	@static
@@ -1523,8 +1611,8 @@ ChessUtils class to contain static utility functions.
 	ChessUtils.convertRowColumnToIndex = function (row, column) {
 		return (7 - row) * 8 + column;
 	};
-	
-	
+
+
 	/*
 	----------------------------------------------------------------------------
 	Utility functions
@@ -1534,7 +1622,7 @@ ChessUtils class to contain static utility functions.
 	Repeats a given string (or character) x times.
 	Example: repeatString('0', 3) returns '000'.
 	(No parameter checking!)
-	
+
 	@method repeatString
 	@public
 	@static
@@ -1543,18 +1631,18 @@ ChessUtils class to contain static utility functions.
 	@return {String} The 'what' string repeated 'times' times.
 	*/
 	ChessUtils.repeatString = function (what, times) {
-		var helper = [];
-		
+		const helper = [];
+
 		helper.length = times + 1;
 		return helper.join(what);
-		
+
 	};
-	
+
 	/**
 		Replaces a character/string in a given string (or character) x times.
 		Example: replaceStringAt('Hong', 0, 'K') returns 'Kong', replaceStringAt('Hong', 3, 'g Kong') returns 'Hong Kong'.
 		(No parameter checking!)
-		
+
 		@method replaceStringAt
 		@public
 		@static
@@ -1564,19 +1652,19 @@ ChessUtils class to contain static utility functions.
 		@return {String} The result after replacement
 		*/
 	ChessUtils.replaceStringAt = function (inputString, index, what) {
-			
-		var a;
-			
+
+		let a;
+
 		a = inputString.split('');
 		a[index] = what;
 		return a.join('');
 	};
-	
-	
+
+
 	if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
 		module.exports.ChessUtils = ChessUtils;
 	} else {
 		window.ChessUtils = ChessUtils;
 	}
-	
+
 }());

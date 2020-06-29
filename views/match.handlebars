@@ -1,17 +1,15 @@
 <main>
     <div class="container-fluid">
-        <div class="row">
-            <div class="col-12">
-                <br/>
-                <a href="https://thechessschool.net/home"><span id="logoBox"></span></a>
-            </div>
-            <hr/>
+        <div class="row py-3">
             <div class="col-12 text-center">
-                <h1 id="headerText"></h1>
+              <a href="https://thechessschool.net/home" class='float-left'><span id="logoBox"></span></a>
+              <h1 id="titleText" class='mb-0'></h1>
+              <h2 id="headerText"></h2>
             </div>
+            <hr class='mt-0'>
         </div>
         <div class="row justify-content-center">
-            <div class="col-6">
+            <div class="col-6 pl-0 pr-2">
                 <div class="infoBox mainBox float-right">
                     <div class="outlineBar text-center">
                         <div id="status"></div>
@@ -33,17 +31,17 @@
                     <div class="outlineBar bottom">
                           <div id="chatTypeBox" class="playerInput justify-content-center">
                             <input id="inputMessage" placeholder="Type here..."/><button id="send" onClick=sendMessage()>Send</button>
-                        </div>  
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="col-6 text-center">
+            <div class="col-6 text-center pl-2 pr-0">
                 <div class="infoBox chessBox mainBox">
                     <div class="playerInput drawBtn">
                         <button id="draw" type="button">Draw</button>
                     </div>
                     <div id="statusPreview"></div>
-                    <div id="topName" class="nameBox"></div> 
+                    <div id="topName" class="nameBox"></div>
                     <div id="myBoard"></div>
                     <div id="bottomName" class="nameBox"></div>
                     <div id="promotionsChoice" class="playerInput">
@@ -54,7 +52,7 @@
                             <span onClick="setPromotions('b', 'proB')" id="proB" class="proPiece">&#9821;</span>
                             <span onClick="setPromotions('n', 'proN')" id="proN" class="proPiece">&#9822;</span>
                         </div>
-                    </div> 
+                    </div>
                     <div class="playerInput resignBtn">
                         <button id="resign" type="button">Resign</button>
                     </div>
@@ -72,18 +70,25 @@
         resignation = false, gameEnd = false, chatMessages = [], topPlayer = "black", drawOffer = false, drawAccepted = false, oppCon = false;
         whiteName = `<div id="whiteName"><span class="whiteArrow">&rarr;</span> <span class="chessPiece white"></span> ${userData.white_name} <span id="whiteStatus" style="font-style: italic">(offline)</span> <span class="whiteArrow">&larr;</span></div>`,
         blackName = `<div id="blackName"><span class="blackArrow">&rarr;</span> <span class="chessPiece black"></span> ${userData.black_name} <span id="blackStatus" style="font-style: italic">(offline)</span> <span class="blackArrow">&larr;</span></div>`;
-        
+
         userData.logo ? $('#logoBox').append(`<img src=${userData.logo}></img>`) : $("#logoBox").append(`<img src=/images/tcs-logo.png></img>`);
-        userData.header ? $('#headerText').html(`${userData.header}`) : $('#headerText').html(`The Chess School`);
+        let title  = 'The Chess School',
+            header = userData.header;
+        if (header && header.includes(': ')) {
+          title  = header.split(': ')[0];
+          header = header.split(': ')[1]
+        }
+        $('#titleText').html(title);
+        if (header) $('#headerText').html(header);
         userData.player_color == "observer" ? $('.playerInput').hide() : $('#flipButton').hide();
         if (userData.player_color == "black") {
             $('#topName').html(whiteName);
             $('#bottomName').html(blackName);
-        } 
+        }
         else {
             $('#topName').html(blackName);
             $('#bottomName').html(whiteName);
-        };   
+        };
         $(".whiteArrow").hide();
         $(".blackArrow").hide();
         $(document).ready(()=>{ $('#flip').click(flipBoard) });
@@ -98,7 +103,7 @@
         socket.on('disconnect', (data)=>{
             console.log("Disconnected from server");
             board.enableUserInput(false);
-            $("#resign").attr("disabled", true); 
+            $("#resign").attr("disabled", true);
             $("#draw").attr("disabled", true);
             $("#send").attr("disabled", true);
             initialStatus = true;
@@ -106,10 +111,10 @@
             statusTimeout = setTimeout(()=>{ resetConnections(); }, 5000);
         });
 
-        socket.on('reconnect', ()=>{ 
+        socket.on('reconnect', ()=>{
             $("#resign").attr("disabled", false);
             $("#draw").attr("disabled", false);
-            $("#send").attr("disabled", false); 
+            $("#send").attr("disabled", false);
         });
 
         socket.on('messages', (data)=>{
@@ -150,16 +155,16 @@
                         pgn: chess.pgn()
                     };
                     console.log("draw accepted");
-                    if (socket.connected) { 
-                        socket.emit('moveMade', drawData); 
+                    if (socket.connected) {
+                        socket.emit('moveMade', drawData);
                         moveTimeout = setTimeout(()=>{
                             socket.close();
                             socket.open();
                         }, 500);
                     }
-                    else { 
-                        socket.on('reconnect', ()=>{ 
-                            socket.emit('moveMade', drawData); 
+                    else {
+                        socket.on('reconnect', ()=>{
+                            socket.emit('moveMade', drawData);
                             moveTimeout = setTimeout(()=>{
                                 socket.close();
                                 socket.open();
@@ -199,7 +204,7 @@
                 console.log("fail");
                 socket.close();
                 socket.open();
-            } else 
+            } else
             if (initialStatus) {
                 initialStatus = false;
                 setConStatus();
@@ -212,10 +217,10 @@
             let coaches = [], observers = [], oppCon = false;
             for (let user of conStatus) {
                 if (user.id == (userData.player_color == "white" ? userData.black_id : userData.white_id)) { oppCon = true }
-                if (user.color == "white") { $('#whiteStatus').empty(); } else 
-                if (user.color == "black") { $('#blackStatus').empty(); } else 
+                if (user.color == "white") { $('#whiteStatus').empty(); } else
+                if (user.color == "black") { $('#blackStatus').empty(); } else
                 if (user.is_coach) { coaches.push(user) }
-                else { observers.push(user); }; 
+                else { observers.push(user); };
             };
             if (coaches.length !== 0 || observers.length !== 0) {
                 $('#observers').empty();
@@ -250,10 +255,10 @@
             if (chess.in_check()) { $('#statusPreview').html(`Check!`); } else
             if (resignation) { $('#statusPreview').html(`Resigned!`); } else
             if (drawAccepted) { $('#statusPreview').html(`Draw!`); };
-            if (chess.in_draw() || 
-                chess.in_threefold_repetition() || 
-                chess.in_stalemate() || 
-                chess.in_checkmate() || 
+            if (chess.in_draw() ||
+                chess.in_threefold_repetition() ||
+                chess.in_stalemate() ||
+                chess.in_checkmate() ||
                 gameEnd) {
                 $("#resign").attr("disabled", true);
                 $("#draw").attr("disabled", true);
@@ -278,13 +283,13 @@
         changeGameStatus = ()=>{
             nextPlayer = 'White';
             if (chess.turn() === 'b') { nextPlayer = 'Black'; };
-            if (chess.in_checkmate()) { gameEnd = (nextPlayer == 'White') ? "black" : "white", status = `CHECKMATE! ${nextPlayer == 'White' ? "Black" : "White"} wins!`; } else 
-            if (chess.in_draw() || chess.in_threefold_repetition() || chess.in_stalemate()) { gameEnd = "draw", status = 'DRAW!'; } 
+            if (chess.in_checkmate()) { gameEnd = (nextPlayer == 'White') ? "black" : "white", status = `CHECKMATE! ${nextPlayer == 'White' ? "Black" : "White"} wins!`; } else
+            if (chess.in_draw() || chess.in_threefold_repetition() || chess.in_stalemate()) { gameEnd = "draw", status = 'DRAW!'; }
             else {
                 status = `${nextPlayer} to move.`;
                 if (chess.in_check()) { status = `CHECK! ${status}`; };
             };
-            updateGameInfo(); 
+            updateGameInfo();
         };
 
         pieceMove = (move)=>{
@@ -308,21 +313,21 @@
                 board.enableUserInput(false);
                 console.log("move sent");
                 console.log(chess.pgn());
-                if (socket.connected) { 
-                    socket.emit('moveMade', moveData); 
+                if (socket.connected) {
+                    socket.emit('moveMade', moveData);
                     moveTimeout = setTimeout(()=>{
                         socket.close();
                         socket.open();
                     }, 500);
                 }
-                else { 
-                    socket.on('reconnect', ()=>{ 
-                        socket.emit('moveMade', moveData); 
+                else {
+                    socket.on('reconnect', ()=>{
+                        socket.emit('moveMade', moveData);
                         moveTimeout = setTimeout(()=>{
                             socket.close();
                             socket.open();
-                        }, 500); 
-                    }); 
+                        }, 500);
+                    });
                 };
             };
             return chess.fen();
@@ -359,12 +364,12 @@
                             resignation = true, gameEnd = (res.lastMove == "white") ? "black" : "white",
                             status = `RESIGNATION! ${res[i].resign_id == userData.white_id ? "White" : "Black"} has resigned!`;
                             updateGameInfo();
-                        } else 
+                        } else
                         if (res[i].resign_id == "draw") {
                             drawAccepted = true, gameEnd = "draw", status = `DRAW! A draw has been accepted!`;
                             updateGameInfo();
-                        } 
-                        else { 
+                        }
+                        else {
                             gameEnd = res[i].resign_id, status = res[i].status_message ? res[i].status_message : res[i].resign_id;
                             updateGameInfo();
                             $('#statusPreview').html(res[i].resign_id);
@@ -372,8 +377,8 @@
                     };
                 };
             };
-            if (userData.player_color != "observer" && 
-                userData.player_color == nextPlayer.toLowerCase() && 
+            if (userData.player_color != "observer" &&
+                userData.player_color == nextPlayer.toLowerCase() &&
                 !chess.in_checkmate() &&
                 !chess.in_draw() &&
                 !chess.in_threefold_repetition() &&
@@ -415,7 +420,7 @@
                         minute: 'numeric',
                         hour: 'numeric'
                     });
-                    if (chatMessages.length == 1) { 
+                    if (chatMessages.length == 1) {
                         chatTime = newChatTime;
                     } else
                     if (newChatTime.getDate() == chatTime.getDate() &&
@@ -438,7 +443,7 @@
             let resign = confirm("Are you sure you want to resign?");
             if (resign && !resignation) {
                 board.enableUserInput(false);
-                $("#resign").attr("disabled", true); 
+                $("#resign").attr("disabled", true);
                 $("#draw").attr("disabled", true);
                 gameEnd = (userData.player_color == "white") ? "black" : "white";
                 let resignData = {
@@ -449,21 +454,21 @@
                     pgn: chess.pgn()
                 };
                 console.log("resignation sent");
-                if (socket.connected) { 
-                    socket.emit('moveMade', resignData); 
+                if (socket.connected) {
+                    socket.emit('moveMade', resignData);
                     moveTimeout = setTimeout(()=>{
                         socket.close();
                         socket.open();
                     }, 500);
                 }
-                else { 
-                    socket.on('reconnect', ()=>{ 
-                        socket.emit('moveMade', resignData); 
+                else {
+                    socket.on('reconnect', ()=>{
+                        socket.emit('moveMade', resignData);
                         moveTimeout = setTimeout(()=>{
                             socket.close();
                             socket.open();
                         }, 500);
-                    }) 
+                    })
                 };
             };
         };

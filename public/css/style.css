@@ -62,7 +62,7 @@ hr {
 	border-top: 1px solid #e7e7e7;
 }
 
-#headerText, .boxLabel {
+#titleText, #headerText, .boxLabel {
 	font-family: 'Roboto', sans-serif;
 }
 
@@ -160,11 +160,14 @@ hr {
 }
 
 #logoBox img {
-	height: 40px;
 	width: 150px;
 }
 
-#headerText {
+#logoBox {
+	position: absolute;
+}
+
+#titleText, #headerText {
 	color: white;
 }
 
@@ -215,20 +218,20 @@ hr {
 }
 
 .whiteMessage {
-	background-color: rgb(40, 94, 142, 0.15);
+	background-color: rgba(40, 94, 142, 0.15);
 	padding-left: 3px;
 	padding-right: 3px;
 }
 
 .blackMessage {
-	background-color: rgb(189, 73, 50, 0.15);
+	background-color: rgba(189, 73, 50, 0.15);
 	padding-left: 3px;
 	padding-right: 3px;
 }
 
 .textDisplay {
 	overflow-y: scroll;
-	overflow-x: wrap; 
+	overflow-x: auto;
 	height: 100%;
 	width: 100%;
 	border: 1px solid #428bca;
@@ -256,7 +259,7 @@ hr {
 
 #observers {
 	overflow-y: scroll;
-	overflow-x: wrap; 
+	overflow-x: auto;
 	overflow-wrap: break-word;
 	height: 100%;
 	width: 100%;
@@ -269,7 +272,7 @@ hr {
 
 #chatBox {
 	overflow-y: scroll; 
-	overflow-x:wrap; 
+	overflow-x: auto;
 	overflow-wrap: break-word;
 	border: 1px solid #428bca;
 	border-radius: 3px;
@@ -298,7 +301,7 @@ hr {
 
 #noteBox {
 	overflow-y: scroll; 
-	overflow-x:wrap; 
+	overflow-x: auto;
 	overflow-wrap: break-word;
 	border: 1px solid #428bca;
 	border-radius: 3px;
@@ -335,13 +338,13 @@ hr {
 #myBoard {
 	width: 100%; 
 	max-width: calc(100vh - 300px);
-	border: 25px solid #6598ad;
+	border: 0px solid #6598ad;
 }
 
 .testDiv {
-	width: 100%; 
+	width: 100%;
 	max-width: calc(100vh - 300px);
-	border: 25px solid #6598ad;
+	border: 0px solid #6598ad;
 }
 
 .testDiv:after {
@@ -356,9 +359,9 @@ hr {
 }
 
 .odd { 
-	background-color: rgb(0, 0, 0, 0.05);
+	background-color: rgba(0, 0, 0, 0.05);
 } 
 
 .highlight {
-	background-color: rgb(255, 238, 0, 0.75) !important;
+	background-color: rgba(255, 238, 0, 0.75) !important;
 }

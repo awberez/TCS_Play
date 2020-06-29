@@ -1,17 +1,15 @@
 <main>
     <div class="container-fluid">
-        <div class="row">
-            <div class="col-12">
-                <br/>
-                <a href="https://thechessschool.net/home"><span id="logoBox"></span></a>
-            </div>
-            <hr/>
-            <div class="col-12 text-center">
-                <h1 id="headerText"></h1>
-            </div>
+      <div class="row py-3">
+        <div class="col-12 text-center">
+          <a href="https://thechessschool.net/home" class='float-left'><span id="logoBox"></span></a>
+          <h1 id="titleText" class='mb-0'></h1>
+          <h2 id="headerText"></h2>
         </div>
-        <div class="row justify-content-center">
-            <div class="col-6">
+        <hr class='mt-0'>
+      </div>
+      <div class="row justify-content-center">
+            <div class="col-6 pl-0 pr-2">
                 <div class="infoBox mainBox float-right">
                     <div class="outlineBar text-center">
                         <div id="status"></div>
@@ -39,7 +37,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-6 text-center">
+            <div class="col-6 text-center pl-2 pr-0">
                 <div class="infoBox chessBox mainBox">
                     <div id="statusPreview"></div>
                     <div id="topName" class="nameBox"></div> 
@@ -75,7 +73,14 @@
         
         if (!userData.user_name) { $('#noteTypeBox').hide(); };
         userData.logo ? $('#logoBox').append(`<img src=${userData.logo}></img>`) : $("#logoBox").append(`<img src=/images/tcs-logo.png></img>`);
-        userData.header ? $('#headerText').html(`${userData.header}`) : $('#headerText').html(`The Chess School`);
+        let title = 'The Chess School',
+            header = userData.header;
+        if (header && header.includes(': ')) {
+            title = header.split(': ')[0];
+            header = header.split(': ')[1]
+        }
+        $('#titleText').html(title);
+        if (header) $('#headerText').html(header);
         $('#topName').html(blackName);
         $('#bottomName').html(whiteName);  
         $(".whiteArrow").hide();
