@@ -3,8 +3,8 @@
       <div class="row py-3">
         <div class="col-12 text-center">
           <a href="https://thechessschool.net/home" class='float-left'><span id="logoBox"></span></a>
-          <h1 id="titleText" class='mb-0'></h1>
-          <h2 id="headerText"></h2>
+          <h2 id="titleText" class='mb-0'></h2>
+          <h4 id="headerText"></h4>
         </div>
         <hr class='mt-0'>
       </div>
@@ -40,9 +40,11 @@
             <div class="col-6 text-center pl-2 pr-0">
                 <div class="infoBox chessBox mainBox">
                     <div id="statusPreview"></div>
-                    <div id="topName" class="nameBox"></div> 
-                    <div id="myBoard"></div>
-                    <div id="bottomName" class="nameBox"></div>
+                    <div id="topName" class="nameBox"></div>
+                    <div class="embed-responsive embed-responsive-square">
+                      <div id="myBoard" class="embed-responsive-item"></div>
+                    </div>
+                  <div id="bottomName" class="nameBox"></div>
                     <div id="reviewButtons">
                         <div class="moveButtonDiv">
                             <button id="firstB" class="moveButton" type="button" onClick=switchMove("first")>&#x23EE</button>
