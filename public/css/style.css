@@ -20,7 +20,7 @@ button {
 	outline: none !important;
 }
 
-chessBox button {
+.chessBox button {
 	padding-left: 0px;
 	padding-right: 0px;
 }
