@@ -9,7 +9,7 @@
         <hr class='mt-0'>
       </div>
       <div class="row justify-content-center">
-            <div class="col-6 pl-0 pr-2">
+            <div class="col-6 px-0 pr-lg-2">
                 <div class="infoBox mainBox float-right">
                     <div class="outlineBar text-center">
                         <div id="status"></div>
@@ -38,7 +38,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-6 text-center pl-2 pr-0">
+            <div class="col-6 text-center px-0 pl-lg-2">
                 <div class="infoBox chessBox mainBox">
                     <div id="statusPreview"></div>
                     <div id="topName" class="nameBox"></div>
@@ -71,8 +71,8 @@
 
         let decodedJson = decodeURIComponent("{{{encodedJson}}}"), userData = JSON.parse(decodedJson), socket = io('/review'),
         gameEnd = false, chatTime, finalPgn, noteData, noteTimeout, movesMade = [], moveDisplay = 0, nextPlayer = 'white', chatMessages = [], noteMessages = [], topPlayer = "black", resignation = false, drawAccepted = false,
-        whiteName = `<div id="whiteName"><span class="whiteArrow">&rarr;</span> <span class="chessPiece white"></span> ${userData.white_name} <span id="whiteStatus" style="font-style: italic">(offline)</span> <span class="whiteArrow">&larr;</span></div>`,
-        blackName = `<div id="blackName"><span class="blackArrow">&rarr;</span> <span class="chessPiece black"></span> ${userData.black_name} <span id="blackStatus" style="font-style: italic">(offline)</span> <span class="blackArrow">&larr;</span></div>`;
+        whiteName = `<div id="whiteName"><span class="whiteArrow">&rarr;</span> <span class="chessPiece white"></span> <span class="d-none d-lg-inline"> ${userData.white_name} </span> <span id="whiteStatus" style="font-style: italic">(offline)</span> <span class="whiteArrow">&larr;</span></div>`,
+        blackName = `<div id="blackName"><span class="blackArrow">&rarr;</span> <span class="chessPiece black"></span> <span class="d-none d-lg-inline"> ${userData.white_name} </span> <span id="blackStatus" style="font-style: italic">(offline)</span> <span class="blackArrow">&larr;</span></div>`;
         
         if (!userData.user_name) { $('#noteTypeBox').hide(); };
         userData.logo ? $('#logoBox').append(`<img src=${userData.logo}></img>`) : $("#logoBox").append(`<img src=/images/tcs-logo.png></img>`);
