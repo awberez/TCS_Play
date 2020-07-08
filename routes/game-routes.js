@@ -38,7 +38,8 @@ module.exports = (app)=>{
 				    	black_id: req.body.black_player.id,
 				    	logo: req.body.logo,
 				    	header: req.body.header,
-				    	callback_url: req.body.callback_url
+				    	callback_url: req.body.callback_url,
+				    	expiration: req.body.expiration
 				    }).then(() => {
 				    	let uuids = [], names = [];
 				    	uuids.push(

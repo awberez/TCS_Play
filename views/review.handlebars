@@ -67,7 +67,7 @@
     <script type="text/javascript">
 
         let decodedJson = decodeURIComponent("{{{encodedJson}}}"), userData = JSON.parse(decodedJson), socket = io('/review'),
-        gameEnd = false, chatTime, finalPgn, noteData, noteTimeout, movesMade = [], moveDisplay = 0, nextPlayer = 'white', chatMessages = [], noteMessages = [], topPlayer = "black", resignation = false, drawAccepted = false,
+        gameEnd = false, chatTime, finalPgn, noteData, noteTimeout, movesMade = [], moveDisplay = 0, moveTotal = 0, nextPlayer = 'white', chatMessages = [], noteMessages = [], topPlayer = "black", resignation = false, drawAccepted = false,
         whiteName = `<div id="whiteName"><span class="whiteArrow">&rarr;</span> <span class="chessPiece white"></span> ${userData.white_name} <span id="whiteStatus" style="font-style: italic">(offline)</span> <span class="whiteArrow">&larr;</span></div>`,
         blackName = `<div id="blackName"><span class="blackArrow">&rarr;</span> <span class="chessPiece black"></span> ${userData.black_name} <span id="blackStatus" style="font-style: italic">(offline)</span> <span class="blackArrow">&larr;</span></div>`;
         
@@ -109,7 +109,9 @@
             if (data.moves.length != 0) { console.log(`${movesMade.length < data.moves.length - 1 ? "moves" : "move"} received`); };
             if (data.chat.length != 0) { console.log(`chat ${chatMessages.length < data.chat.length - 1 ? "messages" : "message"} received`); };
             if (data.notes.length != 0) { console.log(`note ${noteMessages.length < data.notes.length - 1 ? "messages" : "message"} received`); };
-            movesMade = data.moves, noteData = data.notes, moveDisplay = movesMade.length;
+            movesMade = data.moves, noteData = data.notes;
+            movesMade[movesMade.length-1].resign_id ? moveTotal = movesMade.length-1 : moveTotal = movesMade.length;
+            moveDisplay = moveTotal;
             displayChat(data.chat);
             displayNotes(noteData);
             displayMove();
@@ -171,9 +173,9 @@
             board.setPosition(ChessUtils.FEN.startId, false);
             chess.reset();
             status = 'White to move.', nextPlayer = 'White', resignation = false, drawAccepted = false;
-            $("#moveLabel").html(`Moves: <span id="moveSpan">(${moveDisplay}/${movesMade.length})</span>`)
+            $("#moveLabel").html(`Moves: <span id="moveSpan">(${moveDisplay}/${moveTotal})</span>`)
             for (i = 0; i < moveDisplay; i++) {
-                if (!movesMade[i].resign_id) {
+                if (!movesMade[i+1].resign_id) {
                     chess.move({
                         from: movesMade[i].from,
                         to: movesMade[i].to,
@@ -183,19 +185,31 @@
                     changeGameStatus();
                 }
                 else {
-                    if (movesMade[i].resign_id == userData.white_id || movesMade[i].resign_id == userData.black_id) {
+                    if (movesMade[i+1].resign_id = userData.white_id || movesMade[i+1].resign_id == userData.black_id) {
+                        chess.move({
+                            from: movesMade[i].from,
+                            to: movesMade[i].to,
+                            promotion: movesMade[i].promotion
+                        });
+                        board.setPosition(movesMade[i].fen, false);
                         resignation = true, gameEnd = (movesMade.lastMove == "white") ? "black" : "white",
                         status = `RESIGNATION! ${movesMade[i].resign_id == userData.white_id ? "White" : "Black"} has resigned!`;
                         updateGameInfo();
                     } else 
-                    if (movesMade[i].resign_id == "draw") {
+                    if (movesMade[i+1].resign_id == "draw") {
+                        chess.move({
+                            from: movesMade[i].from,
+                            to: movesMade[i].to,
+                            promotion: movesMade[i].promotion
+                        });
+                        board.setPosition(movesMade[i].fen, false);
                         drawAccepted = true, status = `DRAW! A draw has been accepted!`;
                         updateGameInfo();
                     }
                     else {
-                        gameEnd = movesMade[i].resign_id, status = movesMade[i].status_message ? movesMade[i].status_message : movesMade[i].resign_id;
+                        gameEnd = movesMade[i+1].resign_id, status = movesMade[i+1].status_message ? movesMade[i+1].status_message : movesMade[i+1].resign_id;
                         updateGameInfo();
-                        $('#statusPreview').html(movesMade[i].resign_id);
+                        $('#statusPreview').html(movesMade[i+1].resign_id);
                     };
                 };
             };
@@ -218,8 +232,8 @@
         switchMove = (where)=>{
             if (where == "first" && moveDisplay != 1)                   { moveDisplay = 1; } else
             if (where == "back" && moveDisplay > 1)                     { moveDisplay--; } else
-            if (where == "forward" && moveDisplay < movesMade.length)   { moveDisplay++; } else 
-            if (where == "last" && moveDisplay != movesMade.length)     { moveDisplay = movesMade.length; }
+            if (where == "forward" && moveDisplay < moveTotal)   { moveDisplay++; } else 
+            if (where == "last" && moveDisplay != moveTotal)     { moveDisplay = moveTotal; }
             else { return; };
             displayMove(); 
         };
