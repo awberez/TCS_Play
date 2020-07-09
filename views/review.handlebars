@@ -140,6 +140,7 @@
         updateGameInfo = (resId)=>{
             $('#status').html(status);
             $('#statusPreview').empty();
+            $('#statusPreview').removeClass('statusResign');
             if (chess.in_draw() || chess.in_threefold_repetition() || chess.in_stalemate()) { $('#statusPreview').html(`Draw!`) } else
             if (chess.in_checkmate()) { $('#statusPreview').html(`Checkmate!`) } else
             if (chess.in_check() && !resignation && !drawAccepted) { $('#statusPreview').html(`Check!`) } else
