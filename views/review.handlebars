@@ -196,32 +196,20 @@
             else {
                 for (i = 0; i < moveDisplay; i++) {
                     if (!movesMade[i+1].resign_id) {
-                        chess.move({
-                            from: movesMade[i].from,
-                            to: movesMade[i].to,
-                            promotion: movesMade[i].promotion
-                        });
+                        pushMove(movesMade[i].from, movesMade[i].to, movesMade[i].promotion);
                         board.setPosition(movesMade[i].fen, false);
                         changeGameStatus();
                     }
                     else {
                         if (movesMade[i+1].resign_id == userData.white_id || movesMade[i+1].resign_id == userData.black_id) {
-                            chess.move({
-                                from: movesMade[i].from,
-                                to: movesMade[i].to,
-                                promotion: movesMade[i].promotion
-                            });
+                            pushMove(movesMade[i].from, movesMade[i].to, movesMade[i].promotion);
                             board.setPosition(movesMade[i].fen, false);
                             resignation = true, gameEnd = true,
                             status = `RESIGNATION! ${movesMade[i+1].resign_id == userData.white_id ? "White" : "Black"} has resigned!`;
                             updateGameInfo(movesMade[i+1].resign_id);
                         } else 
                         if (movesMade[i+1].resign_id == "draw") {
-                            chess.move({
-                                from: movesMade[i].from,
-                                to: movesMade[i].to,
-                                promotion: movesMade[i].promotion
-                            });
+                            pushMove(movesMade[i].from, movesMade[i].to, movesMade[i].promotion);
                             board.setPosition(movesMade[i].fen, false);
                             drawAccepted = true, status = `DRAW! A draw has been accepted!`;
                             updateGameInfo();
@@ -252,10 +240,18 @@
             };
         };
 
+        pushMove = (fromVar, toVar, promoVar)=>{
+            chess.move({
+                from: fromVar,
+                to: toVar,
+                promotion: promoVar
+            });
+        };
+
         switchMove = (where)=>{
-            if (where == "first" && moveDisplay != 1)                   { moveDisplay = 1; } else
-            if (where == "back" && moveDisplay > 1)                     { moveDisplay--; } else
-            if (where == "forward" && moveDisplay < moveTotal)   { moveDisplay++; } else 
+            if (where == "first" && moveDisplay != 1)            { moveDisplay = 1; } else
+            if (where == "back" && moveDisplay > 1)              { moveDisplay--; }   else
+            if (where == "forward" && moveDisplay < moveTotal)   { moveDisplay++; }   else 
             if (where == "last" && moveDisplay != moveTotal)     { moveDisplay = moveTotal; }
             else { return; };
             displayMove(); 
