@@ -137,13 +137,18 @@
             updateGameInfo();
         };
 
-        updateGameInfo = ()=>{
+        updateGameInfo = (resId)=>{
             $('#status').html(status);
             $('#statusPreview').empty();
             if (chess.in_draw() || chess.in_threefold_repetition() || chess.in_stalemate()) { $('#statusPreview').html(`Draw!`) } else
             if (chess.in_checkmate()) { $('#statusPreview').html(`Checkmate!`) } else
-            if (chess.in_check()) { $('#statusPreview').html(`Check!`) } else
-            if (resignation) { $('#statusPreview').html(`Resigned!`) } else
+            if (chess.in_check() && !resignation && !drawAccepted) { $('#statusPreview').html(`Check!`) } else
+            if (resignation) { 
+                $('#statusPreview').html(`${resId == userData.white_id 
+                    ? `<span class="chessPiece white statusPiece"></span> Resigned!` 
+                    : `<span class="chessPiece black statusPiece"></span> Resigned!`}`)
+                $('#statusPreview').addClass('statusResign'); 
+            } else
             if (drawAccepted) { $('#statusPreview').html(`Draw!`) };
             $(".whiteArrow").hide();
             $(".blackArrow").hide();
@@ -163,8 +168,8 @@
         changeGameStatus = ()=>{
             nextPlayer = 'White';
             if (chess.turn() === 'b') { nextPlayer = 'Black'; };
-            if (chess.in_checkmate()) { gameEnd = (nextPlayer == 'White') ? "black" : "white", status = `CHECKMATE! ${nextPlayer == 'White' ? "Black" : "White"} wins!`; } else 
-            if (chess.in_draw() || chess.in_threefold_repetition() || chess.in_stalemate()) { gameEnd = "draw", status = 'DRAW!'; } 
+            if (chess.in_checkmate()) { gameEnd = true, status = `CHECKMATE! ${nextPlayer == 'White' ? "Black" : "White"} wins!`; } else 
+            if (chess.in_draw() || chess.in_threefold_repetition() || chess.in_stalemate()) { gameEnd = true, status = 'DRAW!'; } 
             else {
                 status = `${nextPlayer} to move.`;
                 if (chess.in_check()) { status = `CHECK! ${status}`; };
@@ -188,16 +193,16 @@
                     changeGameStatus();
                 }
                 else {
-                    if (movesMade[i+1].resign_id = userData.white_id || movesMade[i+1].resign_id == userData.black_id) {
+                    if (movesMade[i+1].resign_id == userData.white_id || movesMade[i+1].resign_id == userData.black_id) {
                         chess.move({
                             from: movesMade[i].from,
                             to: movesMade[i].to,
                             promotion: movesMade[i].promotion
                         });
                         board.setPosition(movesMade[i].fen, false);
-                        resignation = true, gameEnd = (movesMade.lastMove == "white") ? "black" : "white",
-                        status = `RESIGNATION! ${movesMade[i].resign_id == userData.white_id ? "White" : "Black"} has resigned!`;
-                        updateGameInfo();
+                        resignation = true, gameEnd = true,
+                        status = `RESIGNATION! ${movesMade[i+1].resign_id == userData.white_id ? "White" : "Black"} has resigned!`;
+                        updateGameInfo(movesMade[i+1].resign_id);
                     } else 
                     if (movesMade[i+1].resign_id == "draw") {
                         chess.move({
@@ -210,7 +215,7 @@
                         updateGameInfo();
                     }
                     else {
-                        gameEnd = movesMade[i+1].resign_id, status = movesMade[i+1].status_message ? movesMade[i+1].status_message : movesMade[i+1].resign_id;
+                        gameEnd = true, status = movesMade[i+1].status_message ? movesMade[i+1].status_message : movesMade[i+1].resign_id;
                         updateGameInfo();
                         $('#statusPreview').html(movesMade[i+1].resign_id);
                     };

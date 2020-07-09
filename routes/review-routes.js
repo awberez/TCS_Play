@@ -81,12 +81,8 @@ module.exports = (app)=>{
 
   		client.on('join', (data)=>{
 	  		client.match_id = data.match_id, client.room = `review/${client.match_id}`;
-	  		if (data.user_name) { client.user_name = data.user_name; };
 	  		client.join(client.room);
 	        client.emit('messages', 'Connected to server');
-	        //sendMatchContent(db.GameMove, 'moves');
-	    	//sendMatchContent(db.GameChat, 'chat');
-	    	//sendMatchContent(db.ReviewNote, 'notes');
 	    	db.GameMove.findAll({
 	        	where: { match_id: client.match_id },
 	        	order: [ [ 'id', 'ASC' ]]

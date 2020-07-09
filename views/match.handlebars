@@ -250,13 +250,18 @@
             updateGameInfo();
         };
 
-        updateGameInfo = ()=>{
+        updateGameInfo = (resId)=>{
             $('#status').html(status);
             $('#statusPreview').empty();
             if (chess.in_draw() || chess.in_threefold_repetition() || chess.in_stalemate()) { $('#statusPreview').html(`Draw!`) } else
             if (chess.in_checkmate()) { $('#statusPreview').html(`Checkmate!`); } else
-            if (chess.in_check()) { $('#statusPreview').html(`Check!`); } else
-            if (resignation) { $('#statusPreview').html(`Resigned!`); } else
+            if (chess.in_check() && !resignation && !drawAccepted) { $('#statusPreview').html(`Check!`); } else
+            if (resignation) { 
+                $('#statusPreview').html(`${resId == userData.white_id 
+                    ? `<span class="chessPiece white statusPiece"></span> Resigned!` 
+                    : `<span class="chessPiece black statusPiece"></span> Resigned!`}`);
+                $('#statusPreview').addClass('statusResign');
+            } else
             if (drawAccepted) { $('#statusPreview').html(`Draw!`); };
             if (chess.in_draw() ||
                 chess.in_threefold_repetition() ||
@@ -366,7 +371,7 @@
                         if (res[i].resign_id == userData.white_id || res[i].resign_id == userData.black_id) {
                             resignation = true, gameEnd = (res.lastMove == "white") ? "black" : "white",
                             status = `RESIGNATION! ${res[i].resign_id == userData.white_id ? "White" : "Black"} has resigned!`;
-                            updateGameInfo();
+                            updateGameInfo(res[i].resign_id);
                         } else
                         if (res[i].resign_id == "draw") {
                             drawAccepted = true, gameEnd = "draw", status = `DRAW! A draw has been accepted!`;
