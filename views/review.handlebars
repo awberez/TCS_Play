@@ -182,7 +182,7 @@
             chess.reset();
             status = 'White to move.', nextPlayer = 'White', resignation = false, drawAccepted = false;
             $("#moveLabel").html(`Moves: <span id="moveSpan">(${moveDisplay}/${moveTotal})</span>`)
-            if (moveDisplay == 0) {
+            if (moveTotal == 0) {
                 if (movesMade[0].resign_id == userData.white_id || movesMade[0].resign_id == userData.black_id) {
                     resignation = true, gameEnd = true,
                     status = `RESIGNATION! ${movesMade[0].resign_id == userData.white_id ? "White" : "Black"} has resigned!`;
@@ -234,19 +234,21 @@
                     };
                 };
             };
-            let lineBreakPgn = chess.pgn().replace(/ (?=\d+\.)/g, '<br/>');
-            if (!finalPgn) { finalPgn = lineBreakPgn };
-            let currentPgn = lineBreakPgn.replace(/\d{1,3}\. [a-z0-9\-+# ]+$/i, `<span class="highlight">${chess.pgn().match(/\d{1,3}\. [a-z0-9\-+# ]+$/i)}</span>`);
-            $('#pgn').html(`<span style="color:gray;">${finalPgn.replace(lineBreakPgn, `<span style="color:black !important;">${currentPgn}</span>`)}</span>`);
-            if (!$('#pgn .highlight').isVisible($('#pgn'))) { document.getElementById("pgn").getElementsByClassName('highlight')[0].scrollIntoView(); };
-            $(".notePgn").removeClass("highlight");
-            $(`.noteId${movesMade[moveDisplay-1].id}`).addClass("highlight");
-            let items = document.getElementById("noteBox").getElementsByClassName('highlight');
-            if (items.length != 0 && !$("#noteBox .highlight").first().isVisible($('#noteBox'))) {
-                document.getElementById("noteBox").scrollTo({
-                    top: items[0].offsetTop - items[0].offsetHeight,
-                    behavior: 'smooth'
-                });
+            if (moveTotal != 0) {
+                let lineBreakPgn = chess.pgn().replace(/ (?=\d+\.)/g, '<br/>');
+                if (!finalPgn) { finalPgn = lineBreakPgn };
+                let currentPgn = lineBreakPgn.replace(/\d{1,3}\. [a-z0-9\-+# ]+$/i, `<span class="highlight">${chess.pgn().match(/\d{1,3}\. [a-z0-9\-+# ]+$/i)}</span>`);
+                $('#pgn').html(`<span style="color:gray;">${finalPgn.replace(lineBreakPgn, `<span style="color:black !important;">${currentPgn}</span>`)}</span>`);
+                if (!$('#pgn .highlight').isVisible($('#pgn'))) { document.getElementById("pgn").getElementsByClassName('highlight')[0].scrollIntoView(); };
+                $(".notePgn").removeClass("highlight");
+                $(`.noteId${movesMade[moveDisplay-1].id}`).addClass("highlight");
+                let items = document.getElementById("noteBox").getElementsByClassName('highlight');
+                if (items.length != 0 && !$("#noteBox .highlight").first().isVisible($('#noteBox'))) {
+                    document.getElementById("noteBox").scrollTo({
+                        top: items[0].offsetTop - items[0].offsetHeight,
+                        behavior: 'smooth'
+                    });
+                };
             };
         };
 
