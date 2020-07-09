@@ -1,7 +1,12 @@
-const express = require("express"), app = express(), server = require('http').createServer(app), 
-io = require('socket.io')(server), bodyParser = require("body-parser"), path = require('path'), 
-db = require("./models"), exphbs = require("express-handlebars"),
-PORT = process.env.PORT || 8082;
+const express    = require("express"),
+      app        = express(),
+      server     = require('http').createServer(app),
+      io = require('socket.io')(server),
+      bodyParser = require("body-parser"),
+      path = require('path'),
+      db         = require("./models"),
+      exphbs     = require("express-handlebars"),
+      PORT       = process.env.PORT || 8080;
  
 app.use(express.static('public'));
 
