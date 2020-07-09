@@ -182,42 +182,55 @@
             chess.reset();
             status = 'White to move.', nextPlayer = 'White', resignation = false, drawAccepted = false;
             $("#moveLabel").html(`Moves: <span id="moveSpan">(${moveDisplay}/${moveTotal})</span>`)
-            for (i = 0; i < moveDisplay; i++) {
-                if (!movesMade[i+1].resign_id) {
-                    chess.move({
-                        from: movesMade[i].from,
-                        to: movesMade[i].to,
-                        promotion: movesMade[i].promotion
-                    });
-                    board.setPosition(movesMade[i].fen, false);
-                    changeGameStatus();
-                }
-                else {
-                    if (movesMade[i+1].resign_id == userData.white_id || movesMade[i+1].resign_id == userData.black_id) {
+            if (moveDisplay == 0) {
+                if (movesMade[0].resign_id == userData.white_id || movesMade[0].resign_id == userData.black_id) {
+                    resignation = true, gameEnd = true,
+                    status = `RESIGNATION! ${movesMade[0].resign_id == userData.white_id ? "White" : "Black"} has resigned!`;
+                    updateGameInfo(movesMade[0].resign_id);
+                } else
+                if (movesMade[0].resign_id == "draw") {
+                    drawAccepted = true, status = `DRAW! A draw has been accepted!`;
+                    updateGameInfo();
+                };
+            }
+            else {
+                for (i = 0; i < moveDisplay; i++) {
+                    if (!movesMade[i+1].resign_id) {
                         chess.move({
                             from: movesMade[i].from,
                             to: movesMade[i].to,
                             promotion: movesMade[i].promotion
                         });
                         board.setPosition(movesMade[i].fen, false);
-                        resignation = true, gameEnd = true,
-                        status = `RESIGNATION! ${movesMade[i+1].resign_id == userData.white_id ? "White" : "Black"} has resigned!`;
-                        updateGameInfo(movesMade[i+1].resign_id);
-                    } else 
-                    if (movesMade[i+1].resign_id == "draw") {
-                        chess.move({
-                            from: movesMade[i].from,
-                            to: movesMade[i].to,
-                            promotion: movesMade[i].promotion
-                        });
-                        board.setPosition(movesMade[i].fen, false);
-                        drawAccepted = true, status = `DRAW! A draw has been accepted!`;
-                        updateGameInfo();
+                        changeGameStatus();
                     }
                     else {
-                        gameEnd = true, status = movesMade[i+1].status_message ? movesMade[i+1].status_message : movesMade[i+1].resign_id;
-                        updateGameInfo();
-                        $('#statusPreview').html(movesMade[i+1].resign_id);
+                        if (movesMade[i+1].resign_id == userData.white_id || movesMade[i+1].resign_id == userData.black_id) {
+                            chess.move({
+                                from: movesMade[i].from,
+                                to: movesMade[i].to,
+                                promotion: movesMade[i].promotion
+                            });
+                            board.setPosition(movesMade[i].fen, false);
+                            resignation = true, gameEnd = true,
+                            status = `RESIGNATION! ${movesMade[i+1].resign_id == userData.white_id ? "White" : "Black"} has resigned!`;
+                            updateGameInfo(movesMade[i+1].resign_id);
+                        } else 
+                        if (movesMade[i+1].resign_id == "draw") {
+                            chess.move({
+                                from: movesMade[i].from,
+                                to: movesMade[i].to,
+                                promotion: movesMade[i].promotion
+                            });
+                            board.setPosition(movesMade[i].fen, false);
+                            drawAccepted = true, status = `DRAW! A draw has been accepted!`;
+                            updateGameInfo();
+                        }
+                        else {
+                            gameEnd = true, status = movesMade[i+1].status_message ? movesMade[i+1].status_message : movesMade[i+1].resign_id;
+                            updateGameInfo();
+                            $('#statusPreview').html(movesMade[i+1].resign_id);
+                        };
                     };
                 };
             };
