@@ -216,9 +216,11 @@
                             updateGameInfo();
                         }
                         else {
+                            pushMove(movesMade[i].from, movesMade[i].to, movesMade[i].promotion);
+                            board.setPosition(movesMade[i].fen, false);
                             gameEnd = true, status = movesMade[i+1].status_message ? movesMade[i+1].status_message : movesMade[i+1].resign_id;
                             updateGameInfo();
-                            $('#statusPreview').html(movesMade[i+1].resign_id);
+                            $('#statusPreview').html(`${movesMade[i+1].resign_id} wins!`);
                         };
                     };
                 };

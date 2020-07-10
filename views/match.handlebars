@@ -125,7 +125,11 @@
         });
 
         socket.on('alert', (data)=>{
-            alert(data);
+            board.enableUserInput(false);
+            $("#resign").attr("disabled", true);
+            $("#draw").attr("disabled", true);
+            $("#send").attr("disabled", true);
+            alert(`This game has been ended.\nStatus: ${data}`);
         });
 
         socket.on('status', (data)=>{
@@ -380,7 +384,7 @@
                         else {
                             gameEnd = res[i].resign_id, status = res[i].status_message ? res[i].status_message : res[i].resign_id;
                             updateGameInfo();
-                            $('#statusPreview').html(res[i].resign_id);
+                            $('#statusPreview').html(`${res[i].resign_id} wins!`);
                         };
                     };
                 };

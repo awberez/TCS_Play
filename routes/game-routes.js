@@ -178,11 +178,12 @@ module.exports = (app)=>{
 
   		/*example updategame req json:
   	{ 	match_id: '492241',
-  		game_status: 'white/black/draw/incomplete'  (optional)
-  		status_message: 'ended by coach'  			(optional, but must also have game_status)
-	  	logo: 'logo png string',   					(optional)
-		header: 'header string',   					(optional)
-		callback_url: 'url string' 					(optional)
+  		game_status: 'adjudicated/timed out/delayed'  (optional)
+  		results: 'white/black/draw' 				  (optional, but must also have game_status and status_message)
+  		status_message: 'ended by coach'  			  (optional, but must also have game_status and results)
+	  	logo: 'logo png string',   					  (optional)
+		header: 'header string',   					  (optional)
+		callback_url: 'url string' 					  (optional)
     }*/
 
   	app.post("/updategame", (req, res)=>{
@@ -194,6 +195,7 @@ module.exports = (app)=>{
 	    	else {
 	    		let updateData = {};
 	    		if (req.body.game_status) { updateData.game_status = req.body.game_status; };
+	    		if (req.body.results) { updateData.game_status = req.body.results; };
 	    		if (req.body.logo) { updateData.logo = req.body.logo; };
 	    		if (req.body.header) { updateData.header = req.body.header; };
 	    		if (req.body.callback_url) { updateData.callback_url = req.body.callback_url; };
@@ -202,11 +204,11 @@ module.exports = (app)=>{
 		    			updateData,
 		    			{returning: true, plain: true, where: {match_id: req.body.match_id}
 		    		}).then(()=>{
-		    			if (req.body.game_status) {
+		    			if (req.body.results) {
 		    				db.GameMove.create({ 
 						    	match_id: req.body.match_id,
 						    	lastMove: "admin",
-						    	resign_id: req.body.game_status,
+						    	resign_id: req.body.results,
 						    	status_message: req.body.status_message
 						    }).then(() => {
 						    	db.GameMove.findAll({
@@ -224,9 +226,13 @@ module.exports = (app)=>{
 					                        });
 					                    };
 					                };
-									res.send( {game_end: req.body.game_status, pgn: chess.pgn()} );
+									res.send( {results: req.body.results, pgn: chess.pgn()} );
 						    	});	
 						    }); 
+		    			} else
+		    			if (req.body.game_status != "in progress") { 
+		    				match.to(`match/${req.body.match_id}`).emit('alert', req.body.game_status); 
+		    				res.send("success");
 		    			}
 		    			else { res.send("success"); };
 		    		});
@@ -280,6 +286,21 @@ module.exports = (app)=>{
 		    match.to(client.room).emit('status', matchConnections[`${client.match_id}`]);
 	        sendMatchContent(db.GameMove, 'moves');
 	    	sendMatchContent(db.GameChat, 'chat');
+	    	db.GameList.findOne({
+		        where: { match_id: client.match_id }
+		    }).then((dbGame)=>{
+		    	if (dbGame.game_status != "in progress") {
+		    		db.GameMove.findAll({
+			        	where: { match_id: client.match_id },
+			        	order: [ [ 'id', 'DESC' ]]
+			    	}).then((gameMoves)=>{
+			    		if (!gameMoves[gameMoves.length].resign_id) {
+			    			console.log(gameMoves[gameMoves.length]);
+			    			match.to(client.room).emit('alert', dbGame.game_status);
+			    		};
+			    	});
+		    	};
+		    });
 	    });
 
   		client.on('disconnect', ()=>{
@@ -301,9 +322,15 @@ module.exports = (app)=>{
 			        	where: { match_id: client.match_id },
 			        	order: [ [ 'id', 'DESC' ]]
 			    	}).then((gameMoves)=>{
-			    		gameEndCallback = ()=>{ 
+			    		moveCallback = ()=>{ 
 			    			sendMatchContent(db.GameMove, 'moves');
-			    			if (dbGame.callback_url) { axios.post(`${dbGame.callback_url}`, {game_end: data.game_end, pgn: data.pgn}).then((res)=>{ console.log(res); }).catch((error)=>{ console.log(error); }); }; 
+			    			if (dbGame.callback_url) { 
+			    				db.GameList.findOne({
+							        where: { match_id: client.match_id }
+							    }).then((dbGame2)=>{
+			    					axios.post(`${dbGame.callback_url}`, {results: dbGame2.results, pgn: data.pgn}).then((res)=>{ console.log(res); }).catch((error)=>{ console.log(error); });
+			    				});
+			    			}; 
 			    		};
 			    		if (data.resign && data.move_id == gameMoves.length && data.game_end != "draw") {
 			    			colorConsole(`${client.color} player has resigned`);
@@ -312,7 +339,7 @@ module.exports = (app)=>{
 						    	lastMove: client.color,
 						    	fen: data.fen,
 						    	resign_id: client.player_id
-						    }).then(() => { db.GameList.update( {game_status: data.game_end}, {returning: true, where: {match_id: client.match_id}} ).then(()=>{ gameEndCallback(); }); });
+						    }).then(() => { db.GameList.update( {game_status: "ended", results: data.game_end}, {returning: true, where: {match_id: client.match_id}} ).then(()=>{ moveCallback(); }); });
 			    		} else 
 			    		if (data.resign && data.move_id == gameMoves.length && data.game_end == "draw") {
 			    			console.log(colors.white(`match ${client.match_id} is a draw`));
@@ -321,7 +348,7 @@ module.exports = (app)=>{
 						    	lastMove: client.color,
 						    	fen: data.fen,
 						    	resign_id: "draw"
-						    }).then(() => { db.GameList.update( {game_status: data.game_end}, {returning: true, where: {match_id: client.match_id}} ).then(()=>{ gameEndCallback(); }); });
+						    }).then(() => { db.GameList.update( {game_status: "ended", results: data.game_end}, {returning: true, where: {match_id: client.match_id}} ).then(()=>{ moveCallback(); }); });
 			    		} else 
 			    		if ((gameMoves[1] && data.from && gameMoves[1].lastMove == client.color && gameMoves[1].from !== data.from && gameMoves[1].to !== data.to && data.move_id == gameMoves.length + 1) || 
 		    				(gameMoves[0] && data.from && gameMoves[0].lastMove !== client.color && data.move_id == gameMoves.length + 1) || 
@@ -335,8 +362,11 @@ module.exports = (app)=>{
 						    	promotion: data.promotion,
 						    	fen: data.fen
 						    }).then(() => { 
-						    	if (data.game_end) { db.GameList.update( {game_status: data.game_end}, {returning: true, where: {match_id: client.match_id}} ).then(()=>{ gameEndCallback(); }); }
-						    	else { sendMatchContent(db.GameMove, 'moves'); };
+						    	if (data.game_end) { db.GameList.update( {game_status: "ended", results: data.game_end}, {returning: true, where: {match_id: client.match_id}} ).then(()=>{ moveCallback(); }); }
+						    	else { 
+						    		sendMatchContent(db.GameMove, 'moves'); 
+						    		moveCallback();
+						    	};
 						    }); 
 				    	};
 					});
