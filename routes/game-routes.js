@@ -242,6 +242,17 @@ module.exports = (app)=>{
 	    });
   	});
 
+  	app.get("/dbrecord/:id", (req, res)=>{
+  		db.GameList.findOne({
+	        where: { match_id: { [Op.eq]: req.params.id } }
+	    }).then((dbGame)=>{
+	    	if(dbGame) {
+	    		res.send(dbGame);
+	    	}
+	    	else { res.send("failure"); };
+	    });
+  	});
+
   	app.get("/status/:id", (req, res)=>{
   		db.GameList.findOne({
 	        where: { match_id: { [Op.eq]: req.params.id } }
@@ -294,7 +305,7 @@ module.exports = (app)=>{
 			        	where: { match_id: client.match_id },
 			        	order: [ [ 'id', 'DESC' ]]
 			    	}).then((gameMoves)=>{
-			    		if (!gameMoves[gameMoves.length].resign_id) {
+			    		if (gameMoves[gameMoves.length].resign_id != null) {
 			    			console.log(gameMoves[gameMoves.length]);
 			    			match.to(client.room).emit('alert', dbGame.game_status);
 			    		};
