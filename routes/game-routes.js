@@ -195,7 +195,7 @@ module.exports = (app)=>{
 	    	else {
 	    		let updateData = {};
 	    		if (req.body.game_status) { updateData.game_status = req.body.game_status; };
-	    		if (req.body.results) { updateData.game_status = req.body.results; };
+	    		if (req.body.results) { updateData.results = req.body.results; };
 	    		if (req.body.logo) { updateData.logo = req.body.logo; };
 	    		if (req.body.header) { updateData.header = req.body.header; };
 	    		if (req.body.callback_url) { updateData.callback_url = req.body.callback_url; };
@@ -245,12 +245,7 @@ module.exports = (app)=>{
   	app.get("/dbrecord/:id", (req, res)=>{
   		db.GameList.findOne({
 	        where: { match_id: { [Op.eq]: req.params.id } }
-	    }).then((dbGame)=>{
-	    	if(dbGame) {
-	    		res.send(dbGame);
-	    	}
-	    	else { res.send("failure"); };
-	    });
+	    }).then((dbGame)=>{ dbGame ? res.send(dbGame) : res.send("failure"); });
   	});
 
   	app.get("/status/:id", (req, res)=>{
@@ -305,7 +300,7 @@ module.exports = (app)=>{
 			        	where: { match_id: client.match_id },
 			        	order: [ [ 'id', 'DESC' ]]
 			    	}).then((gameMoves)=>{
-			    		if (gameMoves[gameMoves.length].resign_id != null) {
+			    		if (gameMoves.length == 0 || gameMoves[gameMoves.length-1].resign_id == null) {
 			    			console.log(gameMoves[gameMoves.length]);
 			    			match.to(client.room).emit('alert', dbGame.game_status);
 			    		};
