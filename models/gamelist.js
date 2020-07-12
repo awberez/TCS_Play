@@ -30,6 +30,12 @@ module.exports = function(sequelize, DataTypes) {
     },
     createdAt: DataTypes.DATE,
     updatedAt: DataTypes.DATE,
+    results: {type: DataTypes.STRING,
+        allowNull: true
+    },
+    expiration: {type: DataTypes.DATE,
+        allowNull: true
+    },
   });
   return GameList;
 };
