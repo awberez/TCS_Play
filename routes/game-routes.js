@@ -116,12 +116,14 @@ module.exports = (app)=>{
 					    		player_id: dbUuid.user_id,
 					    		white_id: dbGame.white_id,
 					    		white_name: dbWhite.user_name,
+					    		white_rating: dbGame.white_rating,
 					    		black_id: dbGame.black_id,
 					    		black_name: dbBlack.user_name,
+					    		black_rating: dbGame.black_rating,
 					    		logo: dbGame.logo,
-					    		header: dbGame.header
+					    		header: dbGame.header,
+					    		expiration: dbGame.expiration
 					    	};
-					    	if (dbGame.logo) { userData.logo = dbGame.logo; };
 					    	if (dbUuid.user_id == dbGame.white_id) {
 					    		userData.player_name = dbWhite.user_name, userData.player_color = "white";
 					    		console.log(userData);
@@ -165,8 +167,13 @@ module.exports = (app)=>{
 				    		player_color: "observer",
 				    		white_id: dbGame.white_id,
 				    		white_name: dbWhite.user_name,
+				    		white_rating: dbGame.white_rating,
 				    		black_id: dbGame.black_id,
-				    		black_name: dbBlack.user_name
+				    		black_name: dbBlack.user_name,
+				    		black_rating: dbGame.black_rating,
+				    		logo: dbGame.logo,
+					    	header: dbGame.header,
+					    	expiration: dbGame.expiration
 				    	};
 			    		res.render("match", { encodedJson : encodeURIComponent(JSON.stringify(userData)) });
 			    	});
@@ -183,6 +190,7 @@ module.exports = (app)=>{
   		status_message: 'ended by coach'  			  (optional, but must also have game_status and results)
 	  	logo: 'logo png string',   					  (optional)
 		header: 'header string',   					  (optional)
+		expiration: 'date'							  (optional)
 		callback_url: 'url string' 					  (optional)
     }*/
 
@@ -198,6 +206,7 @@ module.exports = (app)=>{
 	    		if (req.body.results) { updateData.results = req.body.results; };
 	    		if (req.body.logo) { updateData.logo = req.body.logo; };
 	    		if (req.body.header) { updateData.header = req.body.header; };
+	    		if (req.body.expiration) { updateData.expiration = req.body.expiration; };
 	    		if (req.body.callback_url) { updateData.callback_url = req.body.callback_url; };
 	    		if (updateData.game_status || updateData.logo || updateData.header || updateData.callback_url) {
 		    		db.GameList.update(
@@ -333,22 +342,13 @@ module.exports = (app)=>{
 			    				});
 			    			}; 
 			    		};
-			    		if (data.resign && data.move_id == gameMoves.length && data.game_end != "draw") {
-			    			colorConsole(`${client.color} player has resigned`);
+			    		if (data.resign && data.move_id == gameMoves.length) {
+			    			data.game_end != "draw" ? colorConsole(`${client.color} player has resigned`) : console.log(colors.white(`match ${client.match_id} is a draw`));
 			    			db.GameMove.create({ 
 						    	match_id: client.match_id,
 						    	lastMove: client.color,
 						    	fen: data.fen,
-						    	resign_id: client.player_id
-						    }).then(() => { db.GameList.update( {game_status: "ended", results: data.game_end}, {returning: true, where: {match_id: client.match_id}} ).then(()=>{ moveCallback(); }); });
-			    		} else 
-			    		if (data.resign && data.move_id == gameMoves.length && data.game_end == "draw") {
-			    			console.log(colors.white(`match ${client.match_id} is a draw`));
-			    			db.GameMove.create({ 
-						    	match_id: client.match_id,
-						    	lastMove: client.color,
-						    	fen: data.fen,
-						    	resign_id: "draw"
+						    	resign_id: data.game_end != "draw" ? client.player_id : "draw"
 						    }).then(() => { db.GameList.update( {game_status: "ended", results: data.game_end}, {returning: true, where: {match_id: client.match_id}} ).then(()=>{ moveCallback(); }); });
 			    		} else 
 			    		if ((gameMoves[1] && data.from && gameMoves[1].lastMove == client.color && gameMoves[1].from !== data.from && gameMoves[1].to !== data.to && data.move_id == gameMoves.length + 1) || 
