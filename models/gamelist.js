@@ -36,6 +36,12 @@ module.exports = function(sequelize, DataTypes) {
     expiration: {type: DataTypes.DATE,
         allowNull: true
     },
+    white_rating: {type: DataTypes.INTEGER,
+        allowNull: true
+    },
+    black_rating: {type: DataTypes.INTEGER,
+        allowNull: true
+    },
   });
   return GameList;
 };
