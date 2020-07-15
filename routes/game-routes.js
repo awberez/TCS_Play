@@ -295,16 +295,11 @@ module.exports = (app)=>{
 	    	db.GameList.findOne({
 		        where: { match_id: client.match_id }
 		    }).then((dbGame)=>{
-		    	if (dbGame.game_status != "in progress") {
+		    	if (dbGame.game_status != "in progress" && dbGame.game_status != "ended") {
 		    		db.GameMove.findAll({
 			        	where: { match_id: client.match_id },
 			        	order: [ [ 'id', 'DESC' ]]
-			    	}).then((gameMoves)=>{
-			    		if (gameMoves.length == 0 || gameMoves[gameMoves.length-1].resign_id == null) {
-			    			console.log(gameMoves[gameMoves.length]);
-			    			match.to(client.room).emit('alert', dbGame.game_status);
-			    		};
-			    	});
+			    	}).then((gameMoves)=>{ if (gameMoves.length == 0 || gameMoves[0].resign_id == null) { match.to(client.room).emit('alert', dbGame.game_status); }; });
 		    	};
 		    });
 	    });
