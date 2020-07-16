@@ -35,7 +35,9 @@ module.exports = (app)=>{
 			    	db.GameList.create({ 
 				    	match_id: req.body.match_id,
 						white_id: req.body.white_player.id,
+						white_rating: req.body.white_player.rating,
 				    	black_id: req.body.black_player.id,
+				    	black_rating: req.body.black_player.rating,
 				    	logo: req.body.logo,
 				    	header: req.body.header,
 				    	callback_url: req.body.callback_url,

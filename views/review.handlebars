@@ -75,8 +75,8 @@
 
         let decodedJson = decodeURIComponent("{{{encodedJson}}}"), userData = JSON.parse(decodedJson), socket = io('/review'),
         gameEnd = false, chatTime, finalPgn, noteData, noteTimeout, movesMade = [], moveDisplay = 0, moveTotal = 0, nextPlayer = 'white', chatMessages = [], noteMessages = [], topPlayer = "black", resignation = false, drawAccepted = false,
-        whiteName = `<div id="whiteName"><span class="whiteArrow">&rarr;</span> <span class="chessPiece white"></span><span id="whiteStatus" style="font-style: italic">(offline)</span> <span class="whiteArrow">&larr;</span></div>`,
-        blackName = `<div id="blackName"><span class="blackArrow">&rarr;</span> <span class="chessPiece black"></span><span id="blackStatus" style="font-style: italic">(offline)</span> <span class="blackArrow">&larr;</span></div>`;
+        whiteName = `<div id="whiteName"><span class="whiteArrow">&rarr;</span> <span class="chessPiece white"></span> <span id="whiteStatus" style="font-style: italic">(offline)</span> <span class="whiteArrow">&larr;</span></div>`,
+        blackName = `<div id="blackName"><span class="blackArrow">&rarr;</span> <span class="chessPiece black"></span> <span id="blackStatus" style="font-style: italic">(offline)</span> <span class="blackArrow">&larr;</span></div>`;
         
         if (!userData.user_name) { $('#noteTypeBox').hide(); };
         userData.logo ? $('#logoBox').append(`<img src=${userData.logo}></img>`) : $("#logoBox").append(`<img src=/images/tcs-logo.png></img>`);

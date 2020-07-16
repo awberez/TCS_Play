@@ -7,8 +7,8 @@ $(function(){
 			let match = ~~(Math.random() * 1000000) - 1,
 			data = {
 				match_id: match,
-				white_player: {id: 115, username: "WhitePlayerName", uuid: generateUUID()},
-				black_player: {id: 225, username: "BlackPlayerName", uuid: generateUUID()},
+				white_player: {id: 115, username: "WhitePlayerName", uuid: generateUUID(), rating: ~~(Math.random() * 1000) + 1400},
+				black_player: {id: 225, username: "BlackPlayerName", uuid: generateUUID(), rating: ~~(Math.random() * 1000) + 1400},
 				coaches: [ {id: 999, username: "CoachName", uuid: generateUUID()} ]
 			}
 			$.post(`/newgame`, data, (res)=>{ 
