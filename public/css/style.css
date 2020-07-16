@@ -276,7 +276,7 @@ hr {
         font-size: small;
     }
 
-    #connections, .chatContainer, .noteContainer {
+    #connections, #playerNames, .chatContainer, .noteContainer {
         height: 120px;
         width: calc(100% - 136px) !important;
     }
@@ -286,11 +286,31 @@ hr {
     }
 }
 
-#connections {
-    height: 120px;
+#playerNames {
+    height: 70px;
     width: calc(100% - 171px);
     position: absolute;
     top: 60px;
+    left: 11px;
+}
+
+#players {
+    overflow-x: auto;
+    overflow-wrap: break-word;
+    height: 100%;
+    width: 100%;
+    border: 1px solid #428bca;
+    border-radius: 3px;
+    background: white;
+    padding-left: 3px;
+    padding-right: 3px;
+}
+
+#connections {
+    height: 100px;
+    width: calc(100% - 171px);
+    position: absolute;
+    top: 158px;
     left: 11px;
 }
 
@@ -324,7 +344,7 @@ hr {
 }
 
 .chatContainer {
-    height: calc(100% - 290px);
+    height: calc(100% - 370px);
     position: absolute;
     left: 11px;
     bottom: 84px;
@@ -332,8 +352,8 @@ hr {
 }
 
 .chatContainerReview {
-    height: 200px !important;
-    top: 60px !important;
+    height: 100px !important;
+    top: 158px !important;
 }
 
 #noteBox {

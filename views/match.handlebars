@@ -14,6 +14,10 @@
                     <div class="outlineBar text-center">
                         <div id="status"></div>
                     </div>
+                    <div id="playerNames">
+                        <div class="boxLabel" style="font-weight: bold">Players:</div>
+                        <div id="players" class="text-display"></div>
+                    </div>
                     <div id="connections">
                         <div class="boxLabel" style="font-weight: bold">Observers:</div>
                         <div id="observers" class="text-display"><i>none</i></div>
@@ -71,8 +75,8 @@
         let decodedJson = decodeURIComponent("{{{encodedJson}}}"), userData = JSON.parse(decodedJson), socket = io('/match'), chatTime,
         moveTimeout, chatTimeout, statusTimeout, movesMade = [], promotionPiece = "q", nextPlayer = 'white', status, conStatus, initialStatus = true;
         resignation = false, gameEnd = false, chatMessages = [], topPlayer = "black", drawOffer = false, drawAccepted = false, oppCon = false;
-        whiteName = `<div id="whiteName"><span class="whiteArrow">&rarr;</span> <span class="chessPiece white"></span> <span class="d-none d-lg-inline"> ${userData.white_name} </span> <span id="whiteStatus" style="font-style: italic">(offline)</span> <span class="whiteArrow">&larr;</span></div>`,
-        blackName = `<div id="blackName"><span class="blackArrow">&rarr;</span> <span class="chessPiece black"></span> <span class="d-none d-lg-inline"> ${userData.black_name} </span> <span id="blackStatus" style="font-style: italic">(offline)</span> <span class="blackArrow">&larr;</span></div>`;
+        whiteName = `<div id="whiteName"><span class="whiteArrow">&rarr;</span> <span class="chessPiece white"></span> <span id="whiteStatus" style="font-style: italic">(offline)</span> <span class="whiteArrow">&larr;</span></div>`,
+        blackName = `<div id="blackName"><span class="blackArrow">&rarr;</span> <span class="chessPiece black"></span> <span id="blackStatus" style="font-style: italic">(offline)</span> <span class="blackArrow">&larr;</span></div>`;
 
         userData.logo ? $('#logoBox').append(`<img src=${userData.logo}></img>`) : $("#logoBox").append(`<img src=/images/tcs-logo.png></img>`);
         let title  = 'The Chess School',
@@ -94,6 +98,16 @@
         };
         $(".whiteArrow").hide();
         $(".blackArrow").hide();
+        $('#players').html(`
+            <div>
+                <span class="chessPiece white"></span>
+                <span>${userData.white_rating ? `${userData.white_name} (${userData.white_rating})` : userData.white_name}</span>
+            </div>
+            <div>
+                <span class="chessPiece black"></span>
+                <span>${userData.black_rating ? `${userData.black_name} (${userData.black_rating})` : userData.black_name}</span>
+            </div>
+            `);
         $(document).ready(()=>{ $('#flip').click(flipBoard) });
         $(document).ready(()=>{ $('#resign').click(()=>{ resignGame(); }); });
         $(document).ready(()=>{ $('#draw').click(()=>{ drawGame(); }); });

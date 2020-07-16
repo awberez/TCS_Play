@@ -192,6 +192,8 @@ module.exports = (app)=>{
 		header: 'header string',   					  (optional)
 		expiration: 'date'							  (optional)
 		callback_url: 'url string' 					  (optional)
+		white_rating: '1991'						  (optional)
+		black_rating: '2082'						  (optional)
     }*/
 
   	app.post("/updategame", (req, res)=>{
@@ -208,7 +210,15 @@ module.exports = (app)=>{
 	    		if (req.body.header) { updateData.header = req.body.header; };
 	    		if (req.body.expiration) { updateData.expiration = req.body.expiration; };
 	    		if (req.body.callback_url) { updateData.callback_url = req.body.callback_url; };
-	    		if (updateData.game_status || updateData.logo || updateData.header || updateData.callback_url) {
+	    		if (req.body.white_rating) { updateData.white_rating = req.body.white_rating; };
+	    		if (req.body.black_rating) { updateData.black_rating = req.body.black_rating; };
+	    		if (updateData.game_status || 
+	    			updateData.logo || 
+	    			updateData.header || 
+	    			updateData.callback_url || 
+	    			updateData.expiration ||
+	    			updateData.white_rating ||
+	    			updateData.black_rating) {
 		    		db.GameList.update(
 		    			updateData,
 		    			{returning: true, plain: true, where: {match_id: req.body.match_id}
@@ -239,7 +249,7 @@ module.exports = (app)=>{
 						    	});	
 						    }); 
 		    			} else
-		    			if (req.body.game_status != "in progress") { 
+		    			if (updateData.game_status && req.body.game_status != "in progress") { 
 		    				match.to(`match/${req.body.match_id}`).emit('alert', req.body.game_status); 
 		    				res.send("success");
 		    			}

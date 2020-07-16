@@ -29,8 +29,10 @@ module.exports = (app)=>{
 								    		match_id: dbUuid.match_id,
 								    		white_id: dbGame.white_id,
 								    		white_name: dbWhite.user_name,
+								    		white_rating: dbGame.white_rating,
 								    		black_id: dbGame.black_id,
 								    		black_name: dbBlack.user_name,
+								    		black_rating: dbGame.black_rating,
 								    		logo: dbGame.logo,
 								    		header: dbGame.header,
 								    		user_name: dbCoach.user_name
@@ -64,8 +66,10 @@ module.exports = (app)=>{
 				    		match_id: dbGame.match_id,
 				    		white_id: dbGame.white_id,
 				    		white_name: dbWhite.user_name,
+				    		white_rating: dbGame.white_rating,
 				    		black_id: dbGame.black_id,
 				    		black_name: dbBlack.user_name,
+				    		black_rating: dbGame.black_rating,
 				    		logo: dbGame.logo,
 				    		header: dbGame.header,
 				    	};
