@@ -456,8 +456,12 @@ function Chessboard(containerId, config) {
 	this.enableUserInput = function (enabled) {
 		if (arguments.length === 0) {
 			enabled = true;
+			$('.chess_square').removeClass("noPoint");
 		}
-		else enabled = false;
+		else {
+			enabled = false;
+			$('.chess_square').addClass("noPoint");
+		};
 		_userInputEnabled = enabled;
 	};
 	/**

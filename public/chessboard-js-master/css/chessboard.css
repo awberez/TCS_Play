@@ -72,7 +72,6 @@ div.chess_board div.chess_square_selected div.chess_player_black {
     cursor: pointer;
 }
 
-
 /*div.chess_board div.chess_square_light.chess_square_valid_move {
 background-color: #CDE855;
 }
@@ -100,10 +99,6 @@ div.chess_board div.chess_square {
 
 div.chess_board div.chess_square {
     cursor: pointer;
-}
-
-div.chess_board div.chess_piece_none {
-    cursor: auto;
 }
 
 
