@@ -75,8 +75,8 @@
 
         let decodedJson = decodeURIComponent("{{{encodedJson}}}"), userData = JSON.parse(decodedJson), socket = io('/review'),
         gameEnd = false, chatTime, finalPgn, noteData, noteTimeout, movesMade = [], moveDisplay = 0, moveTotal = 0, nextPlayer = 'white', chatMessages = [], noteMessages = [], topPlayer = "black", resignation = false, drawAccepted = false,
-        whiteName = `<div id="whiteName"><span class="whiteArrow arrow">⮕</span> <span class="chessPiece white"></span> <span id="whiteStatus" style="font-style: italic">(offline)</span></div>`,
-        blackName = `<div id="blackName"><span class="blackArrow arrow">⮕</span> <span class="chessPiece black"></span> <span id="blackStatus" style="font-style: italic">(offline)</span></div>`;
+        whiteName = `<div id="whiteName"><span class="whiteArrow arrow">⮕</span> <span class="chessPiece white"></span></div>`,
+        blackName = `<div id="blackName"><span class="blackArrow arrow">⮕</span> <span class="chessPiece black"></span></div>`;
         
         if (!userData.user_name) { $('#noteTypeBox').hide(); };
         userData.logo ? $('#logoBox').append(`<img src=${userData.logo}></img>`) : $("#logoBox").append(`<img src=/images/tcs-logo.png></img>`);
