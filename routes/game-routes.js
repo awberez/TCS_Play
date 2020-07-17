@@ -11,12 +11,12 @@ module.exports = (app)=>{
 	  	logo: 'logo png string',
 		header: 'header string',
 		callback_url: 'url string',
-  		white_player: { id: '123', username: 'WhitePlayerName', uuid: '4244-4114-6867-5666' },
-  		black_player: { id: '321', username: 'BlackPlayerName', uuid: '6533-4566-8453-1568' },
+  		white_player: { id: '123', username: 'WhitePlayerName', uuid: '4244-4114-6867-5666', rating: '1703' },
+  		black_player: { id: '321', username: 'BlackPlayerName', uuid: '6533-4566-8453-1568', rating: '2194' },
   		coaches: [ 
-  			{ id: '101', username: 'FirstCoachName', uuid: '6577-9754-7642-3555' },
+  			{ id: '101', username: 'FirstCoachName',  uuid: '6577-9754-7642-3555' },
      		{ id: '202', username: 'SecondCoachName', uuid: '9096-2757-7524-5321' },
-     		{ id: '303', username: 'ThirdCoachName', uuid: '8683-3462-4663-8019' } 
+     		{ id: '303', username: 'ThirdCoachName',  uuid: '8683-3462-4663-8019' } 
      	] 
     }*/
 
@@ -41,7 +41,8 @@ module.exports = (app)=>{
 				    	logo: req.body.logo,
 				    	header: req.body.header,
 				    	callback_url: req.body.callback_url,
-				    	expiration: req.body.expiration
+				    	expiration: req.body.expiration,
+				    	time_clock: req.body.time_clock
 				    }).then(() => {
 				    	let uuids = [], names = [];
 				    	uuids.push(
@@ -78,7 +79,7 @@ module.exports = (app)=>{
 
   	/*example addcoach req json:
   	{   coaches: [ 
-  			{ match_id: 492241, id: '101', username: 'FirstCoachName', uuid: '6577-9754-7642-3555' },
+  			{ match_id: 492241, id: '101', username: 'FirstCoachName',  uuid: '6577-9754-7642-3555' },
      		{ match_id: 492241, id: '202', username: 'SecondCoachName', uuid: '9096-2757-7524-5321' },
      		{ match_id: 032950, id: '202', username: 'SecondCoachName', uuid: '8683-3462-4663-8019' } 
      	] 
@@ -124,7 +125,8 @@ module.exports = (app)=>{
 					    		black_rating: dbGame.black_rating,
 					    		logo: dbGame.logo,
 					    		header: dbGame.header,
-					    		expiration: dbGame.expiration
+					    		expiration: dbGame.expiration,
+					    		time_clock: dbGame.time_clock
 					    	};
 					    	if (dbUuid.user_id == dbGame.white_id) {
 					    		userData.player_name = dbWhite.user_name, userData.player_color = "white";
@@ -175,7 +177,8 @@ module.exports = (app)=>{
 				    		black_rating: dbGame.black_rating,
 				    		logo: dbGame.logo,
 					    	header: dbGame.header,
-					    	expiration: dbGame.expiration
+					    	expiration: dbGame.expiration,
+					    	time_clock: dbGame.time_clock
 				    	};
 			    		res.render("match", { encodedJson : encodeURIComponent(JSON.stringify(userData)) });
 			    	});

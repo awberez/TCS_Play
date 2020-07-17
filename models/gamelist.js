@@ -42,6 +42,9 @@ module.exports = function(sequelize, DataTypes) {
     black_rating: {type: DataTypes.INTEGER,
         allowNull: true
     },
+    time_clock: {type: DataTypes.INTEGER,
+        allowNull: true
+    },
   });
   return GameList;
 };
