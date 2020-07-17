@@ -39,6 +39,11 @@ button:disabled:hover {
     background: white;
 }
 
+.arrow {
+	margin-left: -20px;
+	vertical-align: 2px;
+}
+
 #reviewButtons {
     position: absolute;
     bottom: 2px;
@@ -146,6 +151,10 @@ hr {
     font-family: "LOC Chess Pieceset", Fallback, sans-serif;
 }
 
+.mainPiece {
+	font-size: 30px;
+}
+
 .chessBox {
     padding-left: 0px;
     padding-right: 0px;
@@ -189,8 +198,8 @@ hr {
 }
 
 .nameBox {
-    padding-top: 9px;
-    padding-bottom: 11px;
+    padding-top: 0px;
+    padding-bottom: 5px;
 }
 
 #statusPreview {

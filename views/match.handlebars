@@ -75,8 +75,8 @@
         let decodedJson = decodeURIComponent("{{{encodedJson}}}"), userData = JSON.parse(decodedJson), socket = io('/match'), chatTime,
         moveTimeout, chatTimeout, statusTimeout, movesMade = [], promotionPiece = "q", nextPlayer = 'white', status, conStatus, initialStatus = true;
         resignation = false, gameEnd = false, chatMessages = [], topPlayer = "black", drawOffer = false, drawAccepted = false, oppCon = false;
-        whiteName = `<div id="whiteName"><span class="whiteArrow">&rarr;</span> <span class="chessPiece white"></span> <span id="whiteStatus" style="font-style: italic">(offline)</span> <span class="whiteArrow">&larr;</span></div>`,
-        blackName = `<div id="blackName"><span class="blackArrow">&rarr;</span> <span class="chessPiece black"></span> <span id="blackStatus" style="font-style: italic">(offline)</span> <span class="blackArrow">&larr;</span></div>`;
+        whiteName = `<div id="whiteName"><span class="whiteArrow arrow">⮕</span> <span class="chessPiece white mainPiece"></span> <span id="whiteStatus" style="font-style: italic">(offline)</span></div>`,
+        blackName = `<div id="blackName"><span class="blackArrow arrow">⮕</span> <span class="chessPiece black mainPiece"></span> <span id="blackStatus" style="font-style: italic">(offline)</span></div>`;
 
         userData.logo ? $('#logoBox').append(`<img src=${userData.logo}></img>`) : $("#logoBox").append(`<img src=/images/tcs-logo.png></img>`);
         let title  = 'The Chess School',
@@ -299,8 +299,12 @@
         flipBoard = ()=>{
             board.setOrientation(ChessUtils.ORIENTATION.flip);
             topPlayer = (topPlayer == "white") ? "black" : "white";
+            let currentWhiteStatus = document.getElementById("whiteStatus").textContent,
+            currentblackStatus = document.getElementById("blackStatus").textContent;
             $('#topName').html(topPlayer == "white" ? whiteName : blackName);
             $('#bottomName').html(topPlayer == "white" ? blackName : whiteName);
+            $('#whiteStatus').html(currentWhiteStatus);
+            $('#blackStatus').html(currentblackStatus);
             $(".whiteArrow").hide();
             $(".blackArrow").hide();
             if (!gameEnd) { nextPlayer == 'White' ? $(".whiteArrow").show() : $(".blackArrow").show(); };
