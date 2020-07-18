@@ -74,7 +74,7 @@
     <script type="text/javascript">
 
         let decodedJson = decodeURIComponent("{{{encodedJson}}}"), userData = JSON.parse(decodedJson), socket = io('/review'),
-        gameEnd = false, chatTime, finalPgn, noteData, noteTimeout, movesMade = [], moveDisplay = 0, moveTotal = 0, nextPlayer = 'white', chatMessages = [], noteMessages = [], topPlayer = "black", resignation = false, drawAccepted = false,
+        gameEnd = false, chatTime, finalPgn, noteData, noteTimeout, movesMade = [], moveDisplay = 0, moveTotal = -1, nextPlayer = 'white', chatMessages = [], noteMessages = [], topPlayer = "black", resignation = false, drawAccepted = false,
         whiteName = `<div id="whiteName"><span class="whiteArrow arrow">⮕</span> <span class="chessPiece white mainPiece"></span></div>`,
         blackName = `<div id="blackName"><span class="blackArrow arrow">⮕</span> <span class="chessPiece black mainPiece"></span></div>`;
         
@@ -122,16 +122,18 @@
         });
 
         socket.on('init', (data)=>{
-            console.log("initializing");
-            if (data.moves.length != 0) { console.log(`${movesMade.length < data.moves.length - 1 ? "moves" : "move"} received`); };
-            if (data.chat.length != 0) { console.log(`chat ${chatMessages.length < data.chat.length - 1 ? "messages" : "message"} received`); };
-            if (data.notes.length != 0) { console.log(`note ${noteMessages.length < data.notes.length - 1 ? "messages" : "message"} received`); };
-            movesMade = data.moves, noteData = data.notes;
-            movesMade[movesMade.length-1].resign_id ? moveTotal = movesMade.length-1 : moveTotal = movesMade.length;
-            moveDisplay = moveTotal;
-            displayChat(data.chat);
-            displayNotes(noteData);
-            displayMove();
+            if (moveTotal == -1) {
+                console.log("initializing");
+                if (data.moves.length != 0) { console.log(`${movesMade.length < data.moves.length - 1 ? "moves" : "move"} received`); };
+                if (data.chat.length != 0) { console.log(`chat ${chatMessages.length < data.chat.length - 1 ? "messages" : "message"} received`); };
+                if (data.notes.length != 0) { console.log(`note ${noteMessages.length < data.notes.length - 1 ? "messages" : "message"} received`); };
+                movesMade = data.moves, noteData = data.notes;
+                movesMade[movesMade.length-1].resign_id ? moveTotal = movesMade.length-1 : moveTotal = movesMade.length;
+                moveDisplay = moveTotal;
+                displayChat(data.chat);
+                displayNotes(noteData);
+                displayMove();
+            };
         });
 
         socket.on('notes', (data)=>{
@@ -329,7 +331,7 @@
             $("#noteDiv").empty();
             let notesArr = quickSort(res), even = true;
             for (i = 0; i < notesArr.length; i++) {
-                even = even ? false : true;
+                even = !even;
                 $('#noteDiv').append(`
                     <div class="noteMessage ${even ? "even" : "odd"}"}>
                         <span class="notePgn noteId${notesArr[i].move_id} ${notesArr[i].move_id == movesMade[moveDisplay-1].id ? "highlight" : ""}">[${notesArr[i].move_name}]</span>: ${notesArr[i].message}
