@@ -125,7 +125,7 @@ hr {
 @media (max-width: 991px) {
 
     #proText:before {
-		content: '=';
+		content: '⇨';
 	}
 
 	#proText {
@@ -133,12 +133,12 @@ hr {
 	}
 
 	#proLabel {
-		bottom: 10px;
+		bottom: 7px;
 	}
 
 	.proPawn {
     	font-size: 20px;
-    	vertical-align: 5%;
+    	vertical-align: 11%;
 	}
 
 	.proPiece {
@@ -148,7 +148,7 @@ hr {
 	#proBtns {
 		position:absolute;
 		bottom: 0px;
-		left: 25px;
+		left: 30px;
 		width: 40px;
 	}
 
