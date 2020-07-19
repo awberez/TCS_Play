@@ -225,7 +225,7 @@
                             status = `RESIGNATION! ${movesMade[i+1].resign_id == userData.white_id ? "White" : "Black"} has resigned!`;
                             updateGameInfo(movesMade[i+1].resign_id);
                         } else 
-                        if (movesMade[i+1].resign_id == "draw") {
+                        if (movesMade[i+1].resign_id == "draw" && !movesMade[i+1].status_message) {
                             pushMove(movesMade[i].from, movesMade[i].to, movesMade[i].promotion);
                             board.setPosition(movesMade[i].fen, false);
                             drawAccepted = true, status = `DRAW! A draw has been accepted!`;

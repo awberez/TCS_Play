@@ -479,6 +479,10 @@ hr {
     	right: 45px;
     }
 
+    .drawBtn, .resignBtn {
+    	bottom: 12.5px;
+    }
+
     #draw:before {
 		content: 'D';
 	}
