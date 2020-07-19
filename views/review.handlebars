@@ -124,9 +124,9 @@
         socket.on('init', (data)=>{
             if (moveTotal == -1) {
                 console.log("initializing");
-                if (data.moves.length != 0) { console.log(`${movesMade.length < data.moves.length - 1 ? "moves" : "move"} received`); };
-                if (data.chat.length != 0) { console.log(`chat ${chatMessages.length < data.chat.length - 1 ? "messages" : "message"} received`); };
-                if (data.notes.length != 0) { console.log(`note ${noteMessages.length < data.notes.length - 1 ? "messages" : "message"} received`); };
+                if (data.moves.length != 0) { console.log(`${1 < data.moves.length ? "moves" : "move"} received`); };
+                if (data.chat.length != 0) { console.log(`chat ${1 < data.chat.length ? "messages" : "message"} received`); };
+                if (data.notes.length != 0) { console.log(`note ${1 < data.notes.length ? "messages" : "message"} received`); };
                 movesMade = data.moves, noteData = data.notes;
                 movesMade[movesMade.length-1].resign_id ? moveTotal = movesMade.length-1 : moveTotal = movesMade.length;
                 moveDisplay = moveTotal;

@@ -407,6 +407,14 @@ hr {
     margin-right: 5px;
 }
 
+#draw:before {
+	content: 'Draw';
+}
+
+#resign:before {
+	content: 'Resign';
+}
+
 @media (min-width: 992px) {
     #myBoard {
         max-width: calc(100vh - 240px);
@@ -422,6 +430,22 @@ hr {
         padding-left: 0px;
         padding-right: 0px;
     }
+
+    #draw, #resign {
+    	width: 30px;
+    }
+
+    .drawBtn {
+    	right: 45px;
+    }
+
+    #draw:before {
+		content: 'D';
+	}
+
+	#resign:before {
+		content: 'R';
+	}
 }
 
 #myBoard {
