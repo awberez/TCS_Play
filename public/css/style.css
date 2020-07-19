@@ -99,6 +99,10 @@ hr {
     left: 0px;
 }
 
+#proText:before {
+	content: 'Promotions:';
+}
+
 .proPawn {
     font-family: "LOC Chess Pieceset", Fallback, sans-serif;
     vertical-align: 15%;
@@ -116,6 +120,42 @@ hr {
 
 .proPiece:not(.selected):hover {
     background: #c6cbd1;
+}
+
+@media (max-width: 991px) {
+
+    #proText:before {
+		content: '=';
+	}
+
+	#proText {
+		margin-left: -3px;
+	}
+
+	#proLabel {
+		bottom: 10px;
+	}
+
+	.proPawn {
+    	font-size: 20px;
+    	vertical-align: 5%;
+	}
+
+	.proPiece {
+		padding: 1px 1px 3px 1px;
+	}
+
+	#proBtns {
+		position:absolute;
+		bottom: 0px;
+		left: 25px;
+		width: 40px;
+	}
+
+	#promotionsChoice {
+		left: 6px;
+	}
+
 }
 
 .selected {
