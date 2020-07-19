@@ -77,7 +77,7 @@
         gameEnd = false, chatTime, finalPgn, noteData, noteTimeout, movesMade = [], moveDisplay = 0, moveTotal = -1, nextPlayer = 'white', chatMessages = [], noteMessages = [], topPlayer = "black", resignation = false, drawAccepted = false,
         whiteName = `<div id="whiteName"><span class="whiteArrow arrow">⮕</span> <span class="chessPiece white mainPiece"></span></div>`,
         blackName = `<div id="blackName"><span class="blackArrow arrow">⮕</span> <span class="chessPiece black mainPiece"></span></div>`;
-        
+        console.log(userData);
         if (!userData.user_name) { $('#noteTypeBox').hide(); };
         userData.logo ? $('#logoBox').append(`<img src=${userData.logo}></img>`) : $("#logoBox").append(`<img src=/images/tcs-logo.png></img>`);
         let title = 'The Chess School', header = userData.header;
@@ -217,7 +217,14 @@
                     if (!movesMade[i+1] || !movesMade[i+1].resign_id) {
                         pushMove(movesMade[i].from, movesMade[i].to, movesMade[i].promotion);
                         board.setPosition(movesMade[i].fen, false);
-                        changeGameStatus();
+                        if (!movesMade[i+1] && userData.game_status != "ended"
+                                            || userData.game_status != "white"
+                                            || userData.game_status != "black"
+                                            || userData.game_status != "draw") {
+                            status = `Game ended. Status: ${userData.game_status}`;
+                            updateGameInfo();
+                        }                            
+                        else { changeGameStatus(); };
                     }
                     else {
                         if (movesMade[i+1].resign_id == userData.white_id || movesMade[i+1].resign_id == userData.black_id) {

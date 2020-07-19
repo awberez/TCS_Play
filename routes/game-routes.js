@@ -206,7 +206,7 @@ module.exports = (app)=>{
 		db.GameList.findOne({
 	        where: { match_id: req.body.match_id }
 	    }).then((dbGame)=>{
-	    	if (!dbGame) { res.send("failure"); }
+	    	if (!dbGame || req.body.game_status == "ended" || req.body.game_status == "in progress") { res.send("failure"); }
 	    	else {
 	    		let updateData = {};
 	    		if (req.body.game_status) { updateData.game_status = req.body.game_status; };

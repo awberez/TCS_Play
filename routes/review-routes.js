@@ -26,6 +26,7 @@ module.exports = (app)=>{
 							    		where: { user_id: dbUuid.user_id }
 							    	}).then((dbCoach)=>{
 							    		let userData = {
+							    			game_status: dbGame.game_status,
 								    		match_id: dbUuid.match_id,
 								    		white_id: dbGame.white_id,
 								    		white_name: dbWhite.user_name,
@@ -63,6 +64,7 @@ module.exports = (app)=>{
 			    		where: { user_id: dbGame.black_id }
 			    	}).then((dbBlack)=>{
 				    	let userData = {
+				    		game_status: dbGame.game_status,
 				    		match_id: dbGame.match_id,
 				    		white_id: dbGame.white_id,
 				    		white_name: dbWhite.user_name,
