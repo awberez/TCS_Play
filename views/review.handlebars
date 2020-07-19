@@ -211,8 +211,10 @@
                 };
             }
             else {
+                console.log(movesMade);
                 for (i = 0; i < moveDisplay; i++) {
-                    if (!movesMade[i+1].resign_id) {
+                    console.log(i);
+                    if (!movesMade[i+1] || !movesMade[i+1].resign_id) {
                         pushMove(movesMade[i].from, movesMade[i].to, movesMade[i].promotion);
                         board.setPosition(movesMade[i].fen, false);
                         changeGameStatus();
