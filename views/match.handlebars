@@ -76,8 +76,8 @@
         let decodedJson = decodeURIComponent("{{{encodedJson}}}"), userData = JSON.parse(decodedJson), socket = io('/match'), chatTime,
         moveTimeout, chatTimeout, statusTimeout, movesMade = [], promotionPiece = "q", nextPlayer = 'white', status, conStatus, initialStatus = true;
         resignation = false, gameEnd = false, chatMessages = [], topPlayer = "black", drawOffer = false, drawAccepted = false, oppCon = false;
-        whiteName = `<div id="whiteName"><span class="whiteArrow arrow">⮕</span> <span class="chessPiece white mainPiece"></span> <span id="whiteStatus" style="font-style: italic">(offline)</span></div>`,
-        blackName = `<div id="blackName"><span class="blackArrow arrow">⮕</span> <span class="chessPiece black mainPiece"></span> <span id="blackStatus" style="font-style: italic">(offline)</span></div>`;
+        whiteName = `<div id="whiteName"><span class="whiteArrow arrow">&#11157;</span> <span class="chessPiece white mainPiece"></span> <span id="whiteStatus" style="font-style: italic">(offline)</span></div>`,
+        blackName = `<div id="blackName"><span class="blackArrow arrow">&#11157;</span> <span class="chessPiece black mainPiece"></span> <span id="blackStatus" style="font-style: italic">(offline)</span></div>`;
 
         userData.logo ? $('#logoBox').append(`<img src=${userData.logo}></img>`) : $("#logoBox").append(`<img src=/images/tcs-logo.png></img>`);
         let title  = 'The Chess School',
@@ -109,12 +109,15 @@
                 <span>${userData.black_rating ? `${userData.black_name} (${userData.black_rating})` : userData.black_name}</span>
             </div>
             `);
+        $("#expirationClock").hide();
         $(document).ready(()=>{ $('#flip').click(flipBoard) });
         $(document).ready(()=>{ $('#resign').click(()=>{ resignGame(); }); });
         $(document).ready(()=>{ $('#draw').click(()=>{ drawGame(); }); });
         $(window).keydown((event)=>{ if (event.which === 13 && document.activeElement === document.getElementById('inputMessage')) { sendMessage(); }; });
-        if (userData.expiration) { expirationTimer() } else
-        if (userData.time_clock) { timeClocks() };
+        $(document).ready(()=>{ 
+            if (userData.expiration) { expirationTimer(); } else
+            if (userData.time_clock) { timeClocks(); };
+        });
 
         socket.on('connect', (data)=>{
             socket.emit('join', userData);
@@ -522,10 +525,11 @@
                 let now = new Date().getTime(), 
                 distance = expirationDate - now, 
                 days = Math.floor(distance / (1000 * 60 * 60 * 24)),
-                hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
-                minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)),
-                seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                hours = String(Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))).padStart(2, '0'),
+                minutes = String(Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0'),
+                seconds = String(Math.floor((distance % (1000 * 60)) / 1000)).padStart(2, '0');
                 $('#expirationClock').html(`${days}d ${hours}h ${minutes}m ${seconds}s`);
+                $("#expirationClock").show();
                 if (distance < 0) {
                     clearInterval(expireInterval);
                     $('#expirationClock').html("EXPIRED");

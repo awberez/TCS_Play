@@ -11,6 +11,7 @@ module.exports = (app)=>{
 	  	logo: 'logo png string',
 		header: 'header string',
 		callback_url: 'url string',
+		expiration: 'iso date'
   		white_player: { id: '123', username: 'WhitePlayerName', uuid: '4244-4114-6867-5666', rating: '1703' },
   		black_player: { id: '321', username: 'BlackPlayerName', uuid: '6533-4566-8453-1568', rating: '2194' },
   		coaches: [ 
@@ -413,8 +414,14 @@ module.exports = (app)=>{
 	  	});
 
 	  	client.on('expired', ()=>{
-	  		db.GameList.update( {game_status: "Timed out"}, {returning: true, where: {match_id: client.match_id}} ).then(()=>{ 
-				match.to(client.room).emit('alert', "Timed out");
+	  		db.GameList.findOne({
+		        where: { match_id: client.match_id }
+		    }).then((dbGame)=>{
+		  		if (dbGame.game_status != "Timed out") {
+			  		db.GameList.update( {game_status: "Timed out"}, {returning: true, where: {match_id: client.match_id}} ).then(()=>{ 
+						match.to(client.room).emit('alert', "Timed out");
+					});
+				};
 			});
 	  	});
 
