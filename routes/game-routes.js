@@ -228,12 +228,12 @@ module.exports = (app)=>{
 		    			updateData,
 		    			{returning: true, plain: true, where: {match_id: req.body.match_id}
 		    		}).then(()=>{
-		    			if (req.body.results) {
+		    			if (updateData.game_status && updateData.status_message && updateData.results) {
 		    				db.GameMove.create({ 
 						    	match_id: req.body.match_id,
 						    	lastMove: "admin",
-						    	resign_id: req.body.results,
-						    	status_message: req.body.status_message
+						    	resign_id: updateData.results,
+						    	status_message: updateData.status_message
 						    }).then(() => {
 						    	db.GameMove.findAll({
 						        	where: { match_id: req.body.match_id },
@@ -250,12 +250,12 @@ module.exports = (app)=>{
 					                        });
 					                    };
 					                };
-									res.send( {results: req.body.results, pgn: chess.pgn()} );
+									res.send( {results: updateData.results, pgn: chess.pgn()} );
 						    	});	
 						    }); 
 		    			} else
-		    			if (updateData.game_status && req.body.game_status != "in progress") { 
-		    				match.to(`match/${req.body.match_id}`).emit('alert', req.body.game_status); 
+		    			if (updateData.game_status && updateData.game_status != dbGame.game_status) { 
+		    				match.to(`match/${req.body.match_id}`).emit('alert', updateData.game_status); 
 		    				res.send("success");
 		    			}
 		    			else { res.send("success"); };
@@ -410,6 +410,12 @@ module.exports = (app)=>{
 	  	client.on('decline', (data)=>{
 	  		console.log(colors.white(`draw offer in match ${client.match_id} has been declined`));
 	  		match.to(client.room).emit('decline', data);
+	  	});
+
+	  	client.on('expired', ()=>{
+	  		db.GameList.update( {game_status: "Timed out"}, {returning: true, where: {match_id: client.match_id}} ).then(()=>{ 
+				match.to(client.room).emit('alert', "Timed out");
+			});
 	  	});
 
 	  	sendMatchContent = (dbTable, channel)=>{

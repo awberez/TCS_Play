@@ -43,6 +43,7 @@
             <div class="col-6 text-center px-0 pl-lg-2">
                 <div class="infoBox chessBox mainBox">
                     <div id="statusPreview"></div>
+                    <div id="expirationClock"></div>
                     <div id="topName" class="nameBox"></div>
                     <div class="embed-responsive embed-responsive-square">
                       <div id="myBoard" class="embed-responsive-item"></div>
@@ -112,6 +113,8 @@
         $(document).ready(()=>{ $('#resign').click(()=>{ resignGame(); }); });
         $(document).ready(()=>{ $('#draw').click(()=>{ drawGame(); }); });
         $(window).keydown((event)=>{ if (event.which === 13 && document.activeElement === document.getElementById('inputMessage')) { sendMessage(); }; });
+        if (userData.expiration) { expirationTimer() } else
+        if (userData.time_clock) { timeClocks() };
 
         socket.on('connect', (data)=>{
             socket.emit('join', userData);
@@ -142,7 +145,6 @@
             board.enableUserInput(false);
             $("#resign").attr("disabled", true);
             $("#draw").attr("disabled", true);
-            $("#send").attr("disabled", true);
             alert(`This game has been ended.\nStatus: ${data}`);
         });
 
@@ -512,6 +514,31 @@
                 if (socket.connected) { socket.emit('draw', userData.player_id); }
                 else { socket.on('reconnect', ()=>{ socket.emit('draw', userData.player_id); }); };
             };
+        };
+
+        expirationTimer = ()=>{
+            let expirationDate = new Date(userData.expiration).getTime(),
+            expireInterval = setInterval(function() {
+                let now = new Date().getTime(), 
+                distance = expirationDate - now, 
+                days = Math.floor(distance / (1000 * 60 * 60 * 24)),
+                hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+                minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)),
+                seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                $('#expirationClock').html(`${days}d ${hours}h ${minutes}m ${seconds}s`);
+                if (distance < 0) {
+                    clearInterval(expireInterval);
+                    $('#expirationClock').html("EXPIRED");
+                    board.enableUserInput(false);
+                    $("#resign").attr("disabled", true);
+                    $("#draw").attr("disabled", true);
+                    socket.emit('expired');
+                };
+            }, 1000);
+        };
+
+        timeClocks = ()=>{
+
         };
 
         let chess = new Chess(),

@@ -77,7 +77,7 @@
         gameEnd = false, chatTime, finalPgn, noteData, noteTimeout, movesMade = [], moveDisplay = 0, moveTotal = -1, nextPlayer = 'white', chatMessages = [], noteMessages = [], topPlayer = "black", resignation = false, drawAccepted = false,
         whiteName = `<div id="whiteName"><span class="whiteArrow arrow">⮕</span> <span class="chessPiece white mainPiece"></span></div>`,
         blackName = `<div id="blackName"><span class="blackArrow arrow">⮕</span> <span class="chessPiece black mainPiece"></span></div>`;
-        console.log(userData);
+        
         if (!userData.user_name) { $('#noteTypeBox').hide(); };
         userData.logo ? $('#logoBox').append(`<img src=${userData.logo}></img>`) : $("#logoBox").append(`<img src=/images/tcs-logo.png></img>`);
         let title = 'The Chess School', header = userData.header;
