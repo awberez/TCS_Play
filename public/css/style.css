@@ -88,15 +88,14 @@ hr {
 
 #expirationClock {
 	position: absolute;
-	top: -1px;
-	right: -1px;
+	top: 12px;
+	right: 10px;
 	font-weight: bold;
-	border-top: 1px solid #428bca;
-	border-right: 1px solid #428bca;
-	padding: 4px 6px 4px 6px;
-	border-radius: 0px 2px 0px 2px;
-	color: white;
-	background-color: #6598ad;
+	color: #285e8e;
+}
+
+.expSoon {
+	color: #bd4932 !important;
 }
 
 #promotionsChoice {
