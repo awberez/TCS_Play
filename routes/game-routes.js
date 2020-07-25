@@ -417,7 +417,7 @@ module.exports = (app)=>{
 	  		db.GameList.findOne({
 		        where: { match_id: client.match_id }
 		    }).then((dbGame)=>{
-		  		if (dbGame.game_status != "Timed out") {
+		  		if (dbGame.game_status == "in progress") {
 			  		db.GameList.update( {game_status: "Timed out"}, {returning: true, where: {match_id: client.match_id}} ).then(()=>{ 
 						match.to(client.room).emit('alert', "Timed out");
 					});
