@@ -78,10 +78,8 @@
         resignation = false, gameEnd = false, chatMessages = [], topPlayer = "black", drawOffer = false, drawAccepted = false, oppCon = false;
         whiteName = `<div id="whiteName"><span class="whiteArrow arrow">&#11157;</span> <span class="chessPiece white mainPiece"></span> <span id="whiteStatus" style="font-style: italic">(offline)</span></div>`,
         blackName = `<div id="blackName"><span class="blackArrow arrow">&#11157;</span> <span class="chessPiece black mainPiece"></span> <span id="blackStatus" style="font-style: italic">(offline)</span></div>`;
-
         userData.logo ? $('#logoBox').append(`<img src=${userData.logo}></img>`) : $("#logoBox").append(`<img src=/images/tcs-logo.png></img>`);
-        let title  = 'The Chess School',
-            header = userData.header;
+        let title  = 'The Chess School', header = userData.header;
         if (header && header.includes(': ')) {
           title  = header.split(': ')[0];
           header = header.split(': ')[1]
@@ -110,14 +108,14 @@
             </div>
             `);
         $("#expirationClock").hide();
-        $(document).ready(()=>{ $('#flip').click(flipBoard) });
-        $(document).ready(()=>{ $('#resign').click(()=>{ resignGame(); }); });
-        $(document).ready(()=>{ $('#draw').click(()=>{ drawGame(); }); });
-        $(window).keydown((event)=>{ if (event.which === 13 && document.activeElement === document.getElementById('inputMessage')) { sendMessage(); }; });
         $(document).ready(()=>{ 
-            if (userData.expiration) { expirationTimer(); } else
+            $('#flip').click(flipBoard) 
+            $('#resign').click(()=>{ resignGame(); });
+            $('#draw').click(()=>{ drawGame(); });
+            if (userData.expiration) { expirationTimer(); };
             if (userData.time_clock) { timeClocks(); };
         });
+        $(window).keydown((event)=>{ if (event.which === 13 && document.activeElement === document.getElementById('inputMessage')) { sendMessage(); }; });
 
         socket.on('connect', (data)=>{
             socket.emit('join', userData);
