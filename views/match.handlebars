@@ -76,7 +76,7 @@
     <script type="text/javascript">
 
         let decodedJson = decodeURIComponent("{{{encodedJson}}}"), userData = JSON.parse(decodedJson), socket = io('/match'), 
-        chatTime, alerted, override = false, moveTimeout, chatTimeout, statusTimeout, movesMade = [], promotionPiece = "q", nextPlayer = 'white', status, conStatus, initialStatus = true, resignation = false, gameEnd = false, chatMessages = [], topPlayer = "black", drawOffer = false, drawAccepted = false, oppCon = false, tcInterval, whiteTime, blackTime,
+        chatTime, alerted, override = false, moveTimeout, chatTimeout, statusTimeout, movesMade = [], promotionPiece = "q", nextPlayer = 'white', status, conStatus, initialStatus = true, resignation = false, gameEnd = false, chatMessages = [], topPlayer = "black", drawOffer = false, drawAccepted = false, oppCon = false, tcInterval, whiteTime, blackTime, lastMoveTime,
         whiteName = `<div id="whiteName"><span class="whiteArrow arrow">&#11157;</span> <span class="chessPiece white mainPiece"></span> <span id="whiteStatus" style="font-style: italic">(offline)</span></div>`,
         blackName = `<div id="blackName"><span class="blackArrow arrow">&#11157;</span> <span class="chessPiece black mainPiece"></span> <span id="blackStatus" style="font-style: italic">(offline)</span></div>`;
         userData.logo ? $('#logoBox').append(`<img src=${userData.logo}></img>`) : $("#logoBox").append(`<img src=/images/tcs-logo.png></img>`);
@@ -408,7 +408,10 @@
                         movesMade.push(chessMove);
                         board.setPosition(res[i].fen);
                         changeGameStatus();
-                        if (userData.time_clock) { timeClockCountdown(res[i].createdAt); };
+                        if (userData.time_clock) { 
+                            mostRecentMove = i == 0 ? true : false;
+                            timeClockCountdown(res[i].createdAt, mostRecentMove); 
+                        };
                     }
                     else {
                         if (userData.time_clock) { clearInterval(tcInterval); };
@@ -575,15 +578,56 @@
             };
             $('#topClock').html(`${userData.time_clock}m 00s`);
             $('#bottomClock').html(`${userData.time_clock}m 00s`);
-            whiteTime = userData.time_clock, blackTime = userData.time_clock;
+            whiteTime = userData.time_clock * 60 * 1000, blackTime = userData.time_clock * 60 * 1000;
         };
 
-        timeClockCountdown = (moveTime)=>{
+        timeClockCountdown = (moveTime, mostRecentMove)=>{
             clearInterval(tcInterval);
             console.log(moveTime);
             console.log(nextPlayer);
+            let bMins, bSecs, wMins, wSecs, distance;
+            if (!lastMoveTime) { 
+                    lastMoveTime = new Date(moveTime).getTime() 
+                }
+            else {
+                let currentMoveTime = new Date(moveTime).getTime(), timeDif = lastMoveTime - currentMoveTime, now = new Date().getTime();
+                distance = now - currentMoveTime;
+                minutes = String(Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0'),
+                seconds = String(Math.floor((distance % (1000 * 60)) / 1000)).padStart(2, '0');
+                if (mostRecentMove) {console.log(`distance: ${minutes}m ${seconds}s`);};
+                lastMoveTime = currentMoveTime;
+                if (nextPlayer == "Black") {
+                    whiteTime = whiteTime + timeDif;
+                } 
+                else { 
+                    blackTime = blackTime + timeDif;
+                };
+            };
+            let blackTemp = blackTime, whiteTemp = whiteTime;
+            if (nextPlayer == "Black" && mostRecentMove) { blackTemp = blackTime - distance; } else
+            if (nextPlayer == "White" && mostRecentMove) { whiteTemp = whiteTime - distance; }
+            bMins = String(Math.floor((blackTemp % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
+            bSecs = String(Math.floor((blackTemp % (1000 * 60)) / 1000)).padStart(2, '0');
+            wMins = String(Math.floor((whiteTemp % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
+            wSecs = String(Math.floor((whiteTemp % (1000 * 60)) / 1000)).padStart(2, '0');
+            console.log (`whiteTime = ${whiteTime}: ${wMins}m ${wSecs}s`);
+            console.log (`blackTime = ${blackTime}: ${bMins}m ${bSecs}s`);
+            $('.whiteClock').html(`${wMins}m ${wSecs}s`);
+            $('.blackClock').html(`${bMins}m ${bSecs}s`);
+            let whiteInt = whiteTemp, blackInt = blackTemp;
             tcInterval = setInterval(function() {
-
+                if (nextPlayer == "White") {
+                    whiteInt = whiteInt - 1000;
+                    mins = String(Math.floor((whiteInt % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
+                    secs = String(Math.floor((whiteInt % (1000 * 60)) / 1000)).padStart(2, '0');
+                    $('.whiteClock').html(`${mins}m ${secs}s`);
+                }
+                else {
+                    blackInt = blackInt - 1000;
+                    mins = String(Math.floor((blackInt % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
+                    secs = String(Math.floor((blackInt % (1000 * 60)) / 1000)).padStart(2, '0');
+                    $('.blackClock').html(`${mins}m ${secs}s`);
+                };
             }, 1000);
         };
 
