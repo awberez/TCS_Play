@@ -98,6 +98,34 @@ hr {
 	color: #bd4932 !important;
 }
 
+#topClock {
+	top: -23px;
+}
+
+#bottomClock {
+	bottom: -23px;
+}
+
+#topClock, #bottomClock {
+	position: absolute;
+	left: 0;
+	right: 0;
+	margin: auto;
+	background: white;
+	width: 75px;
+	font-weight: bold;
+	border-radius: 3px;
+	color: #285e8e;
+}
+
+.whiteClock {
+	border: 2px solid #428bca;
+}
+
+.blackClock {
+	border: 2px solid #428bca;
+}
+
 #promotionsChoice {
     position: absolute;
     bottom: 6px;

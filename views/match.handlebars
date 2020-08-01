@@ -44,11 +44,13 @@
                 <div class="infoBox chessBox mainBox">
                     <div id="statusPreview"></div>
                     <div id="expirationClock"></div>
+                    <div id="topClock"></div>
                     <div id="topName" class="nameBox"></div>
                     <div class="embed-responsive embed-responsive-square">
                       <div id="myBoard" class="embed-responsive-item"></div>
                     </div>
                     <div id="bottomName" class="nameBox"></div>
+                    <div id="bottomClock"></div>
                     <div id="promotionsChoice" class="playerInput">
                         <div id="proLabel"><span class="proPawn">&#9823;</span><span id="proText"></span></div>
                         <div id="proBtns" class="text-center">
@@ -73,9 +75,8 @@
     </div>
     <script type="text/javascript">
 
-        let decodedJson = decodeURIComponent("{{{encodedJson}}}"), userData = JSON.parse(decodedJson), socket = io('/match'), chatTime, alerted,
-        moveTimeout, chatTimeout, statusTimeout, movesMade = [], promotionPiece = "q", nextPlayer = 'white', status, conStatus, initialStatus = true;
-        resignation = false, gameEnd = false, chatMessages = [], topPlayer = "black", drawOffer = false, drawAccepted = false, oppCon = false;
+        let decodedJson = decodeURIComponent("{{{encodedJson}}}"), userData = JSON.parse(decodedJson), socket = io('/match'), 
+        chatTime, alerted, override = false, moveTimeout, chatTimeout, statusTimeout, movesMade = [], promotionPiece = "q", nextPlayer = 'white', status, conStatus, initialStatus = true, resignation = false, gameEnd = false, chatMessages = [], topPlayer = "black", drawOffer = false, drawAccepted = false, oppCon = false, tcInterval, whiteTime, blackTime,
         whiteName = `<div id="whiteName"><span class="whiteArrow arrow">&#11157;</span> <span class="chessPiece white mainPiece"></span> <span id="whiteStatus" style="font-style: italic">(offline)</span></div>`,
         blackName = `<div id="blackName"><span class="blackArrow arrow">&#11157;</span> <span class="chessPiece black mainPiece"></span> <span id="blackStatus" style="font-style: italic">(offline)</span></div>`;
         userData.logo ? $('#logoBox').append(`<img src=${userData.logo}></img>`) : $("#logoBox").append(`<img src=/images/tcs-logo.png></img>`);
@@ -88,6 +89,7 @@
         if (header) $('#headerText').html(header);
         userData.player_color == "observer" ? $('.playerInput').hide() : $('#flipButton').hide();
         if (userData.player_color == "black") {
+            topPlayer = "white";
             $('#topName').html(whiteName);
             $('#bottomName').html(blackName);
         }
@@ -144,7 +146,7 @@
 
         socket.on('alert', (data)=>{
             if (alerted != data) {
-                alerted = data
+                alerted = data;
                 board.enableUserInput(false);
                 $("#resign").attr("disabled", true);
                 $("#draw").attr("disabled", true);
@@ -262,6 +264,18 @@
             };
             if (!oppCon) { $("#draw").attr("disabled", true); } else
             if (!drawOffer) { $("#draw").attr("disabled", false); };
+            if (!oppCon && movesMade.length == 0 && userData.time_clock && userData.player_color == "white") {
+                $('#status').html("Waiting for opponent to join the game.");
+                board.enableUserInput(false);
+                console.log("disable");
+                override = true;
+            } else
+            if (movesMade.length == 0 && userData.time_clock && userData.player_color == "white") {
+                $('#status').html("White to move.");
+                board.enableUserInput();
+                console.log("enable");
+                override = false;
+            };
         };
 
         resetGame = ()=>{
@@ -335,7 +349,7 @@
               promotion: promotionPiece
             });
             if (chessMove !== null) {
-                movesMade.push(chessMove);
+                //movesMade.push(chessMove);
                 changeGameStatus();
                 let moveData = {
                     from: move.from,
@@ -343,7 +357,7 @@
                     promotion: promotionPiece,
                     fen: chess.fen(),
                     game_end: gameEnd,
-                    move_id: movesMade.length,
+                    move_id: movesMade.length+1,
                     pgn: chess.pgn()
                 };
                 board.enableUserInput(false);
@@ -384,7 +398,7 @@
             if (movesMade.length < res.length) {
                 console.log("displaying new moves");
                 let n = res.length - movesMade.length;
-                for (i = n-1; 0 <= i; i--) {
+                for (i = n-1; 0 <= i; i--) {  
                     if (!res[i].resign_id) {
                         let chessMove = chess.move({
                             from: res[i].from,
@@ -394,8 +408,10 @@
                         movesMade.push(chessMove);
                         board.setPosition(res[i].fen);
                         changeGameStatus();
+                        if (userData.time_clock) { timeClockCountdown(res[i].createdAt); };
                     }
                     else {
+                        if (userData.time_clock) { clearInterval(tcInterval); };
                         if (res[i].resign_id == userData.white_id || res[i].resign_id == userData.black_id) {
                             resignation = true, gameEnd = (res.lastMove == "white") ? "black" : "white",
                             status = `RESIGNATION! ${res[i].resign_id == userData.white_id ? "White" : "Black"} has resigned!`;
@@ -419,7 +435,11 @@
                 !chess.in_draw() &&
                 !chess.in_threefold_repetition() &&
                 !chess.in_stalemate() &&
-                !gameEnd) { board.enableUserInput(); }
+                !gameEnd &&
+                !override) { 
+                    board.enableUserInput(); 
+                    console.log("enabling");
+                }
             else { board.enableUserInput(false); };
         };
 
@@ -545,7 +565,26 @@
         };
 
         timeClocks = ()=>{
+            if (topPlayer == "black") {
+                $('#topClock').addClass("blackClock");
+                $('#bottomClock').addClass("whiteClock");
+            }
+            else {
+                $('#topClock').addClass("whiteClock");
+                $('#bottomClock').addClass("blackClock");
+            };
+            $('#topClock').html(`${userData.time_clock}m 00s`);
+            $('#bottomClock').html(`${userData.time_clock}m 00s`);
+            whiteTime = userData.time_clock, blackTime = userData.time_clock;
+        };
 
+        timeClockCountdown = (moveTime)=>{
+            clearInterval(tcInterval);
+            console.log(moveTime);
+            console.log(nextPlayer);
+            tcInterval = setInterval(function() {
+
+            }, 1000);
         };
 
         let chess = new Chess(),
