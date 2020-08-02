@@ -197,6 +197,7 @@ module.exports = (app)=>{
 	  	logo: 'logo png string',   					  (optional)
 		header: 'header string',   					  (optional)
 		expiration: 'date'							  (optional)
+		time_clock: 20								  (optional)
 		callback_url: 'url string' 					  (optional)
 		white_rating: '1991'						  (optional)
 		black_rating: '2082'						  (optional)
@@ -215,6 +216,7 @@ module.exports = (app)=>{
 	    		if (req.body.logo) { updateData.logo = req.body.logo; };
 	    		if (req.body.header) { updateData.header = req.body.header; };
 	    		if (req.body.expiration) { updateData.expiration = req.body.expiration; };
+	    		if (req.body.time_clock) { updateData.time_clock = req.body.time_clock; };
 	    		if (req.body.callback_url) { updateData.callback_url = req.body.callback_url; };
 	    		if (req.body.white_rating) { updateData.white_rating = req.body.white_rating; };
 	    		if (req.body.black_rating) { updateData.black_rating = req.body.black_rating; };
@@ -223,6 +225,7 @@ module.exports = (app)=>{
 	    			updateData.header || 
 	    			updateData.callback_url || 
 	    			updateData.expiration ||
+	    			updateData.time_clock ||
 	    			updateData.white_rating ||
 	    			updateData.black_rating) {
 		    		db.GameList.update(
@@ -358,6 +361,15 @@ module.exports = (app)=>{
 			    				});
 			    			}; 
 			    		};
+			    		if (data.resign && data.move_id == gameMoves.length && data.resign == "TO:white" || data.resign == "TO:black") {
+			    			colorConsole(`${data.resign == "TO:white" ? "white" : "black"} player has resigned`)
+			    			db.GameMove.create({ 
+						    	match_id: client.match_id,
+						    	lastMove: client.color,
+						    	fen: data.fen,
+						    	resign_id: data.resign
+						    }).then(() => { db.GameList.update( {game_status: "ended", results: data.resign}, {returning: true, where: {match_id: client.match_id}} ).then(()=>{ moveCallback(); }); });
+			    		} else
 			    		if (data.resign && data.move_id == gameMoves.length) {
 			    			data.game_end != "draw" ? colorConsole(`${client.color} player has resigned`) : console.log(colors.white(`match ${client.match_id} is a draw`));
 			    			db.GameMove.create({ 
