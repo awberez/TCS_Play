@@ -76,7 +76,7 @@
     <script type="text/javascript">
 
         let decodedJson = decodeURIComponent("{{{encodedJson}}}"), userData = JSON.parse(decodedJson), socket = io('/match'), 
-        chatTime, alerted, override = false, moveTimeout, chatTimeout, statusTimeout, movesMade = [], promotionPiece = "q", nextPlayer = 'white', status, conStatus, initialStatus = true, resignation = false, gameEnd = false, chatMessages = [], topPlayer = "black", drawOffer = false, drawAccepted = false, oppCon = false, tcInterval, whiteTime, blackTime, lastMoveTime,
+        chatTime, alerted, override = false, moveTimeout, chatTimeout, statusTimeout, movesMade = [], promotionPiece = "q", nextPlayer = 'white', status, conStatus, initialStatus = true, resignation = false, gameEnd = false, chatMessages = [], topPlayer = "black", drawOffer = false, drawAccepted = false, oppCon = false, expireInterval, tcInterval, whiteTime, blackTime, lastMoveTime,
         whiteName = `<div id="whiteName"><span class="whiteArrow arrow">&#11157;</span> <span class="chessPiece white mainPiece"></span> <span id="whiteStatus" style="font-style: italic">(offline)</span></div>`,
         blackName = `<div id="blackName"><span class="blackArrow arrow">&#11157;</span> <span class="chessPiece black mainPiece"></span> <span id="blackStatus" style="font-style: italic">(offline)</span></div>`;
         userData.logo ? $('#logoBox').append(`<img src=${userData.logo}></img>`) : $("#logoBox").append(`<img src=/images/tcs-logo.png></img>`);
@@ -159,9 +159,7 @@
         socket.on('alert', (data)=>{
             if (alerted != data) {
                 alerted = data;
-                board.enableUserInput(false);
-                $("#resign").attr("disabled", true);
-                $("#draw").attr("disabled", true);
+                endGameProcedure();
                 alert(`This game has been ended.\nStatus: ${data}`);
             };
         });
@@ -344,6 +342,17 @@
             $('#blackStatus').html(currentblackStatus);
             $(".whiteArrow").hide();
             $(".blackArrow").hide();
+            if (userData.time_clock) {
+                let whiteClockVal = $('.whiteClock').html(), blackClockVal = $('.blackClock').html();
+                if ($('#topClock').hasClass('whiteClock')) {
+                    $('#topClock').removeClass('whiteClock').addClass('blackClock').html(blackClockVal);
+                    $('#bottomClock').removeClass('blackClock').addClass('whiteClock').html(whiteClockVal);
+                }
+                else {
+                    $('#topClock').removeClass('blackClock').addClass('whiteClock').html(whiteClockVal);
+                    $('#bottomClock').removeClass('whiteClock').addClass('blackClock').html(blackClockVal);
+                };
+            };
             if (!gameEnd) { nextPlayer == 'White' ? $(".whiteArrow").show() : $(".blackArrow").show(); };
         };
 
@@ -427,6 +436,7 @@
                         changeGameStatus();
                         if (userData.time_clock) { 
                             mostRecentMove = i == 0 ? true : false;
+                            if (!mostRecentMove && i == 1 && res[0].resign_id) { mostRecentMove = true; };
                             timeClockCountdown(res[i].createdAt, mostRecentMove); 
                         };
                     }
@@ -523,9 +533,7 @@
         resignGame = ()=>{
             let resign = confirm("Are you sure you want to resign?");
             if (resign && !resignation) {
-                board.enableUserInput(false);
-                $("#resign").attr("disabled", true);
-                $("#draw").attr("disabled", true);
+                endGameProcedure();
                 gameEnd = (userData.player_color == "white") ? "black" : "white";
                 let resignData = {
                     fen: chess.fen(),
@@ -566,8 +574,8 @@
         };
 
         expirationTimer = ()=>{
-            let expirationDate = new Date(userData.expiration).getTime(), expSoon,
-            expireInterval = setInterval(function() {
+            let expirationDate = new Date(userData.expiration).getTime(), expSoon;
+            expireInterval = setInterval(()=>{
                 let now = new Date().getTime(), 
                 distance = expirationDate - now, 
                 days = String(Math.floor(distance / (1000 * 60 * 60 * 24))).padStart(2, '0'),
@@ -579,11 +587,8 @@
                 $("#expirationClock").show();
                 if (expSoon) { $('#expirationClock').addClass("expSoon"); };
                 if (distance < 0) {
-                    clearInterval(expireInterval);
                     $('#expirationClock').html("EXPIRED");
-                    board.enableUserInput(false);
-                    $("#resign").attr("disabled", true);
-                    $("#draw").attr("disabled", true);
+                    endGameProcedure();
                     socket.emit('expired');
                 };
             }, 1000);
@@ -619,7 +624,7 @@
             $('.whiteClock').html(`${wMins}m ${wSecs}s`);
             $('.blackClock').html(`${bMins}m ${bSecs}s`);
             let whiteInt = whiteTemp, blackInt = blackTemp;
-            tcInterval = setInterval(function() {
+            tcInterval = setInterval(()=>{
                 if (nextPlayer == "White") {
                     whiteInt = whiteInt - 1000;
                     mins = String(Math.floor((whiteInt % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
@@ -645,10 +650,7 @@
                 };
             }, 1000);
             timeIsUp = ()=>{
-                clearInterval(tcInterval);
-                board.enableUserInput(false);
-                $("#resign").attr("disabled", true);
-                $("#draw").attr("disabled", true);
+                endGameProcedure();
                 gameEnd = (nextPlayer == "White") ? "white" : "black";
                 let resignData = {
                     fen: chess.fen(),
@@ -674,6 +676,14 @@
                     })
                 };
             };
+        };
+
+        endGameProcedure = ()=>{
+            board.enableUserInput(false);
+            clearInterval(expireInterval);
+            clearInterval(tcInterval);
+            $("#resign").attr("disabled", true);
+            $("#draw").attr("disabled", true);
         };
 
         let chess = new Chess(),
