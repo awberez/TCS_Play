@@ -463,7 +463,8 @@
                         };
                     };
                 };
-            };
+            } else
+            if (0 < res.length && userData.time_clock && !res[0].resign_id) { timeClockCountdown(res[0].createdAt, true); };
             if (userData.player_color != "observer" &&
                 userData.player_color == nextPlayer.toLowerCase() &&
                 !chess.in_checkmate() &&
