@@ -306,10 +306,10 @@ module.exports = (app)=>{
 
 		client.on('join', (data)=>{
 	  		client.match_id = data.match_id, client.room = `match/${client.match_id}`, client.player_name = data.player_name, client.player_id = data.player_id, 
-	  		client.color = `${data.player_color == "white" || data.player_color == "black" ? data.player_color : `observer ${data.player_id}`}`;
+	  		client.color = `${data.player_color == "white" || data.player_color == "black" ? data.player_color : `observer ${data.player_id}`}`, now = new Date().getTime();
 	  		console.log(colors.magenta(`${client.color} has connected to match ${client.match_id}`));
 	  		client.join(client.room);
-	        client.emit('messages', 'Connected to server');
+	        client.emit('time', now);
 	        let playerInfo = { color: client.color, name: client.player_name, id: client.player_id };
 	        if (data.is_coach) { playerInfo.is_coach = true };
 	        if (matchConnections[`${client.match_id}`]) {
