@@ -288,13 +288,11 @@
             if (!oppCon && movesMade.length == 0 && userData.time_clock && userData.player_color == "white") {
                 $('#status').html("Waiting for opponent to join the game.");
                 board.enableUserInput(false);
-                console.log("disable");
                 override = true;
             } else
             if (movesMade.length == 0 && userData.time_clock && userData.player_color == "white") {
                 $('#status').html("White to move.");
                 board.enableUserInput();
-                console.log("enable");
                 override = false;
             };
         };
@@ -481,10 +479,7 @@
                 !chess.in_threefold_repetition() &&
                 !chess.in_stalemate() &&
                 !gameEnd &&
-                !override) { 
-                    board.enableUserInput(); 
-                    console.log("enabling");
-                }
+                !override) { board.enableUserInput(); }
             else { board.enableUserInput(false); };
         };
 

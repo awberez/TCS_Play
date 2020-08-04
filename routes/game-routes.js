@@ -362,13 +362,14 @@ module.exports = (app)=>{
 			    			}; 
 			    		};
 			    		if (data.resign && data.move_id == gameMoves.length && data.resign == "TO:white" || data.resign == "TO:black") {
-			    			colorConsole(`${data.resign == "TO:white" ? "white" : "black"} player has resigned`)
+			    			colorConsole(`${data.resign == "TO:white" ? "white" : "black"} player has timed out`);
+			    			let result = data.resign == "TO:white" ? "black" : "white";
 			    			db.GameMove.create({ 
 						    	match_id: client.match_id,
 						    	lastMove: client.color,
 						    	fen: data.fen,
 						    	resign_id: data.resign
-						    }).then(() => { db.GameList.update( {game_status: "ended", results: data.resign}, {returning: true, where: {match_id: client.match_id}} ).then(()=>{ moveCallback(); }); });
+						    }).then(() => { db.GameList.update( {game_status: "ended", results: result}, {returning: true, where: {match_id: client.match_id}} ).then(()=>{ moveCallback(); }); });
 			    		} else
 			    		if (data.resign && data.move_id == gameMoves.length) {
 			    			data.game_end != "draw" ? colorConsole(`${client.color} player has resigned`) : console.log(colors.white(`match ${client.match_id} is a draw`));
