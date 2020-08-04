@@ -76,7 +76,7 @@
     <script type="text/javascript">
 
         let decodedJson = decodeURIComponent("{{{encodedJson}}}"), userData = JSON.parse(decodedJson), socket = io('/match'), serverTimeDif = 0,
-        chatTime, alerted, override = false, moveTimeout, chatTimeout, statusTimeout, movesMade = [], promotionPiece = "q", nextPlayer = 'white', status, conStatus, initialStatus = true, resignation = false, gameEnd = false, chatMessages = [], topPlayer = "black", drawOffer = false, drawAccepted = false, oppCon = false, expireInterval, tcInterval, whiteTime, blackTime, lastMoveTime,
+        chatTime, alerted, override = false, moveTimeout, chatTimeout, statusTimeout, movesMade = [], promotionPiece = "q", nextPlayer = 'white', status, conStatus, initialStatus = true, resignation = false, gameEnd = false, chatMessages = [], topPlayer = "black", drawOffer = false, drawAccepted = false, oppCon = false, expireInterval, timeClockInterval, whiteTime, blackTime, lastMoveTime,
         whiteName = `<div id="whiteName"><span class="whiteArrow arrow">&#11157;</span> <span class="chessPiece white mainPiece"></span> <span id="whiteStatus" style="font-style: italic">(offline)</span></div>`,
         blackName = `<div id="blackName"><span class="blackArrow arrow">&#11157;</span> <span class="chessPiece black mainPiece"></span> <span id="blackStatus" style="font-style: italic">(offline)</span></div>`;
         userData.logo ? $('#logoBox').append(`<img src=${userData.logo}></img>`) : $("#logoBox").append(`<img src=/images/tcs-logo.png></img>`);
@@ -150,10 +150,6 @@
             $("#resign").attr("disabled", false);
             $("#draw").attr("disabled", false);
             $("#send").attr("disabled", false);
-            if (userData.time_clock && movesMade.length != 0) { 
-                console.log('resetting clock');
-                timeClockCountdown(movesMade[movesMade.length-1].createdAt, true); 
-            };
         });
 
         socket.on('messages', (data)=>{
@@ -449,7 +445,7 @@
                         };
                     }
                     else {
-                        if (userData.time_clock) { clearInterval(tcInterval); };
+                        if (userData.time_clock) { clearInterval(timeClockInterval); };
                         if (res[i].resign_id == userData.white_id || res[i].resign_id == userData.black_id) {
                             resignation = true, gameEnd = (res.lastMove == "white") ? "black" : "white",
                             status = `RESIGNATION! ${res[i].resign_id == userData.white_id ? "White" : "Black"} has resigned!`;
@@ -471,7 +467,7 @@
                         };
                     };
                 };
-            } else
+            };
             if (userData.player_color != "observer" &&
                 userData.player_color == nextPlayer.toLowerCase() &&
                 !chess.in_checkmate() &&
@@ -629,65 +625,43 @@
                     };
                 };
             };
-            clearInterval(tcInterval);
-            let bMins, bSecs, wMins, wSecs, currentMoveTime = new Date(moveTime).getTime(), now = new Date().getTime(), distance = now - currentMoveTime;
+            setTheClocks = ()=>{
+                let now = new Date().getTime(), distance = now - currentMoveTime, blackTemp = blackTime, whiteTemp = whiteTime;
+                if (nextPlayer == "Black" && mostRecentMove) { blackTemp = blackTime - distance + serverTimeDif; } else
+                if (nextPlayer == "White" && mostRecentMove) { whiteTemp = whiteTime - distance + serverTimeDif; }
+                bMins = String(Math.floor((blackTemp % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
+                bSecs = String(Math.floor((blackTemp % (1000 * 60)) / 1000)).padStart(2, '0');
+                wMins = String(Math.floor((whiteTemp % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
+                wSecs = String(Math.floor((whiteTemp % (1000 * 60)) / 1000)).padStart(2, '0');
+                if (bMins <= 0 && bSecs <= 0) {
+                    bMins = "00";
+                    bSecs = "00";
+                    timeIsUp();
+                };
+                if (wMins <= 0 && wSecs <= 0) {
+                    wMins = "00";
+                    wSecs = "00";
+                    timeIsUp();
+                };
+                $('.whiteClock').html(`${wMins}m ${wSecs}s`);
+                $('.blackClock').html(`${bMins}m ${bSecs}s`);
+            };
+            clearInterval(timeClockInterval);
+            let bMins, bSecs, wMins, wSecs, currentMoveTime = new Date(moveTime).getTime();
             if (!lastMoveTime) { lastMoveTime = new Date(moveTime).getTime() }
             else {
                 let timeDif = lastMoveTime - currentMoveTime;
                 lastMoveTime = currentMoveTime;
                 nextPlayer == "Black" ? whiteTime = whiteTime + timeDif : blackTime = blackTime + timeDif;
-            };
-            let blackTemp = blackTime, whiteTemp = whiteTime;
-            if (nextPlayer == "Black" && mostRecentMove) { blackTemp = blackTime - distance + serverTimeDif; } else
-            if (nextPlayer == "White" && mostRecentMove) { whiteTemp = whiteTime - distance + serverTimeDif; }
-            bMins = String(Math.floor((blackTemp % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
-            bSecs = String(Math.floor((blackTemp % (1000 * 60)) / 1000)).padStart(2, '0');
-            wMins = String(Math.floor((whiteTemp % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
-            wSecs = String(Math.floor((whiteTemp % (1000 * 60)) / 1000)).padStart(2, '0');
-            if (bMins <= 0 && bSecs <= 0) {
-                bMins = "00";
-                bSecs = "00";
-                timeIsUp();
-            };
-            if (wMins <= 0 && wSecs <= 0) {
-                wMins = "00";
-                wSecs = "00";
-                timeIsUp();
-            };
-            $('.whiteClock').html(`${wMins}m ${wSecs}s`);
-            $('.blackClock').html(`${bMins}m ${bSecs}s`);
-            let whiteInt = whiteTemp, blackInt = blackTemp;
-            tcInterval = setInterval(()=>{
-                if (nextPlayer == "White") {
-                    whiteInt = whiteInt - 1000;
-                    mins = String(Math.floor((whiteInt % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
-                    secs = String(Math.floor((whiteInt % (1000 * 60)) / 1000)).padStart(2, '0');
-                    if (mins <= 0 && secs <= 0) {
-                        mins = "00";
-                        secs = "00";
-                        timeIsUp();
-                    };
-                    $('.whiteClock').html(`${mins}m ${secs}s`);
-                    
-                }
-                else {
-                    blackInt = blackInt - 1000;
-                    mins = String(Math.floor((blackInt % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
-                    secs = String(Math.floor((blackInt % (1000 * 60)) / 1000)).padStart(2, '0');
-                    if (mins <= 0 && secs <= 0) {
-                        mins = "00";
-                        secs = "00";
-                        timeIsUp();
-                    };
-                    $('.blackClock').html(`${mins}m ${secs}s`);
-                };
-            }, 1000);
+            };   
+            setTheClocks();
+            timeClockInterval = setInterval(()=>{ setTheClocks(); }, 1000);
         };
 
         endGameProcedure = ()=>{
             board.enableUserInput(false);
             clearInterval(expireInterval);
-            clearInterval(tcInterval);
+            clearInterval(timeClockInterval);
             $("#resign").attr("disabled", true);
             $("#draw").attr("disabled", true);
         };

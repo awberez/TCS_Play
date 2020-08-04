@@ -91,7 +91,7 @@ hr {
 	top: 12px;
 	right: 10px;
 	font-weight: bold;
-	color: #285e8e;
+	color: black;
 }
 
 .expSoon {
@@ -115,15 +115,15 @@ hr {
 	width: 75px;
 	font-weight: bold;
 	border-radius: 3px;
-	color: #285e8e;
+	color: black;
 }
 
 .whiteClock {
-	border: 2px solid #428bca;
+	border: 2px solid #285e8e;
 }
 
 .blackClock {
-	border: 2px solid #428bca;
+	border: 2px solid #bd4932;
 }
 
 #promotionsChoice {
