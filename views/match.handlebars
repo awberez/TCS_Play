@@ -357,6 +357,14 @@
                     $('#topClock').removeClass('blackClock').addClass('whiteClock').html(whiteClockVal);
                     $('#bottomClock').removeClass('whiteClock').addClass('blackClock').html(blackClockVal);
                 };
+                if ($('#topClock').hasClass('expSoon') && !$('#bottomClock').hasClass('expSoon')) {
+                    $('#topClock').removeClass('expSoon');
+                    $('#bottomClock').addClass('expSoon');
+                } else 
+                if ($('#bottomClock').hasClass('expSoon') && !$('#topClock').hasClass('expSoon')) {
+                    $('#topClock').addClass('expSoon');
+                    $('#bottomClock').removeClass('expSoon');
+                };
             };
             if (!gameEnd) { nextPlayer == 'White' ? $(".whiteArrow").show() : $(".blackArrow").show(); };
         };
@@ -576,8 +584,7 @@
         };
 
         expirationTimer = ()=>{
-            let expirationDate = new Date(userData.expiration).getTime(), expSoon;
-            expireInterval = setInterval(()=>{
+            setTheTimer = ()=>{
                 let now = new Date().getTime(), 
                 distance = expirationDate - now, 
                 days = String(Math.floor(distance / (1000 * 60 * 60 * 24))).padStart(2, '0'),
@@ -593,6 +600,11 @@
                     endGameProcedure();
                     socket.emit('expired');
                 };
+            };
+            let expirationDate = new Date(userData.expiration).getTime(), expSoon;
+            setTheTimer();
+            expireInterval = setInterval(()=>{
+                setTheTimer();
             }, 1000);
         };
 
@@ -627,21 +639,23 @@
                 };
             };
             setTheClocks = ()=>{
-                let now = new Date().getTime(), distance = now - currentMoveTime, blackTemp = blackTime, whiteTemp = whiteTime;
-                if (nextPlayer == "Black" && mostRecentMove) { blackTemp = blackTime - distance + serverTimeDif; } else
-                if (nextPlayer == "White" && mostRecentMove) { whiteTemp = whiteTime - distance + serverTimeDif; }
-                bMins = String(Math.floor((blackTemp % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
-                bSecs = String(Math.floor((blackTemp % (1000 * 60)) / 1000)).padStart(2, '0');
+                let now = new Date().getTime(), distance = now - currentMoveTime, whiteTemp = whiteTime, blackTemp = blackTime;
+                if (nextPlayer == "White" && mostRecentMove) { whiteTemp = whiteTime - distance + serverTimeDif; } else
+                if (nextPlayer == "Black" && mostRecentMove) { blackTemp = blackTime - distance + serverTimeDif; }; 
                 wMins = String(Math.floor((whiteTemp % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
                 wSecs = String(Math.floor((whiteTemp % (1000 * 60)) / 1000)).padStart(2, '0');
-                if (bMins <= 0 && bSecs <= 0) {
-                    bMins = "00";
-                    bSecs = "00";
-                    timeIsUp();
-                };
+                bMins = String(Math.floor((blackTemp % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
+                bSecs = String(Math.floor((blackTemp % (1000 * 60)) / 1000)).padStart(2, '0');
+                if (whiteTemp <= (userData.time_clock * 60 * 100)) {  $('.whiteClock').addClass("expSoon"); };
+                if (blackTemp <= (userData.time_clock * 60 * 100)) {  $('.blackClock').addClass("expSoon"); };
                 if (wMins <= 0 && wSecs <= 0) {
                     wMins = "00";
                     wSecs = "00";
+                    timeIsUp();
+                };
+                if (bMins <= 0 && bSecs <= 0) {
+                    bMins = "00";
+                    bSecs = "00";
                     timeIsUp();
                 };
                 $('.whiteClock').html(`${wMins}m ${wSecs}s`);

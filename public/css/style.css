@@ -88,14 +88,18 @@ hr {
 
 #expirationClock {
 	position: absolute;
-	top: 12px;
-	right: 10px;
+	top: 0px;
+	right: 0px;
+	width: 110px;
 	font-weight: bold;
 	color: black;
+	border-left: 1px solid #428bca;
+	border-bottom: 1px solid #428bca;
+	border-radius: 0px 0px 0px 3px;
 }
 
 .expSoon {
-	color: #bd4932 !important;
+	color: red !important;
 }
 
 #topClock {
@@ -189,11 +193,12 @@ hr {
 		position:absolute;
 		bottom: 0px;
 		left: 30px;
-		width: 40px;
+		width: 40px;	
 	}
 
 	#promotionsChoice {
 		left: 6px;
+		font-size: small;
 	}
 
 }
@@ -367,16 +372,15 @@ hr {
 }
 
 @media (max-width: 991px) {
-    .mainBox {
-        font-size: small;
-    }
 
     #connections, #playerNames, .chatContainer, .noteContainer {
+    	font-size: small;
         height: 120px;
         width: calc(100% - 136px) !important;
     }
 
     .pgnDiv {
+    	font-size: small;
         width: 100px;
     }
 }
@@ -517,10 +521,6 @@ hr {
 
     .drawBtn {
     	right: 45px;
-    }
-
-    .drawBtn, .resignBtn {
-    	bottom: 12.5px;
     }
 
     #draw:before {
