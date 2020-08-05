@@ -457,6 +457,7 @@
                         } else
                         if (res[i].resign_id == "TO:white" || res[i].resign_id == "TO:black") {
                             resignation = true, gameEnd = (res[i].resign_id == "TO:white") ? "white" : "black",
+                            $(`.${res[i].resign_id == "TO:white" ? "white" : "black"}Clock`).html(`00m 00s`);
                             status = `TIMEOUT! ${res[i].resign_id == "TO:white" ? "White" : "Black"} has run out of time!`;
                             updateGameInfo(res[i].resign_id);
                         }
