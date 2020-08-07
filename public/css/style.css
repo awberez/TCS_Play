@@ -116,10 +116,11 @@ hr {
 	right: 0;
 	margin: auto;
 	background: white;
-	width: 75px;
+	width: 60px;
 	font-weight: bold;
 	border-radius: 3px;
 	color: black;
+	letter-spacing: 1px;
 }
 
 .whiteClock {
