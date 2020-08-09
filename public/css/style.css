@@ -39,6 +39,10 @@ button:disabled:hover {
     background: white;
 }
 
+.moveButton:disabled {
+	opacity: 60%;
+}
+
 .noPoint {
 	cursor: default !important;
 }

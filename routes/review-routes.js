@@ -36,7 +36,8 @@ module.exports = (app)=>{
 								    		black_rating: dbGame.black_rating,
 								    		logo: dbGame.logo,
 								    		header: dbGame.header,
-								    		user_name: dbCoach.user_name
+								    		user_name: dbCoach.user_name,
+								    		time_clock: dbGame.time_clock
 								    	};
 							    		res.render("review", { encodedJson : encodeURIComponent(JSON.stringify(userData)) });
 							    	});
@@ -74,6 +75,7 @@ module.exports = (app)=>{
 				    		black_rating: dbGame.black_rating,
 				    		logo: dbGame.logo,
 				    		header: dbGame.header,
+							time_clock: dbGame.time_clock
 				    	};
 			    		res.render("review", { encodedJson : encodeURIComponent(JSON.stringify(userData)) });
 					});

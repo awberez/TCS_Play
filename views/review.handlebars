@@ -45,23 +45,25 @@
             <div class="col-6 text-center px-0 pl-lg-2">
                 <div class="infoBox chessBox mainBox">
                     <div id="statusPreview"></div>
+                    <div id="topClock"></div>
                     <div id="topName" class="nameBox"></div>
                     <div class="embed-responsive embed-responsive-square">
                       <div id="myBoard" class="embed-responsive-item"></div>
                     </div>
                   <div id="bottomName" class="nameBox"></div>
+                  <div id="bottomClock"></div>
                     <div id="reviewButtons">
                         <div class="moveButtonDiv">
-                            <button id="firstB" class="moveButton" type="button" onClick=switchMove("first")>&#x23EE</button>
+                            <button id="firstB" class="moveButton" type="button" onClick=switchMove("first") disabled="disabled">&#x23EE</button>
                         </div>
                         <div class="moveButtonDiv">
-                            <button id="backB" class="moveButton" type="button" onClick=switchMove("back")>&#x23EA</button>
+                            <button id="backB" class="moveButton" type="button" onClick=switchMove("back") disabled="disabled">&#x23EA</button>
                         </div>
                         <div class="moveButtonDiv">
-                            <button id="forB" class="moveButton" type="button" onClick=switchMove("forward")>&#x23E9</button>
+                            <button id="nextB" class="moveButton" type="button" onClick=switchMove("forward") disabled="disabled">&#x23E9</button>
                         </div>
                         <div class="moveButtonDiv">
-                            <button id="lastB" class="moveButton" type="button" onClick=switchMove("last")>&#x23ED</button>
+                            <button id="lastB" class="moveButton" type="button" onClick=switchMove("last") disabled="disabled">&#x23ED</button>
                         </div>
                     </div>
                     <div id="flipButton">
@@ -74,7 +76,7 @@
     <script type="text/javascript">
 
         let decodedJson = decodeURIComponent("{{{encodedJson}}}"), userData = JSON.parse(decodedJson), socket = io('/review'),
-        gameEnd = false, chatTime, finalPgn, noteData, noteTimeout, movesMade = [], moveDisplay = 0, moveTotal = -1, nextPlayer = 'white', chatMessages = [], noteMessages = [], topPlayer = "black", resignation = false, drawAccepted = false,
+        gameEnd = false, chatTime, finalPgn, noteData, noteTimeout, movesMade = [], moveDisplay = 0, moveTotal = -1, nextPlayer = 'white', chatMessages = [], noteMessages = [], topPlayer = "black", resignation = false, drawAccepted = false, whiteTime, blackTime, lastMoveTime,
         whiteName = `<div id="whiteName"><span class="whiteArrow arrow">⮕</span> <span class="chessPiece white mainPiece"></span></div>`,
         blackName = `<div id="blackName"><span class="blackArrow arrow">⮕</span> <span class="chessPiece black mainPiece"></span></div>`;
         
@@ -98,7 +100,22 @@
                 <span>${userData.black_rating ? `${userData.black_name} (${userData.black_rating})` : userData.black_name}</span>
             </div>
             `);
-        $(document).ready(()=>{ $('#flip').click(flipBoard) });
+        $(document).ready(()=>{ 
+            $('#flip').click(flipBoard);
+            if (userData.time_clock) { 
+                if (topPlayer == "black") {
+                    $('#topClock').addClass("blackClock");
+                    $('#bottomClock').addClass("whiteClock");
+                }
+                else {
+                    $('#topClock').addClass("whiteClock");
+                    $('#bottomClock').addClass("blackClock");
+                };
+                $('#topClock').html(`${String(userData.time_clock).padStart(2, '0')}:00`);
+                $('#bottomClock').html(`${String(userData.time_clock).padStart(2, '0')}:00`);
+                whiteTime = userData.time_clock * 60 * 1000, blackTime = userData.time_clock * 60 * 1000;
+            };
+        });
         $(window).keydown((event)=>{ if (event.which === 13 && document.activeElement === document.getElementById('inputMessage')) { sendMessage(); }; });
 
         socket.on('connect', (data)=>{
@@ -161,10 +178,15 @@
             if (chess.in_checkmate()) { $('#statusPreview').html(`Checkmate!`) } else
             if (chess.in_check() && !resignation && !drawAccepted) { $('#statusPreview').html(`Check!`) } else
             if (resignation) { 
-                $('#statusPreview').html(`${resId == userData.white_id 
-                    ? `<span class="chessPiece white statusPiece"></span> Resigned!` 
-                    : `<span class="chessPiece black statusPiece"></span> Resigned!`}`)
-                $('#statusPreview').addClass('statusResign'); 
+                $('#statusPreview').html(`${
+                    resId == "TO:white" 
+                        ? `<span class="chessPiece white statusPiece"></span> Timed Out!`
+                        : resId == "TO:black"
+                            ? `<span class="chessPiece black statusPiece"></span> Timed Out!`
+                            : resId == userData.white_id 
+                                ? `<span class="chessPiece white statusPiece"></span> Resigned!` 
+                                : `<span class="chessPiece black statusPiece"></span> Resigned!`}`);
+                $('#statusPreview').addClass('statusResign');
             } else
             if (drawAccepted) { $('#statusPreview').html(`Draw!`) };
             $(".whiteArrow").hide();
@@ -180,6 +202,25 @@
             $(".whiteArrow").hide();
             $(".blackArrow").hide();
             if (!gameEnd) { nextPlayer == 'White' ? $(".whiteArrow").show() : $(".blackArrow").show(); };
+            if (userData.time_clock) {
+                let whiteClockVal = $('.whiteClock').html(), blackClockVal = $('.blackClock').html();
+                if ($('#topClock').hasClass('whiteClock')) {
+                    $('#topClock').removeClass('whiteClock').addClass('blackClock').html(blackClockVal);
+                    $('#bottomClock').removeClass('blackClock').addClass('whiteClock').html(whiteClockVal);
+                }
+                else {
+                    $('#topClock').removeClass('blackClock').addClass('whiteClock').html(whiteClockVal);
+                    $('#bottomClock').removeClass('whiteClock').addClass('blackClock').html(blackClockVal);
+                };
+                if ($('#topClock').hasClass('expSoon') && !$('#bottomClock').hasClass('expSoon')) {
+                    $('#topClock').removeClass('expSoon');
+                    $('#bottomClock').addClass('expSoon');
+                } else 
+                if ($('#bottomClock').hasClass('expSoon') && !$('#topClock').hasClass('expSoon')) {
+                    $('#topClock').addClass('expSoon');
+                    $('#bottomClock').removeClass('expSoon');
+                };
+            };
         };
 
         changeGameStatus = ()=>{
@@ -197,6 +238,11 @@
         displayMove = ()=>{
             board.setPosition(ChessUtils.FEN.startId, false);
             chess.reset();
+            if (userData.time_clock) {
+                whiteTime = userData.time_clock * 60 * 1000, blackTime = userData.time_clock * 60 * 1000, lastMoveTime = false;
+                $('.whiteClock').removeClass("expSoon");
+                $('.blackClock').removeClass("expSoon");
+            };
             status = 'White to move.', nextPlayer = 'White', resignation = false, drawAccepted = false;
             $("#moveLabel").html(`Moves: <span id="moveSpan">(${moveDisplay}/${moveTotal})</span>`)
             if (moveTotal == 0) {
@@ -211,16 +257,20 @@
                 };
             }
             else {
-                console.log(movesMade);
                 for (i = 0; i < moveDisplay; i++) {
-                    console.log(i);
-                    if (!movesMade[i+1] || !movesMade[i+1].resign_id) {
+                    if (userData.time_clock) { 
+                        mostRecentMove = i == moveDisplay ? true : false;
+                        timeClockCountdown(movesMade[i].createdAt, mostRecentMove); 
+                    };
+                    if (!movesMade[i+1].resign_id) {
                         pushMove(movesMade[i].from, movesMade[i].to, movesMade[i].promotion);
                         board.setPosition(movesMade[i].fen, false);
-                        if (!movesMade[i+1] && userData.game_status != "ended"
-                                            || userData.game_status != "white"
-                                            || userData.game_status != "black"
-                                            || userData.game_status != "draw") {
+                        timeClockCountdown(movesMade[i].createdAt, mostRecentMove);
+                        if (i == movesMade.length - 1 
+                            && userData.game_status != "ended"
+                            && userData.game_status != "white"
+                            && userData.game_status != "black"
+                            && userData.game_status != "draw") {
                             status = `Game ended. Status: ${userData.game_status}`;
                             updateGameInfo();
                         }                            
@@ -239,6 +289,12 @@
                             board.setPosition(movesMade[i].fen, false);
                             drawAccepted = true, status = `DRAW! A draw has been accepted!`;
                             updateGameInfo();
+                        } else
+                        if (movesMade[i+1].resign_id == "TO:white" || movesMade[i+1].resign_id == "TO:black") {
+                            resignation = true, gameEnd = true,
+                            $(`.${movesMade[i+1].resign_id == "TO:white" ? "white" : "black"}Clock`).html(`00:00`).addClass('expSoon');
+                            status = `TIMEOUT! ${movesMade[i+1].resign_id == "TO:white" ? "White" : "Black"} has run out of time!`;
+                            updateGameInfo(movesMade[i+1].resign_id);
                         }
                         else {
                             pushMove(movesMade[i].from, movesMade[i].to, movesMade[i].promotion);
@@ -267,6 +323,10 @@
                     });
                 };
             };
+            if (moveDisplay != 1) {
+                $('#firstB').prop('disabled', false);
+                $('#backB').prop('disabled', false);
+            };
         };
 
         pushMove = (fromVar, toVar, promoVar)=>{
@@ -278,12 +338,66 @@
         };
 
         switchMove = (where)=>{
-            if (where == "first" && moveDisplay != 1)            { moveDisplay = 1; } else
-            if (where == "back" && moveDisplay > 1)              { moveDisplay--; }   else
-            if (where == "forward" && moveDisplay < moveTotal)   { moveDisplay++; }   else 
-            if (where == "last" && moveDisplay != moveTotal)     { moveDisplay = moveTotal; }
+            if (where == "first" && moveDisplay != 1)            { 
+                moveDisplay = 1; 
+                $('#firstB').prop('disabled', true);
+                $('#backB').prop('disabled', true);
+                $('#nextB').prop('disabled', false);
+                $('#lastB').prop('disabled', false);
+            } else
+            if (where == "back" && moveDisplay > 1)              { 
+                moveDisplay--; 
+                if (moveDisplay == 1) { $('#firstB').prop('disabled', true); }
+                else { $('#firstB').prop('disabled', false); };
+                if (moveDisplay == 1) { $('#backB').prop('disabled', true); }
+                else { $('#backB').prop('disabled', false); };
+                $('#nextB').prop('disabled', false);
+                $('#lastB').prop('disabled', false);
+            }   else
+            if (where == "forward" && moveDisplay < moveTotal)   { 
+                moveDisplay++; 
+                $('#firstB').prop('disabled', false);
+                $('#backB').prop('disabled', false);
+                if (moveDisplay == moveTotal) { $('#nextB').prop('disabled', true); }
+                else { $('#nextB').prop('disabled', false); };
+                if (moveDisplay == moveTotal) { $('#lastB').prop('disabled', true); }
+                else { $('#lastB').prop('disabled', false); };
+            }   else 
+            if (where == "last" && moveDisplay != moveTotal)     { 
+                moveDisplay = moveTotal; 
+                $('#firstB').prop('disabled', false);
+                $('#backB').prop('disabled', false);
+                $('#nextB').prop('disabled', true);
+                $('#lastB').prop('disabled', true);
+            }
             else { return; };
             displayMove(); 
+        };
+
+        timeClockCountdown = (moveTime, mostRecentMove)=>{
+            let bMins, bSecs, wMins, wSecs, currentMoveTime = new Date(moveTime).getTime();
+            if (!lastMoveTime) { lastMoveTime = new Date(moveTime).getTime() }
+            else {
+                let timeDif = lastMoveTime - currentMoveTime;
+                lastMoveTime = currentMoveTime;
+                nextPlayer == "Black" ? whiteTime = whiteTime + timeDif : blackTime = blackTime + timeDif;
+            };   
+            wMins = String(Math.floor((whiteTime % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
+            wSecs = String(Math.floor((whiteTime % (1000 * 60)) / 1000)).padStart(2, '0');
+            bMins = String(Math.floor((blackTime % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
+            bSecs = String(Math.floor((blackTime % (1000 * 60)) / 1000)).padStart(2, '0');
+            if (whiteTime <= (userData.time_clock * 60 * 100)) {  $('.whiteClock').addClass("expSoon"); };
+            if (blackTime <= (userData.time_clock * 60 * 100)) {  $('.blackClock').addClass("expSoon"); };
+            if (wMins <= 0 && wSecs <= 0) {
+                wMins = "00";
+                wSecs = "00";
+            };
+            if (bMins <= 0 && bSecs <= 0) {
+                bMins = "00";
+                bSecs = "00";
+            };
+            $('.whiteClock').html(`${wMins}:${wSecs}`);
+            $('.blackClock').html(`${bMins}:${bSecs}`);
         };
 
         sendMessage = () => {
