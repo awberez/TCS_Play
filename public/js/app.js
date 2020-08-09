@@ -22,7 +22,7 @@ $(function(){
 			coaches: [ {id: 999, username: "CoachName", uuid: generateUUID()} ],
 			expiration: sevenDaysFromNow
 		};
-		if (timed) { data.time_clock = 1 };
+		if (timed) { data.time_clock = 15 };
 		$.post(`/newgame`, data, (res)=>{ 
 			if (res == "success") {
 				let matchUrl = `${window.location.href.slice(0, -9)}match/`, observeUrl = `${window.location.href.slice(0, -9)}observe/${match}/`,
