@@ -276,6 +276,11 @@
                         };
                     }
                     else {
+                        nextPlayer = chess.turn() === 'b' ? 'Black' : 'White';
+                        if (userData.time_clock) { 
+                            mostRecentMove = i == moveDisplay ? true : false;
+                            timeClockCountdown(movesMade[i].createdAt, mostRecentMove); 
+                        };
                         if (movesMade[i+1].resign_id == userData.white_id || movesMade[i+1].resign_id == userData.black_id) {
                             resignation = true, gameEnd = true,
                             status = `RESIGNATION! ${movesMade[i+1].resign_id == userData.white_id ? "White" : "Black"} has resigned!`;
