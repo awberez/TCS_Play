@@ -277,30 +277,24 @@
                         };
                     }
                     else {
+                        pushMove(movesMade[i].from, movesMade[i].to, movesMade[i].promotion);
+                        board.setPosition(movesMade[i].fen, false);
                         if (movesMade[i+1].resign_id == userData.white_id || movesMade[i+1].resign_id == userData.black_id) {
-                            pushMove(movesMade[i].from, movesMade[i].to, movesMade[i].promotion);
-                            board.setPosition(movesMade[i].fen, false);
                             resignation = true, gameEnd = true,
                             status = `RESIGNATION! ${movesMade[i+1].resign_id == userData.white_id ? "White" : "Black"} has resigned!`;
                             updateGameInfo(movesMade[i+1].resign_id);
                         } else 
                         if (movesMade[i+1].resign_id == "draw" && !movesMade[i+1].status_message) {
-                            pushMove(movesMade[i].from, movesMade[i].to, movesMade[i].promotion);
-                            board.setPosition(movesMade[i].fen, false);
                             drawAccepted = true, status = `DRAW! A draw has been accepted!`;
                             updateGameInfo();
                         } else
                         if (movesMade[i+1].resign_id == "TO:white" || movesMade[i+1].resign_id == "TO:black") {
-                            pushMove(movesMade[i].from, movesMade[i].to, movesMade[i].promotion);
-                            board.setPosition(movesMade[i].fen, false);
                             resignation = true, gameEnd = true,
                             $(`.${movesMade[i+1].resign_id == "TO:white" ? "white" : "black"}Clock`).html(`00:00`).addClass('expSoon');
                             status = `TIMEOUT! ${movesMade[i+1].resign_id == "TO:white" ? "White" : "Black"} has run out of time!`;
                             updateGameInfo(movesMade[i+1].resign_id);
                         }
                         else {
-                            pushMove(movesMade[i].from, movesMade[i].to, movesMade[i].promotion);
-                            board.setPosition(movesMade[i].fen, false);
                             gameEnd = true, status = movesMade[i+1].status_message ? movesMade[i+1].status_message : movesMade[i+1].resign_id;
                             updateGameInfo();
                             $('#statusPreview').html(`${movesMade[i+1].resign_id} wins!`);
