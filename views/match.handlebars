@@ -370,8 +370,7 @@
         };
 
         changeGameStatus = ()=>{
-            nextPlayer = 'White';
-            if (chess.turn() === 'b') { nextPlayer = 'Black'; };
+            nextPlayer = chess.turn() === 'b' ? 'Black' : 'White';
             if (chess.in_checkmate()) { gameEnd = (nextPlayer == 'White') ? "black" : "white", status = `CHECKMATE! ${nextPlayer == 'White' ? "Black" : "White"} wins!`; } else
             if (chess.in_draw() || chess.in_threefold_repetition() || chess.in_stalemate()) { gameEnd = "draw", status = 'DRAW!'; }
             else {

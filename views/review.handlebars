@@ -224,8 +224,7 @@
         };
 
         changeGameStatus = ()=>{
-            nextPlayer = 'White';
-            if (chess.turn() === 'b') { nextPlayer = 'Black'; };
+            nextPlayer = chess.turn() === 'b' ? 'Black' : 'White';
             if (chess.in_checkmate()) { gameEnd = true, status = `CHECKMATE! ${nextPlayer == 'White' ? "Black" : "White"} wins!`; } else 
             if (chess.in_draw() || chess.in_threefold_repetition() || chess.in_stalemate()) { gameEnd = true, status = 'DRAW!'; } 
             else {
@@ -261,13 +260,13 @@
                     pushMove(movesMade[i].from, movesMade[i].to, movesMade[i].promotion);
                     board.setPosition(movesMade[i].fen, false);
                     if (!movesMade[i+1].resign_id) {
-                        console.log("true");
                         if (i == movesMade.length - 1 
                             && userData.game_status != "ended"
                             && userData.game_status != "white"
                             && userData.game_status != "black"
                             && userData.game_status != "draw") {
                             status = `Game ended. Status: ${userData.game_status}`;
+                            nextPlayer = chess.turn() === 'b' ? 'Black' : 'White';
                             updateGameInfo();
                         }                            
                         else { changeGameStatus(); };
@@ -287,7 +286,8 @@
                             updateGameInfo();
                         } else
                         if (movesMade[i+1].resign_id == "TO:white" || movesMade[i+1].resign_id == "TO:black") {
-                            resignation = true, gameEnd = true,
+                            resignation = true, gameEnd = true, nextPlayer = chess.turn() === 'b' ? 'Black' : 'White';
+                            timeClockCountdown(movesMade[i].createdAt, mostRecentMove);
                             $(`.${movesMade[i+1].resign_id == "TO:white" ? "white" : "black"}Clock`).html(`00:00`).addClass('expSoon');
                             status = `TIMEOUT! ${movesMade[i+1].resign_id == "TO:white" ? "White" : "Black"} has run out of time!`;
                             updateGameInfo(movesMade[i+1].resign_id);
@@ -363,7 +363,6 @@
         };
 
         timeClockCountdown = (moveTime, mostRecentMove)=>{
-            console.log(nextPlayer);
             let bMins, bSecs, wMins, wSecs, currentMoveTime = new Date(moveTime).getTime();
             if (!lastMoveTime) { lastMoveTime = new Date(moveTime).getTime() }
             else {
