@@ -8,10 +8,11 @@ module.exports = (app)=>{
 
   /*example newgame req json:
   	{ 	match_id: '492241',
-	  	logo: 'logo png string',
-		header: 'header string',
+	  	logo: 'logo png string',    (optional)
+		header: 'header string',	(optional)
 		callback_url: 'url string',
-		expiration: 'iso date'
+		expiration: 'iso date', 	(optional)
+		time_clock: '15' 			(optional, integer for minutes per player)
   		white_player: { id: '123', username: 'WhitePlayerName', uuid: '4244-4114-6867-5666', rating: '1703' },
   		black_player: { id: '321', username: 'BlackPlayerName', uuid: '6533-4566-8453-1568', rating: '2194' },
   		coaches: [ 

@@ -349,17 +349,13 @@
             } else
             if (where == "back" && moveDisplay > 1)              { 
                 moveDisplay--; 
-                if (moveDisplay == 1) { $('#firstB').prop('disabled', true); }
-                else { $('#firstB').prop('disabled', false); };
-                if (moveDisplay == 1) { $('#backB').prop('disabled', true); }
-                else { $('#backB').prop('disabled', false); };
+                if (moveDisplay == 1) { $('#firstB').prop('disabled', true); };
+                if (moveDisplay == 1) { $('#backB').prop('disabled', true); };
                 $('#nextB').prop('disabled', false);
                 $('#lastB').prop('disabled', false);
             }   else
             if (where == "forward" && moveDisplay < moveTotal)   { 
                 moveDisplay++; 
-                $('#firstB').prop('disabled', false);
-                $('#backB').prop('disabled', false);
                 if (moveDisplay == moveTotal) { $('#nextB').prop('disabled', true); }
                 else { $('#nextB').prop('disabled', false); };
                 if (moveDisplay == moveTotal) { $('#lastB').prop('disabled', true); }
@@ -367,8 +363,6 @@
             }   else 
             if (where == "last" && moveDisplay != moveTotal)     { 
                 moveDisplay = moveTotal; 
-                $('#firstB').prop('disabled', false);
-                $('#backB').prop('disabled', false);
                 $('#nextB').prop('disabled', true);
                 $('#lastB').prop('disabled', true);
             }
