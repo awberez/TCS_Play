@@ -258,10 +258,10 @@
             }
             else {
                 for (i = 0; i < moveDisplay; i++) {
+                    pushMove(movesMade[i].from, movesMade[i].to, movesMade[i].promotion);
+                    board.setPosition(movesMade[i].fen, false);
                     if (!movesMade[i+1].resign_id) {
                         console.log("true");
-                        pushMove(movesMade[i].from, movesMade[i].to, movesMade[i].promotion);
-                        board.setPosition(movesMade[i].fen, false);
                         if (i == movesMade.length - 1 
                             && userData.game_status != "ended"
                             && userData.game_status != "white"
@@ -277,8 +277,6 @@
                         };
                     }
                     else {
-                        pushMove(movesMade[i].from, movesMade[i].to, movesMade[i].promotion);
-                        board.setPosition(movesMade[i].fen, false);
                         if (movesMade[i+1].resign_id == userData.white_id || movesMade[i+1].resign_id == userData.black_id) {
                             resignation = true, gameEnd = true,
                             status = `RESIGNATION! ${movesMade[i+1].resign_id == userData.white_id ? "White" : "Black"} has resigned!`;
