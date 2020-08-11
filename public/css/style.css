@@ -92,14 +92,10 @@ hr {
 
 #expirationClock {
 	position: absolute;
-	top: 0px;
-	right: 0px;
-	width: 110px;
+	top: 8px;
+	right: 14px;
 	font-weight: bold;
-	color: black;
-	border-left: 1px solid #428bca;
-	border-bottom: 1px solid #428bca;
-	border-radius: 0px 0px 0px 3px;
+	color: white;
 }
 
 .expSoon {

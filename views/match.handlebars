@@ -5,6 +5,7 @@
               <a href="https://thechessschool.net/home" class='float-left'><span id="logoBox"></span></a>
               <h2 id="titleText" class='mb-0'></h2>
               <h4 id="headerText"></h4>
+              <h5 id="expirationClock"></h5>
             </div>
             <hr class='mt-0'>
         </div>
@@ -43,7 +44,7 @@
             <div class="col-6 text-center px-0 pl-lg-2">
                 <div class="infoBox chessBox mainBox">
                     <div id="statusPreview"></div>
-                    <div id="expirationClock"></div>
+                    
                     <div id="topClock"></div>
                     <div id="topName" class="nameBox"></div>
                     <div class="embed-responsive embed-responsive-square">
@@ -590,7 +591,7 @@
                 hours = String(Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))).padStart(2, '0'),
                 minutes = String(Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0'),
                 seconds = String(Math.floor((distance % (1000 * 60)) / 1000)).padStart(2, '0');
-                if (days == 0 && hours == 0 && minutes < 10) { expSoon = true }; 
+                if (days <= 0 && hours <= 0 && minutes < 10) { expSoon = true }; 
                 $('#expirationClock').html(expSoon ? `${hours}h ${minutes}m ${seconds}s` : `${days}d ${hours}h ${minutes}m`);
                 $("#expirationClock").show();
                 if (expSoon) { $('#expirationClock').addClass("expSoon"); };
