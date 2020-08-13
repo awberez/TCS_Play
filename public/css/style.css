@@ -490,7 +490,7 @@ hr {
 }
 
 #inputMessage {
-    width: calc(100% - 69px);
+    width: calc(100% - 73px);
     border-radius: 3px;
     border-color: #428bca;
     border-style: solid;
