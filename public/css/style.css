@@ -225,18 +225,14 @@ hr {
 	top: -1px;
 }
 
-#resign {
-    width: 60px;
+#resign, #draw {
+    width: 65px;
 }
 
 .drawBtn {
     position: absolute;
     bottom: 10px;
-    right: 75px;
-}
-
-#draw {
-    width: 60px;
+    right: 80px;
 }
 
 #flipButton {
