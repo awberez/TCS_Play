@@ -10,7 +10,7 @@
 
 body {
     background-image: url(../images/chess-bg.gif);
-    font-family: 'Open Sans', sans-serif;
+    font-family: 'Noto Sans HK', sans-serif;
 }
 
 button {
@@ -19,6 +19,8 @@ button {
     background: white;
     border: 2px solid #428bca;
     outline: none !important;
+    padding-top: 0px;
+    padding-bottom: 3px;
 }
 
 .chessBox button {
@@ -103,11 +105,11 @@ hr {
 }
 
 #topClock {
-	top: -23px;
+	top: -25px;
 }
 
 #bottomClock {
-	bottom: -23px;
+	bottom: -25px;
 }
 
 #topClock, #bottomClock {
@@ -121,6 +123,8 @@ hr {
 	border-radius: 3px;
 	color: black;
 	letter-spacing: 1px;
+	padding-top: 0px;
+	padding-bottom: 2px;
 }
 
 .whiteClock {
