@@ -223,6 +223,8 @@ hr {
 #send {
 	position: relative;
 	top: -1px;
+	width: 58px;
+	padding-left: 7px;
 }
 
 #resign, #draw {
