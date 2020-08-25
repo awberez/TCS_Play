@@ -127,6 +127,10 @@
                 $('#topClock').html(`${String(userData.time_clock).padStart(2, '0')}:00`);
                 $('#bottomClock').html(`${String(userData.time_clock).padStart(2, '0')}:00`);
                 whiteTime = userData.time_clock * 60 * 1000, blackTime = userData.time_clock * 60 * 1000;
+            }
+            else {
+                $('#topClock').hide();
+                $('#bottomClock').hide();
             };
         });
         $(window).keydown((event)=>{ if (event.which === 13 && document.activeElement === document.getElementById('inputMessage')) { sendMessage(); }; });
