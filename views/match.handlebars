@@ -81,6 +81,7 @@
         blackName = `<div id="blackName"><span class="blackArrow arrow"><i class="fa fa-chevron-right"></i></span> <span class="chessPiece black mainPiece"></span> <span id="blackStatus" style="font-style: italic">(offline)</span></div>`;
         userData.logo ? $('#logoBox').append(`<img src=${userData.logo}></img>`) : $("#logoBox").append(`<img src=/images/tcs-logo.png></img>`);
         let title  = 'The Chess School', header = userData.header;
+        document.title = `${userData.white_name} & ${userData.black_name}`;
         if (header && header.includes(': ')) {
           title  = header.split(': ')[0];
           header = header.split(': ')[1]
