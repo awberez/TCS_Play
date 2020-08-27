@@ -82,7 +82,7 @@
         if (!userData.user_name) { $('#noteTypeBox').hide(); };
         userData.logo ? $('#logoBox').append(`<img src=${userData.logo}></img>`) : $("#logoBox").append(`<img src=/images/tcs-logo.png></img>`);
         let title = 'The Chess School', header = userData.header;
-        document.title = `${userData.white_name} & ${userData.black_name}`;
+        document.title = `Review: ${userData.white_name} & ${userData.black_name}`;
         if (header && header.includes(': ')) { title = header.split(': ')[0], header = header.split(': ')[1]; };
         $('#titleText').html(title);
         if (header) $('#headerText').html(header);
