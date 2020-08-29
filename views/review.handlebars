@@ -263,7 +263,7 @@
                 for (i = 0; i < moveDisplay; i++) {
                     pushMove(movesMade[i].from, movesMade[i].to, movesMade[i].promotion);
                     board.setPosition(movesMade[i].fen, false);
-                    if (!movesMade[i+1].resign_id) {
+                    if (!movesMade[i+1] || !movesMade[i+1].resign_id) {
                         if (i == movesMade.length - 1 
                             && userData.game_status != "ended"
                             && userData.game_status != "white"
