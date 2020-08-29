@@ -643,27 +643,29 @@
                 };
             };
             setTheClocks = ()=>{
-                let now = new Date().getTime(), distance = now - currentMoveTime, whiteTemp = whiteTime, blackTemp = blackTime;
-                if (nextPlayer == "White" && mostRecentMove) { whiteTemp = whiteTime - distance + serverTimeDif; } else
-                if (nextPlayer == "Black" && mostRecentMove) { blackTemp = blackTime - distance + serverTimeDif; }; 
-                wMins = String(Math.floor((whiteTemp % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
-                wSecs = String(Math.floor((whiteTemp % (1000 * 60)) / 1000)).padStart(2, '0');
-                bMins = String(Math.floor((blackTemp % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
-                bSecs = String(Math.floor((blackTemp % (1000 * 60)) / 1000)).padStart(2, '0');
-                if (whiteTemp <= (userData.time_clock * 60 * 100)) {  $('.whiteClock').addClass("expSoon"); };
-                if (blackTemp <= (userData.time_clock * 60 * 100)) {  $('.blackClock').addClass("expSoon"); };
-                if (wMins <= 0 && wSecs <= 0) {
-                    wMins = "00";
-                    wSecs = "00";
-                    timeIsUp();
+                if (!gameEnd) {
+                    let now = new Date().getTime(), distance = now - currentMoveTime, whiteTemp = whiteTime, blackTemp = blackTime;
+                    if (nextPlayer == "White" && mostRecentMove) { whiteTemp = whiteTime - distance + serverTimeDif; } else
+                    if (nextPlayer == "Black" && mostRecentMove) { blackTemp = blackTime - distance + serverTimeDif; }; 
+                    wMins = String(Math.floor((whiteTemp % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
+                    wSecs = String(Math.floor((whiteTemp % (1000 * 60)) / 1000)).padStart(2, '0');
+                    bMins = String(Math.floor((blackTemp % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
+                    bSecs = String(Math.floor((blackTemp % (1000 * 60)) / 1000)).padStart(2, '0');
+                    if (whiteTemp <= (userData.time_clock * 60 * 100)) {  $('.whiteClock').addClass("expSoon"); };
+                    if (blackTemp <= (userData.time_clock * 60 * 100)) {  $('.blackClock').addClass("expSoon"); };
+                    if (wMins <= 0 && wSecs <= 0) {
+                        wMins = "00";
+                        wSecs = "00";
+                        timeIsUp();
+                    };
+                    if (bMins <= 0 && bSecs <= 0) {
+                        bMins = "00";
+                        bSecs = "00";
+                        timeIsUp();
+                    };
+                    $('.whiteClock').html(`${wMins}:${wSecs}`);
+                    $('.blackClock').html(`${bMins}:${bSecs}`);
                 };
-                if (bMins <= 0 && bSecs <= 0) {
-                    bMins = "00";
-                    bSecs = "00";
-                    timeIsUp();
-                };
-                $('.whiteClock').html(`${wMins}:${wSecs}`);
-                $('.blackClock').html(`${bMins}:${bSecs}`);
             };
             clearInterval(timeClockInterval);
             let bMins, bSecs, wMins, wSecs, currentMoveTime = new Date(moveTime).getTime();
