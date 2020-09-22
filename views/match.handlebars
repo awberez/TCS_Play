@@ -136,7 +136,19 @@
         });
         $(window).keydown((event)=>{ if (event.which === 13 && document.activeElement === document.getElementById('inputMessage')) { sendMessage(); }; });
 
+        Rollbar.configure({
+            payload: {
+                person: {
+                    username: userData.player_name
+                },
+                game: {
+                    id: userData.match_id
+                }
+            }
+        });
+
         socket.on('connect', (data)=>{
+            console.log('Connected to server');
             socket.emit('join', userData);
         });
 
@@ -160,6 +172,7 @@
         });
 
         socket.on('reconnect', ()=>{
+            console.log('Reconnected to server');
             clearTimeout(reconTimeout);
             clearTimeout(reconFailTimeout);
             $("#resign").attr("disabled", false);
@@ -172,7 +185,6 @@
         });
 
         socket.on('time', (data)=>{
-            console.log('Connected to server');
             let now = new Date().getTime(); 
             serverTimeDif = now - data;
             console.log(`Server timestamp offset: ${serverTimeDif}`);
