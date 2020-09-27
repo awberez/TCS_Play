@@ -282,7 +282,7 @@
                 initialStatus = false;
                 setConStatus();
             }
-            else { statusTimeout = setTimeout(()=>{ setConStatus(); }, 10000); };
+            else { statusTimeout = setTimeout(()=>{ setConStatus(); }, 5000); };
         };
 
         setConStatus = ()=>{
@@ -333,7 +333,7 @@
         updateGameInfo = (resId)=>{
             $('#status').html(status);
             $('#statusPreview').empty();
-            if (chess.in_draw() || chess.in_threefold_repetition() || chess.in_stalemate()) { $('#statusPreview').html(`Draw!`) } else
+            if (chess.in_draw() || chess.in_threefold_repetition() || chess.insufficient_material() || chess.in_stalemate()) { $('#statusPreview').html(`Draw!`) } else
             if (chess.in_checkmate()) { $('#statusPreview').html(`Checkmate!`); } else
             if (chess.in_check() && !resignation && !drawAccepted) { $('#statusPreview').html(`Check!`); } else
             if (resignation) { 
@@ -350,6 +350,7 @@
             if (drawAccepted) { $('#statusPreview').html(`Draw!`); };
             if (chess.in_draw() ||
                 chess.in_threefold_repetition() ||
+                chess.insufficient_material() ||
                 chess.in_stalemate() ||
                 chess.in_checkmate() ||
                 gameEnd) {
@@ -399,7 +400,7 @@
         changeGameStatus = ()=>{
             nextPlayer = chess.turn() === 'b' ? 'Black' : 'White';
             if (chess.in_checkmate()) { gameEnd = (nextPlayer == 'White') ? "black" : "white", status = `CHECKMATE! ${nextPlayer == 'White' ? "Black" : "White"} wins!`; } else
-            if (chess.in_draw() || chess.in_threefold_repetition() || chess.in_stalemate()) { gameEnd = "draw", status = 'DRAW!'; }
+            if (chess.in_draw() || chess.in_threefold_repetition() || chess.insufficient_material() || chess.in_stalemate()) { gameEnd = "draw", status = 'DRAW!'; }
             else {
                 status = `${nextPlayer} to move.`;
                 if (chess.in_check()) { status = `CHECK! ${status}`; };
@@ -486,7 +487,7 @@
                             updateGameInfo(res[i].resign_id);
                         } else
                         if (res[i].resign_id == "draw") {
-                            drawAccepted = true, gameEnd = "draw", status = `DRAW! A draw has been accepted!`;
+                            drawAccepted = true, gameEnd = "draw", status = `DRAW! A draw has been achieved!`;
                             updateGameInfo();
                         } else
                         if (res[i].resign_id == "TO:white" || res[i].resign_id == "TO:black") {
@@ -508,6 +509,7 @@
                 !chess.in_checkmate() &&
                 !chess.in_draw() &&
                 !chess.in_threefold_repetition() &&
+                !chess.insufficient_material() &&
                 !chess.in_stalemate() &&
                 !gameEnd &&
                 !override) { board.enableUserInput(); }
@@ -609,6 +611,24 @@
             };
         };
 
+        isItaDraw = ()=>{
+            let color = (nextPlayer == "White") ? 'b' : 'w', boardPieces = chess.board(), playerPieces = [];
+            console.log(boardPieces);
+            for (let i = 0; i < boardPieces.length; i++) { 
+                for (let j = 0; j < boardPieces[i].length; j++) { 
+                    if (boardPieces[i][j] != null && 
+                        boardPieces[i][j].color == color && 
+                        boardPieces[i][j].type != 'k') { playerPieces.push(boardPieces[i][j].type); };
+                }; 
+            };
+            console.log(playerPieces);
+            if (playerPieces.length == 0 ||
+                (playerPieces.length == 1 && playerPieces[0] == 'b') ||
+                (playerPieces.length == 1 && playerPieces[0] == 'n') ||
+                (playerPieces.length == 2 && playerPieces[0] == 'n' && playerPieces[1] == 'n')) { return true; }
+            else { return false; };
+        };
+
         expirationTimer = ()=>{
             setTheTimer = ()=>{
                 let now = new Date().getTime(), 
@@ -638,11 +658,11 @@
             timeIsUp = ()=>{
                 endGameProcedure();
                 if (!gameEnd) {
-                    gameEnd = (nextPlayer == "White") ? "white" : "black";
+                    gameEnd = isItaDraw() ? "draw" : (nextPlayer == "White") ? "white" : "black";
                     let resignData = {
                         fen: chess.fen(),
                         game_end: gameEnd,
-                        resign: `TO:${gameEnd}`,
+                        resign: isItaDraw() ? true : `TO:${gameEnd}`,
                         move_id: movesMade.length,
                         pgn: chess.pgn()
                     };

@@ -291,7 +291,7 @@
                             updateGameInfo(movesMade[i+1].resign_id);
                         } else 
                         if (movesMade[i+1].resign_id == "draw" && !movesMade[i+1].status_message) {
-                            drawAccepted = true, status = `DRAW! A draw has been accepted!`;
+                            drawAccepted = true, status = `DRAW! A draw has been achieved!`;
                             updateGameInfo();
                         } else
                         if (movesMade[i+1].resign_id == "TO:white" || movesMade[i+1].resign_id == "TO:black") {
