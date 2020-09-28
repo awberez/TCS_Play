@@ -135,15 +135,15 @@
             };
         });
         $(window).keydown((event)=>{ if (event.which === 13 && document.activeElement === document.getElementById('inputMessage')) { sendMessage(); }; });
-        console.log(userData);
+
         Rollbar.configure({
             payload: {
                 person: {
                     username: userData.player_name,
-                    id: userData.player_id
+                    id: userData.player_id,
                 },
                 game: {
-                    id: userData.match_id
+                    id: userData.match_id,
                 }
             }
         });
