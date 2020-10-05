@@ -111,12 +111,12 @@
             </div>
             `);
         $("#expirationClock").hide();
-        $(document).ready(()=>{ 
-            $('#flip').click(flipBoard) 
+        $(document).ready(()=>{
+            $('#flip').click(flipBoard)
             $('#resign').click(()=>{ resignGame(); });
             $('#draw').click(()=>{ drawGame(); });
             if (userData.expiration) { expirationTimer(); };
-            if (userData.time_clock) { 
+            if (userData.time_clock) {
                 if (topPlayer == "black") {
                     $('#topClock').addClass("blackClock");
                     $('#bottomClock').addClass("whiteClock");
@@ -166,9 +166,10 @@
                 socket.close();
                 socket.open();
             }, 30000);
-            reconFailTimeout = setTimeout(()=>{ 
-                console.log("sending Rollbar");
-                Rollbar.error("Unable to reconnect WebSocket", ()=>{ location.reload(); });
+            reconFailTimeout = setTimeout(()=>{
+                location.reload();
+                // console.log("sending Rollbar");
+                // Rollbar.error("Unable to reconnect WebSocket", ()=>{ location.reload(); });
             }, 60000);
         });
 
@@ -186,7 +187,7 @@
         });
 
         socket.on('time', (data)=>{
-            let now = new Date().getTime(); 
+            let now = new Date().getTime();
             serverTimeDif = now - data;
             console.log(`Server timestamp offset: ${serverTimeDif}`);
         });
@@ -337,14 +338,14 @@
             if (chess.in_draw() || chess.in_threefold_repetition() || chess.insufficient_material() || chess.in_stalemate()) { $('#statusPreview').html(`Draw!`) } else
             if (chess.in_checkmate()) { $('#statusPreview').html(`Checkmate!`); } else
             if (chess.in_check() && !resignation && !drawAccepted) { $('#statusPreview').html(`Check!`); } else
-            if (resignation) { 
+            if (resignation) {
                 $('#statusPreview').html(`${
-                    resId == "TO:white" 
+                    resId == "TO:white"
                         ? `<span class="chessPiece white statusPiece"></span> Timed Out!`
                         : resId == "TO:black"
                             ? `<span class="chessPiece black statusPiece"></span> Timed Out!`
-                            : resId == userData.white_id 
-                                ? `<span class="chessPiece white statusPiece"></span> Resigned!` 
+                            : resId == userData.white_id
+                                ? `<span class="chessPiece white statusPiece"></span> Resigned!`
                                 : `<span class="chessPiece black statusPiece"></span> Resigned!`}`);
                 $('#statusPreview').addClass('statusResign');
             } else
@@ -389,7 +390,7 @@
                 if ($('#topClock').hasClass('expSoon') && !$('#bottomClock').hasClass('expSoon')) {
                     $('#topClock').removeClass('expSoon');
                     $('#bottomClock').addClass('expSoon');
-                } else 
+                } else
                 if ($('#bottomClock').hasClass('expSoon') && !$('#topClock').hasClass('expSoon')) {
                     $('#topClock').addClass('expSoon');
                     $('#bottomClock').removeClass('expSoon');
@@ -464,7 +465,7 @@
             if (movesMade.length < res.length) {
                 console.log("displaying new moves");
                 let n = res.length - movesMade.length;
-                for (i = n-1; 0 <= i; i--) {  
+                for (i = n-1; 0 <= i; i--) {
                     if (!res[i].resign_id) {
                         let chessMove = chess.move({
                             from: res[i].from,
@@ -474,10 +475,10 @@
                         movesMade.push({chessMove: chessMove, createdAt: res[i].createdAt});
                         board.setPosition(res[i].fen);
                         changeGameStatus();
-                        if (userData.time_clock) { 
+                        if (userData.time_clock) {
                             mostRecentMove = i == 0 ? true : false;
                             if (!mostRecentMove && i == 1 && res[0].resign_id) { mostRecentMove = true; };
-                            timeClockCountdown(res[i].createdAt, mostRecentMove); 
+                            timeClockCountdown(res[i].createdAt, mostRecentMove);
                         };
                     }
                     else {
@@ -615,12 +616,12 @@
         isItaDraw = ()=>{
             let color = (nextPlayer == "White") ? 'b' : 'w', boardPieces = chess.board(), playerPieces = [];
             console.log(boardPieces);
-            for (let i = 0; i < boardPieces.length; i++) { 
-                for (let j = 0; j < boardPieces[i].length; j++) { 
-                    if (boardPieces[i][j] != null && 
-                        boardPieces[i][j].color == color && 
+            for (let i = 0; i < boardPieces.length; i++) {
+                for (let j = 0; j < boardPieces[i].length; j++) {
+                    if (boardPieces[i][j] != null &&
+                        boardPieces[i][j].color == color &&
                         boardPieces[i][j].type != 'k') { playerPieces.push(boardPieces[i][j].type); };
-                }; 
+                };
             };
             console.log(playerPieces);
             if (playerPieces.length == 0 ||
@@ -632,13 +633,13 @@
 
         expirationTimer = ()=>{
             setTheTimer = ()=>{
-                let now = new Date().getTime(), 
-                distance = expirationDate - now, 
+                let now = new Date().getTime(),
+                distance = expirationDate - now,
                 days = String(Math.floor(distance / (1000 * 60 * 60 * 24))).padStart(2, '0'),
                 hours = String(Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))).padStart(2, '0'),
                 minutes = String(Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0'),
                 seconds = String(Math.floor((distance % (1000 * 60)) / 1000)).padStart(2, '0');
-                if (days <= 0 && hours <= 0 && minutes < 10) { expSoon = true }; 
+                if (days <= 0 && hours <= 0 && minutes < 10) { expSoon = true };
                 $('#expirationClock').html(expSoon ? `${hours}h ${minutes}m ${seconds}s` : `${days}d ${hours}h ${minutes}m`);
                 $("#expirationClock").show();
                 if (expSoon) { $('#expirationClock').addClass("expSoon"); };
@@ -689,7 +690,7 @@
                 if (!gameEnd) {
                     let now = new Date().getTime(), distance = now - currentMoveTime, whiteTemp = whiteTime, blackTemp = blackTime;
                     if (nextPlayer == "White" && mostRecentMove) { whiteTemp = whiteTime - distance + serverTimeDif; } else
-                    if (nextPlayer == "Black" && mostRecentMove) { blackTemp = blackTime - distance + serverTimeDif; }; 
+                    if (nextPlayer == "Black" && mostRecentMove) { blackTemp = blackTime - distance + serverTimeDif; };
                     wMins = String(Math.floor((whiteTemp % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
                     wSecs = String(Math.floor((whiteTemp % (1000 * 60)) / 1000)).padStart(2, '0');
                     bMins = String(Math.floor((blackTemp % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
@@ -717,7 +718,7 @@
                 let timeDif = lastMoveTime - currentMoveTime;
                 lastMoveTime = currentMoveTime;
                 nextPlayer == "Black" ? whiteTime = whiteTime + timeDif : blackTime = blackTime + timeDif;
-            };   
+            };
             setTheClocks();
             timeClockInterval = setInterval(()=>{ setTheClocks(); }, 1000);
         };
