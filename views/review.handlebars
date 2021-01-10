@@ -312,7 +312,7 @@
             if (moveTotal != 0) {
                 let lineBreakPgn = chess.pgn().replace(/ (?=\d+\.)/g, '<br/>');
                 if (!finalPgn) { finalPgn = lineBreakPgn };
-                let currentPgn = lineBreakPgn.replace(/(\d{1,3}\.)( [a-z0-9\-+#]+)? ([a-z0-9\-+#]+$)/i,
+                let currentPgn = lineBreakPgn.replace(/(\d{1,3}\.)( [a-z0-9\-+=#]+)? ([a-z0-9\-+=#]+$)/i,
                                                       "<span class='highlight'>$1</span>$2 <span class='highlight'>$3</span>");
                 $('#pgn').html(`<span style="color:gray;">${finalPgn.replace(lineBreakPgn, `<span style="color:black !important;">${currentPgn}</span>`)}</span>`);
                 if (!$('#pgn .highlight').isVisible($('#pgn'))) { document.getElementById("pgn").getElementsByClassName('highlight')[0].scrollIntoView(); };
