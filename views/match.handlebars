@@ -74,7 +74,7 @@
         </div>
     </div>
     <script type="text/javascript">
-
+    
         let decodedJson = decodeURIComponent("{{{encodedJson}}}"), userData = JSON.parse(decodedJson), socket = io('/match'), serverTimeDif = 0,
         chatTime, alerted, override = false, moveTimeout, chatTimeout, statusTimeout, movesMade = [], promotionPiece = "q", nextPlayer = 'white', status, conStatus, initialStatus = true, resignation = false, gameEnd = false, chatMessages = [], topPlayer = "black", drawOffer = false, drawAccepted = false, oppCon = false, expireInterval, timeClockInterval, whiteTime, blackTime, lastMoveTime, reconTimeout, reconFailTimeout,
         whiteName = `<div id="whiteName"><span class="whiteArrow arrow"><i class="fa fa-chevron-right"></i></span> <span class="chessPiece white mainPiece"></span> <span id="whiteStatus" style="font-style: italic">(offline)</span></div>`,
