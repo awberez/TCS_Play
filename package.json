@@ -30,7 +30,7 @@
     "sanitize-html": "^1.22.1",
     "sequelize": "^5.22.3",
     "sequelize-cli": "^6.2.0",
-    "socket.io": "^2.3.0"
+    "socket.io": "^2.4.0"
   },
   "migrate": "node_modules/sequelize-cli/bin/sequelize db:migrate"
 }
